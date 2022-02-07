@@ -1,5 +1,5 @@
 {
-    "name": "hco/cms",
+    "name": "hcolab/cms",
     "description": "Package used to run a CMS inside a project",
     "type": "library",
     "license": "MIT",
