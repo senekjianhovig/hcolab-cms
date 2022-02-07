@@ -1,0 +1,14 @@
+{
+    "name": "hco/cms",
+    "description": "Package used to run a CMS inside a project",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hovig",
+            "email": "hovig.senekjian@hotmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
