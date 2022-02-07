@@ -1,6 +1,6 @@
 <?php
 
-namespace twa\ecomauth\providers;
+namespace hcolab\cms\providers;
 
 use Illuminate\Support\ServiceProvider;
 
