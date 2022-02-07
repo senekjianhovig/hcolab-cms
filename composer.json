@@ -9,6 +9,18 @@
             "email": "hovig.senekjian@hotmail.com"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "hcolab\\cms\\" : "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "hcolab\\cms\\providers\\CMSServiceProvider"
+            ]
+        }
+    },
     "minimum-stability": "dev",
     "require": {}
 }
