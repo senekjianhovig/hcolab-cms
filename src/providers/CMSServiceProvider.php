@@ -11,7 +11,7 @@ Class CMSServiceProvider extends ServiceProvider{
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \hcolab\cms\Console\MakePage::class
+                \hcolab\cms\console\MakePage::class
             ]);
         }
 

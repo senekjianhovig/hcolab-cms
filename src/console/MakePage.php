@@ -1,6 +1,6 @@
 <?php
 
-namespace hcolab\cms\Console;
+namespace hcolab\cms\console;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
