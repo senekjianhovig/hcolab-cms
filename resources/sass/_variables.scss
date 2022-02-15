@@ -1,0 +1,66 @@
+$color-primary:#1e1e2c;
+$color-primary-darker:#15151e;
+$color-white:#ffffff;
+$color-black:#000;
+
+$color-blue:rgba(24,69,160,1);
+$color-green:rgba(57,154,127,1);
+$color-red:rgba(220,0,0,1);
+
+$color-light:#f8f7f7;
+$color-text-gray: rgba($color-black,0.5);
+$color-gray-1:rgba($color-black,0.1);
+$color-gray-2:rgba($color-black,0.05);
+$color-gray-3:rgba($color-black,0.025);
+
+
+
+$font-alternative: 'Barlow', 'Almarai', sans-serif;
+$font-awesome: "Font Awesome 5 Pro";
+$link-arrow :"\f054";
+
+$mediaquery-small: "(max-width: 1281px) and (min-width: 1101px)";
+$mediaquery-smaller: "(max-width: 1100px) and (min-width: 801px)";
+$mediaquery-mobile: "(max-width: 800px)";
+
+$box-shadows:0 0 5px rgba($color-black,0.1), 0 0 20px rgba($color-black,0.1);
+$box-shadows2:0 0 5px rgba($color-black,0.05), 0 0 20px rgba($color-black,0.05);
+
+
+
+sep{ display: block; width: 100%; clear: both; height:20px; }
+
+//scss templates
+%flex-center {
+    display: flex;
+    align-items: center;
+}
+
+%transition-1 {
+    transition: 0.5s all ease-in-out;
+    transition-timing-function: ease-in-out;
+}
+%transition-2 {
+    transition: 0.3s all ease-in-out;
+    transition-timing-function: ease-in-out;
+}
+%transition-3 {
+    transition: 0.2s all ease-in-out;
+    transition-timing-function: ease-in-out;
+}
+%transition-4 {
+    transition: 0.1s all ease-in-out;
+    transition-timing-function: ease-in-out;
+}
+%absolute-box {
+    position: absolute; top:0; left:0; right:0; bottom:0; margin: auto;
+}
+
+%ellipsis{
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+
+$background: #e74c3c;
+$file-upload-color: #c0392b;
+$file-upload-size: 300px;

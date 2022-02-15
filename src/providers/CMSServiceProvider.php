@@ -15,6 +15,8 @@ Class CMSServiceProvider extends ServiceProvider{
             ]);
         }
 
+        $this->publishes([ __DIR__.'/../../public' => public_path('hcolab/cms') ], 'public');
+
     }
 
     public function register(){

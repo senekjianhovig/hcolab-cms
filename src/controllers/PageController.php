@@ -68,8 +68,8 @@ class PageController extends Controller
         $data["page"] = $page;
 
         return response()->json([
-            'table_body' => view('cms.grid.grid-body', $data)->render(),
-            'pagination' => view('cms.grid.pagination', $data)->render()
+            'table_body' => view('CMSViews::grid.grid-body', $data)->render(),
+            'pagination' => view('CMSViews::grid.pagination', $data)->render()
         ], 200);
     }
 

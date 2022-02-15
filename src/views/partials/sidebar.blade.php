@@ -1,6 +1,6 @@
 <div class="nav main">
     <a href="{{route('dashboard')}}" class="header">
-        <img src="/assets/svg/logo.svg" width="120">
+        <img src="hcolab/cms/assets/svg/logo.svg" width="120">
     </a>
     <form method="post" onsubmit="return false" id="nav-search">
         <i class="search icon"></i>
