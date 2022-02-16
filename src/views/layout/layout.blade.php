@@ -8,9 +8,9 @@
 
     @yield('head')
 
-    <link rel="stylesheet" type="text/css" href="hcolab/cms/css/loader-start.css">
-    <link rel="stylesheet" type="text/css" href="hcolab/cms/css/app.css">
-    <link rel="stylesheet" type="text/css" href="hcolab/cms/css/grid-system.min.css">
+    <link rel="stylesheet" type="text/css" href="{{env('APP_URL')}}/hcolab/cms/css/loader-start.css">
+    <link rel="stylesheet" type="text/css" href="{{env('APP_URL')}}/hcolab/cms/css/app.css">
+    <link rel="stylesheet" type="text/css" href="{{env('APP_URL')}}/hcolab/cms/css/grid-system.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.0/semantic.min.css">
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
 
@@ -31,10 +31,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.0/semantic.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 
-    <script src="hcolab/cms/js/script.js"></script>
+    <script src="{{env('APP_URL')}}/hcolab/cms/js/script.js"></script>
     @yield ('scripts')
 
-    <link rel="stylesheet" type="text/css" href="hcolab/cms/css/loader-end.css">
+    <link rel="stylesheet" type="text/css" href="{{env('APP_URL')}}/hcolab/cms/css/loader-end.css">
 </body>
 
 </html>
