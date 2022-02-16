@@ -11,8 +11,8 @@
 
             <li><a href="/"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</a></li>
 
-            <?php $pages = config('pages')['menu']; ?>
-            @foreach ($pages as $page)
+            <?php $sidebar = config('pages')['menu']; ?>
+            {{-- @foreach ($pages as $page)
 
             @switch($page["type"])
             @case('link')
@@ -40,9 +40,41 @@
             @break
             @endswitch
 
+            @endforeach --}}
+
+
+            @foreach ($sidebar as $item)
+
+            @switch($item["type"])
+            @case('static')
+            <li> <a @if(array_key_exists('target' , $item)) target="{{$item['target']}}" @endif
+                    href="{{$item['link_to']}}"> {{$item["label"]}} </a> </li>
+            @break
+            @case('page')
+
+            @php
+            $link_to = $item['link_to'];
+            $namespace = "\App\Pages\\";
+            $entity = $namespace.$link_to;
+            $class_exists = class_exists($entity);
+            @endphp
+
+            @if($class_exists)
+            @php $class = new $entity; @endphp
+            <li>
+                <a href="{{route('page',['page_slug'=> $class->slug ])}}"> {!! isset($class->icon) ?? $class->icon !!}
+                    {{$class->title}}
+                </a>
+            </li>
+            @endif
+            @break
+
+            @case('group label')
+            <li class="grouplabel"> {{$item["label"]}} </li>
+            @break
+            @endswitch
+
             @endforeach
-
-
 
         </ul>
     </div>

@@ -137,14 +137,13 @@ class Page extends Element
 
     public function getRows()
     {
-
-
-
         $table_data = DB::table($this->entity)->where('deleted', 0);
-
+        
         if (request()->input('sortColumn') && request()->input('sortOrder')) {
             $table_data->orderBy(request()->input('sortColumn'), request()->input('sortOrder'));
         } elseif ($this->sortable) {
+            $table_data->orderBy('orders' , $this->sort_direction);
+        }else{
             $table_data->orderBy($this->sort_field, $this->sort_direction);
         }
 

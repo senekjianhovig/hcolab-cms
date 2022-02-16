@@ -19,9 +19,6 @@ class Column
     foreach($this->columns as $column){
         $column->type = $column->type ? $column->type : $array[$column->name]->ui->type;
         $column->label = $column->label ? $column->label : $array[$column->name]->ui->label;
-        // if(isset($array[$column->name]->ui->data)){
-        // $column->data = $array[$column->name]->ui->data;
-        // }
     }
 
     return $this->columns;
