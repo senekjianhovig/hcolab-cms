@@ -5,7 +5,7 @@ if(!property_exists($data,$name)){ $data->$name = ''; }
 @endphp
 
 
-<div class="{{$element->ui->container}} mb-3">
+<div class="{{$element->ui->container}} mb-4">
     <label style="display: block;
     margin: 0 0 .28571429rem 0;
     color: rgba(0,0,0,.87);

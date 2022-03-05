@@ -264,149 +264,14 @@ function copyButtonInit(){
     });
 }
 
-
 function fileUploadInit(){
 
-    $('.filepond').each(function(index,elem){
-        var inputElement = elem; 
-        FilePond.create(inputElement, {
-                server : { 
-                url : '/upload',
-                name: 'hovig',
-                headers : { 
-                    'X-CSRF-TOKEN' : $('meta[name=csrf-token]').attr('content')  
-                }
-            }
-        });
-    });
-      
-}
-
-
-function initializeCustomFileUpload(){
-
-    const url = '/upload'; 
-
-    $(".hco-file-upload").each(function(index,elem){
-    
-      var mainElement = $(elem); 
-
-      var form = mainElement.find(".frm");
-      
-      var fileInput = mainElement.find(".file-input");
-      var progressArea = mainElement.find(".progress-area");
-      var uploadedArea = mainElement.find(".uploaded-area");
-    
-      fileInput.on('change' , function(e){
-        
-        e.preventDefault();
-   
-        var files = fileInput[0].files;
-     
-
-        for (let i = 0; i < files.length; i++) {
-            let file = files.item(i);
-            
-         
-    
-            let fileName = file.name;
-            if(fileName.length >= 12){
-                let splitName = fileName.split('.');
-                fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
-            }
-
-           console.log(file);
-
-            let formData = new FormData();
-            
-            formData.append(fileInput[0].name, file);
-
-         
-            uploadFile(fileName, formData , uploadedArea , progressArea);
-        }
-
-        
-
-      });
-    
-    });
-
-
-
-}
-
-// function uploadFile(name , formData , uploadedArea , progressArea){
-//   let xhr = new XMLHttpRequest();
-//   xhr.open("POST", "/upload");
-//   xhr.upload.addEventListener("progress", ({loaded, total}) =>{
-//     let fileLoaded = Math.floor((loaded / total) * 100);
-//     let fileTotal = Math.floor(total / 1000);
-//     let fileSize;
-//     (fileTotal < 1024) ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024*1024)).toFixed(2) + " MB";
-
-
-// let progressHTML = `
-// <div class="upload-box upload-box-active">
-// <div class="type">
-//     <i class="fas fa-file-alt"></i>
-// </div>
-// <div class="middle">
-//     <div class="info">
-//         <span class="label"> ${name}</span>
-//         <span class="percentage">${fileLoaded}%</span>
-//     </div>
-//     <div class="bar-wrapper">
-//         <div class="bar"></div>
-//         <div class="bar-filled" style="right: ${100-fileLoaded}%"></div>
-//     </div>
-// </div>
-// <div class="remove">
-//     <button type="button">
-//         <i class="fas fa-times"></i>
-//     </button>
-// </div>
-// </div>
-// `;
-
-//     uploadedArea.addClass("onprogress");
-//     progressArea.html(progressHTML);
-//     if(loaded == total){
-//         progressArea.html('');
-//     let uploadedHTML = `<div class="upload-box ">
-//         <div class="type">
-//             <i class="fas fa-file-alt"></i>
-//         </div>
-//         <div class="middle">
-//             <div class="info">
-//                 <span class="label"> ${name}</span>
-//                 <span class="percentage"></span>
-//             </div>
-//             <div class="file-size">
-//             ${fileSize}
-//             </div>
-//         </div>
-//         <div class="check">
-//             <i class="fas fa-check"></i>
-//         </div>
-//     </div>`;
-//       uploadedArea.removeClass("onprogress");
-//       uploadedArea.append(uploadedHTML);
-//     }
-//   });
- 
-//   xhr.send(formData);
-// }
-
-function initBluImp(){
-
-
-   
     const uploadFiles = ( () => {
 
         const fileRequests = new WeakMap();
 
         const defaultOptions = {
-            url : '/upload',
+            url : '/cms/upload',
             onAbort() {},
             onError() {},
             onProgress() {},
@@ -415,24 +280,26 @@ function initBluImp(){
 
         const uploadFile = (file , options) => {
             const req = new XMLHttpRequest();
-
+            
             const formData = new FormData();
-            formData.append('upld_files' , file);
+            formData.append('file' , file);
+            formData.append('input_name' , options.inputName);
+            formData.append('is_multiple' , options.multiple);
 
             req.open('POST' , options.url , true);
 
             req.onload = (e) => {
                 if (req.status === 200) {
-                    options.onComplete(e, file , options.index);
+                    options.onComplete(e, file , options , JSON.parse(req.response) );
                 } else {
-                    options.onError(e, file , options.index);
+                    options.onError(e, file , options);
                 }
             };
 
-            req.onerror = (e) => options.onError(e, file , options.index);
-            req.ontimeout = (e) =>  options.onError(e,file , options.index);
-            req.upload.onprogress = (e) => options.onProgress(e,file , options.index);
-            req.onabort = (e) =>  options.onAbort(e,file , options.index);
+            req.onerror = (e) => options.onError(e, file , options);
+            req.ontimeout = (e) =>  options.onError(e,file , options);
+            req.upload.onprogress = (e) => options.onProgress(e,file , options);
+            req.onabort = (e) =>  options.onAbort(e,file , options);
             
             fileRequests.set(file , {request : req , options});
 
@@ -452,141 +319,203 @@ function initBluImp(){
         }
     })();
 
-    const uploadAndTrackFiles = (()=> {
+    const uploadAndTrackFiles = ((index)=> {
 
         let uploader = new Array();
         let files = new Array();
         let progressBox = new Array();
         let filesProgressWrapper = new Array();
-        let index;
-
-        const FILE_STATUS = {
-            PENDNG : 'pending',
-            UPLOADING : 'uploading',
-            PAUSED : 'paused',
-            COMPLETED : 'completed',
-            FAILED : 'failed'
-        };
+       
+        const FILE_STATUS = { PENDNG : 'pending', UPLOADING : 'uploading', PAUSED : 'cancelled', COMPLETED : 'completed', FAILED : 'failed' };
 
         files[index] = new Map();
-        console.log(files);
+      
         progressBox[index] = document.createElement('div');
-        progressBox[index].className = 'upload-progress-tracker';
-        progressBox[index].innerHTML = `
-            <h3> Upload </h3>
-            <div class="file-progress-wrapper"> </div>
-        `;
-    
+        progressBox[index].className = 'file-upload-progress-tracker';
+        progressBox[index].innerHTML = `<div class="file-progress-wrapper"> </div>`;
         filesProgressWrapper[index] = progressBox[index].querySelector('.file-progress-wrapper');
 
         const setFileElement = (file , parentElement ,index) => {
-        let fileElement = new Array();
-        fileElement[index] = document.createElement('div');
-        fileElement[index].className = 'upload-progress-tracker';
-        
-        fileElement[index].innerHTML = `
-            <div class="file-details"> 
-                <p> 
+            let fileElement = new Array();
+            fileElement[index] = document.createElement('div');
+            fileElement[index].className = 'upload-progress-tracker';
+    
+
+            fileElement[index].innerHTML = `
+                <div class="file-details"> 
+                  <div class="circular-progress" style="background: conic-gradient(#5C258D   0deg, #eee 0deg )"> 
+                    <div class="value-container"> 0% </div>
+                  </div>
+                  <div class="file-info"> 
                     <span class="file-name"> ${file.name} </span>  
                     <span class="file-status"> ${FILE_STATUS.PENDNG} </span>
-                </p>
-                <div class="progress-bar" style="width : 0 ; height:2px ; background: green"> </div>
-            </div>
-            <div class="file-actions">
-                <button type="button" class="pause-btn"> Pause </button>
-            </div>
-        `;
-
-        files[index].set(file , {
-            status : FILE_STATUS.PENDNG,
-            size : file.size,
-            percentage : 0,
-            fileElement : fileElement[index]
-        });
-
-        const [ , {children : [pauseBtn]} ] = fileElement[index].children;
-        pauseBtn.addEventListener('click' , () => uploader[index].abortFileUpload(file));
-        filesProgressWrapper[index].appendChild(fileElement[index]);
+                  </div>
+                </div>
+                <div class="file-actions">
+                    <button type="button" class="pause-btn"> <i class="trash alternate icon"></i> </button>   
+                </div>`;
+        
+            files[index].set(file , { status : FILE_STATUS.PENDNG, size : file.size, percentage : 0, fileElement : fileElement[index], fileResponse : null , parentElement : parentElement});
+            const [ , {children : [pauseBtn]} ] = fileElement[index].children;
+            pauseBtn.addEventListener('click' , () => { uploader[index].abortFileUpload(file); });
+            filesProgressWrapper[index].appendChild(fileElement[index]);
         }
 
-        const updateFileElement = fileObj => {
-            const [ {children : [ {children : [ , fileStatus]} , progressBar]} ] = fileObj.fileElement.children; 
+        const updateFileElement = (fileObj,options) => {
+            const [ {children : [ progressBar , {children : [ , fileStatus]}]} ] = fileObj.fileElement.children; 
 
-            requestAnimationFrame(()=> {
-                fileStatus.textContent = fileObj.status;
-                fileStatus.className = `status ${fileObj.status}`;
-                progressBar.style.width = fileObj.percentage + '%';
-            });
+            if(fileObj.fileResponse != null){
+                var fileResponse = fileObj.fileResponse;              
+                requestAnimationFrame(()=> {
+                    fileStatus.textContent = "";
+                    fileStatus.className = `status ${fileObj.status}`;              
+                });
+                fileObj.fileElement.outerHTML = fileResponse.file_element;
+            }else{
+                requestAnimationFrame(()=> {
+                    fileStatus.textContent = fileObj.status;
+                    fileStatus.className = `status ${fileObj.status}`;
+                    progressBar.style.background = `conic-gradient(#5C258D   ${fileObj.percentage * 3.6}deg, #eee ${fileObj.percentage * 3.6}deg )`;
+                    progressBar.innerHTML = `<div class="value-container"> ${parseInt(fileObj.percentage)}% </div>`;
+                });
+            }
         }
 
-        const  onProgress = (e , file , i) => {
-        const fileObj = files[i].get(file);
-        fileObj.status = FILE_STATUS.UPLOADING;
-        fileObj.percentage = e.loaded * 100 / e.total;
-        updateFileElement(fileObj);
+        const  onProgress = (e , file , options) => {
+            const fileObj = files[options.index].get(file);
+            fileObj.status = FILE_STATUS.UPLOADING;
+            fileObj.percentage = e.loaded * 100 / e.total;
+            updateFileElement(fileObj , options);
         };
 
-        const  onError = (e , file , i) => { 
-        const fileObj = files[i].get(file);
-        fileObj.status = FILE_STATUS.FAILED;
-        fileObj.percentage = 100;
-        updateFileElement(fileObj);
+        const  onError = (e , file , options) => { 
+            const fileObj = files[options.index].get(file);
+            fileObj.status = FILE_STATUS.FAILED;
+            fileObj.percentage = 100;
+            updateFileElement(fileObj , options);
         };
 
-        const  onAbort = (e , file , i) => { 
-        const fileObj = files[i].get(file);
-        fileObj.status = FILE_STATUS.PAUSED;
-        updateFileElement(fileObj);
+        const  onAbort = (e , file , options) => { 
+            const fileObj = files[options.index].get(file);
+            fileObj.status = FILE_STATUS.PAUSED;
+            updateFileElement(fileObj , options);
+            setTimeout(function(){ $(fileObj.fileElement).slideUp(); $(fileObj.fileElement).remove(); }, 700);
         };
   
-        const  onComplete = (e , file , i) => {
-        const fileObj = files[i].get(file);
-        fileObj.status = FILE_STATUS.COMPLETED;
-        fileObj.percentage = 100;
-        updateFileElement(fileObj);
+        const  onComplete = (e , file , options , response) => {
+            const fileObj = files[options.index].get(file);
+            fileObj.status = FILE_STATUS.COMPLETED;
+            fileObj.percentage = 100;
+            fileObj.fileResponse =  response;
+            updateFileElement(fileObj , options);
         };
 
-        return (uploadedFiles , parentElement , i) => {
-
-            [...uploadedFiles].forEach((file) => { setFileElement(file , parentElement, index) });
-
-            index = i;
-
-            uploader[index] = uploadFiles(uploadedFiles , {
-                url : "/upload",
-                onAbort,
-                onError,
-                onComplete,
-                onProgress,
-                index : index
+        return (uploadedFiles , parentElement , elem , i) => {
+            [...uploadedFiles].forEach((file) => {  setFileElement(file , parentElement, i)  });
+            uploader[i] = uploadFiles(uploadedFiles , { url : "/cms/upload", onAbort, onError, onComplete, onProgress, index : i , elem : elem,
+            multiple : elem.attr('multiple') == true || elem.attr('multiple') == 'multiple' , 
+            inputName : elem.attr('name')
             });
-       
-           
+            parentElement.appendChild(progressBox[i]);
+        }   
 
-            // parentElement.appendChild(progressBox[index]);
-    }
-
-    })();
-
-    
-    const uploadBtn = document.getElementsByClassName('file-upload-label');
-
-    Array.from(uploadBtn).forEach(function(element , index) {
-        let parentElement = element.parentElement;
-        
-        
-        element.addEventListener('change' , e => {
-           uploadAndTrackFiles(e.target.files , parentElement , index);
-        });
     });
 
-   
-    
+    $('.file-upload-label').each(function(index,element){
+        
+        element.addEventListener('change' , e => {
 
+          let multiple =  $(e.target).attr('multiple') == 'multiple' || $(e.target).attr('multiple') == true;
+          console.log(multiple);
+          if(!multiple){
+            $(element).parent().find('.file-upload-progress-tracker').slideUp();
+          }
+
+          uploadAndTrackFiles(index)(e.target.files , $(element).parent()[0] , $(e.target) ,index);
+        });
+    });
+}
+
+function fileElementDelete(elem){
+    elem.parents('.file-upload-progress-tracker').slideUp(); 
+    setTimeout(function(){ elem.parents('.file-upload-progress-tracker').remove(); },1000);
+}
+
+function validateBeforeSubmit(){
+  
+
+    // $('#page').submit(function(event) {
+        
+    //     var array = new Array;
+    //     var valid = true;
+
+    //     $(this).find("input[name^='upld_']").each(function(index , elem){
+    //         var element = $(elem);
+        
+    //         if(element.attr('multiple') == 'multiple' || element.attr('multiple') == true){
+    //             var name_old = element.attr('name').replace("upld", "tmp")    +'[]'; 
+    //             var name_new = element.attr('name').replace("upld", "") +'[]'; 
+    //         }else{
+    //             var name_old = element.attr('name').replace("upld", "tmp"); 
+    //             var name_new = element.attr('name').replace("upld", ""); 
+    //         }
+
+    //         var name_old_length = $('input[name='+name_old+']').length;
+    //         var name_new_length = $('input[name='+name_new+']').length;
+    //         var sum = name_new_length + name_old_length;
+
+    //         valid = valid && (sum != 0);
+
+          
+    //     });
+
+    //         if(!valid){
+    //             console.log("not valid");
+    //             return false;
+    //         }   
+
+
+    //         return false;
+    // });
+
+   
 }
 
 
 
+function updateRelatedFields(elem){
+  
+    var is_checked = elem.prop('checked') == true;
+
+    var related_fields = elem.attr("data-related-fields");
+    var array = related_fields.split(',');
+
+    array.forEach(function(item , index){
+        var array2 = item.split('|');
+        var input = $('input[name='+array2[0]+']');
+        var component = input.parents('.related');
+        
+        if(is_checked){
+            component.removeClass('d-none');
+        }else{
+            component.addClass('d-none');
+        }
+
+        if(array2.length == 2){
+            if(!is_checked){
+                input.prop('required' , array2[1] == 'required');
+            }else{
+                input.prop('required' , false);
+            }
+        }
+    });
+}
+
+function relatedFieldsInit(){
+    $('input[data-related-fields]').each(function(index , elem){
+        updateRelatedFields($(elem));
+    });
+}
 
 $( document ).ready(function() {
     semanticInit();
@@ -594,6 +523,17 @@ $( document ).ready(function() {
     sortByColumn();
     summernoteInit();
     copyButtonInit();
-    // fileUploadInit();
-    initBluImp();
+    fileUploadInit();
+    validateBeforeSubmit();
+    relatedFieldsInit();
+    try {
+        $('#complex-variants').slideUp(0);
+        $('.variation-area').slideUp(0);
+    } catch (error) {
+        
+    }
+    
+    
+   
+
 });

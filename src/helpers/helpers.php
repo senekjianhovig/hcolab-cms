@@ -25,6 +25,101 @@ if(!function_exists('process_grid_field')){
     }
 }
 
+if(!function_exists('process_form_field')){
+    function process_form_field($element , $data , $related_tables = null){
+       
+            switch ($element->ui->type) {
+                case "external textfield":
+                case "textfield":
+                case "email":
+                case "number":
+                return view('CMSViews::form.textfield', [ "element" => $element, "data" => $data ]);
+               
+                break;
+                case "disabled_textfield":
+                return view('CMSViews::form.disabled-textfield', [ "element" => $element, "data" => $data ]);
+                break;
+                case "select":
+                case "multiple select":
+                return view('CMSViews::form.select', [ "element" => $element, "data" => $data , 'related_tables' =>
+                $related_tables]);
+                break;
+
+                case "boolean checkbox":
+                return view('CMSViews::form.boolean-checkbox', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case "textarea":
+                return view('CMSViews::form.textarea', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case "password":
+                return view('CMSViews::form.password', [ "element" => $element, "data" => $data ]);
+                break;
+                case "date picker":
+                return view('CMSViews::form.datepicker', [ "element" => $element, "data" => $data ]);
+                break;
+                case "date time picker":
+                return view('CMSViews::form.datetimepicker', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case "wysiwyg":
+                return view('CMSViews::form.wysiwyg', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case "url":
+                return view('CMSViews::form.url', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case "file":
+                case "multiple file":
+                case "image":
+                return view('CMSViews::form.file', [ "element" => $element, "data" => $data]);
+                break;
+
+                case 'open div':
+                return "<div class='".$element->ui->classes."'>";
+                break;
+
+                case 'close div':
+                return "</div>";
+                break;  
+
+                case 'variants panel':
+                return view('CMSViews::form.variants-panel', [ "element" => $element, "data" => $data , "related_tables"=>$related_tables]);
+                break;
+
+                case 'text':
+                return $element->ui->text;
+                break;
+
+                case 'values select':
+                return view('CMSViews::form.select', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case 'ecom inventory':
+                case 'ecom pricing': 
+                
+                $target_page = new $element->target_page;
+                $target_page->setElements(); 
+
+                $result = [];
+                foreach($target_page->elements as $elem){
+                    if(in_array($elem->name ,$target_page->on_create)){
+                        $result [] = process_form_field($elem , $data , $related_tables); 
+                    }
+                }
+
+                return implode("\n" , $result);
+               
+                break;
+                
+
+            }
+      
+    }
+}
+
 if(!function_exists('set_db')){
     function set_db($field_name, $field_type,  $field_length, $field_default, $is_multi_language){
         $db = new \StdClass;

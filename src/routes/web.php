@@ -13,8 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSSetup::class]], function(){
-    Route::get('/', [App\Http\Controllers\DashboardController::class, 'render'])->name('dashboard');
+    Route::post('/upload', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporary']); 
+    Route::get('/',  function(){ return view('CMSViews::dashboard.index');})->name('dashboard');
     Route::get('generate', function(){ return view('CMSViews::generate');});
     Route::prefix('page')->group(function () {
         Route::get('{page_slug}', [hcolab\cms\controllers\PageController::class, 'render'])->name('page');

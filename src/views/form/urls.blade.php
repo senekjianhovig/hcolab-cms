@@ -26,7 +26,7 @@ $items = [];
     <div class="row">
         @foreach($items as $item)
 
-        <div class="col-lg-12 mb-3">
+        <div class="col-lg-12 mb-4">
             <div class="ui fluid action input">
                 <input type="text" value="{{$item->link}}">
                 <button type="button" class="ui right labeled icon button">

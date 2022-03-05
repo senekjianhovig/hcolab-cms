@@ -2,35 +2,44 @@
 $name = $element->name;
 if(!is_object($data)){ $data = new StdClass(); }
 if(!property_exists($data,$name)){ $data->$name = ''; }
+
+$is_multiple = $element->ui->type == 'multiple file';
+$input_name = $is_multiple ? $element->name.'[]' : $element->name;
+$previews = [];
+if($data && !empty($data->$name)){
+    if($is_multiple){
+       $ids =  json_decode($data->$name);
+    }else{
+       $ids = explode(',', $data->$name); 
+    }
+
+    $previews = \hcolab\cms\models\File::whereIn('id', $ids)->where('deleted',0)->get();
+}
+
+
 @endphp
 
-{{-- <div class="{{ $element->ui->container }} mb-3 hco-file-upload">
-    <label class="image-upload-label"> {{$element->ui->label}}</label>
-    <div class="image-upload-wrap">
-        <form class="frm">
-            <input class="file-upload-input file-input" name="upld_{{$element->name}}" multiple type='file' />
+<div class="{{ $element->ui->container }} mb-4">
+    <div class="c-label">
+        {{$element->ui->label}} @if($element->ui->required) * @endif
+    </div>
+    <div class="file-upload-wrapper">
+        <label class="file-upload-label">
+            <input @if(!is_null($element->ui->accept)) accept="{{$element->ui->accept}}" @endif type='file' name="upld_{{$element->name}}" @if($is_multiple) multiple @endif style="display: none" />
             <div class="drag-text">
                 <i class="fas fa-cloud-upload-alt icon"></i>
-                <div class="label">Drag and drop a file</div>
+                <div class="label">@if($is_multiple) Choose multiple files @else Choose a file @endif</div>
             </div>
-        </form>
+        </label>
+        @foreach ($previews as $preview)
+            @include('CMSViews::form.file-preview', [
+                'value'=> $preview->id,
+                'name' => $input_name, 
+                'mime_category' => $preview->mime_category, 
+                'url' => (bool) $preview->external ? $preview->url : env('APP_URL').'/storage/'.$preview->url, 
+                'display_name' => $preview->original_name,
+                'preview' => true
+                ])
+            @endforeach
     </div>
-    <div class="progress-area uploaded-wrap"></div>
-    <div class="uploaded-area uploaded-wrap"></div>
-
-
-</div> --}}
-
-<div class="{{ $element->ui->container }} mb-3 hco-file-upload">
-    {{-- <label class="image-upload-label"> {{$element->ui->label}}</label> --}}
-    <label class="file-upload-label">
-        <input type='file' {{-- class="file-upload-input file-input" --}} name="upld_{{$element->name}}" multiple
-            style="display: none" />
-        <div class="drag-text">
-            <i class="fas fa-cloud-upload-alt icon"></i>
-            <div class="label">Drag and drop a file</div>
-        </div>
-    </label>
-
-
 </div>

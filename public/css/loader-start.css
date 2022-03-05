@@ -9,7 +9,7 @@
     margin: auto;
     background-color: #f8f7f7;
     z-index: 9999;
-    background-image: url("/assets/svg/spinner.svg");
+    background-image: url("/hcolab/cms/assets/svg/spinner.svg");
     background-position: center;
     background-repeat: no-repeat;
     background-size: 50px;

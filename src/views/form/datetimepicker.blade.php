@@ -9,7 +9,7 @@
         $value = "";
     }
 ?>
-<div class="{{$element->ui->container}} mb-3">
+<div class="{{$element->ui->container}} mb-4">
     <div class="field">
         <label>{{ $element->ui->label }} @if($element->ui->required) * @endif</label>
         <input type="datetime-local" name="{{ $fieldname }}" id="{{ $fieldname }}" value="{{ $value }}"

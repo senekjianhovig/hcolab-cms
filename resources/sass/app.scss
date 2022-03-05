@@ -116,7 +116,7 @@
 
 .wysiwyg{
     label{ margin-bottom: 10px; }
-    .note-editor{ margin-top: 10px; }
+    // .note-editor{ margin-top: 10px; }
 }
 .input-field > label:not(.label-icon).active{ transform:  translateY(-14px) scale(1) !important; }
 
@@ -187,14 +187,7 @@
     }
 
 
-    .c-label {
-        display: block;
-        margin: 0 0 .28571429rem 0;
-        color: rgba(0,0,0,.87);
-        font-size: .92857143em;
-        font-weight: 700;
-        text-transform: none;
-    }
+   
 
     .custom-file-label {
         position: absolute;
@@ -328,5 +321,23 @@ i{
 .custom-file{
     .filepond--credits{
         display: none !important;
+    }
+}
+
+.c-label {
+    display: block;
+    margin: 0 0 .28571429rem 0;
+    color: rgba(0,0,0,.87);
+    font-size: .92857143em;
+    font-weight: 700;
+    text-transform: none;
+}
+
+
+
+.variants-panel{
+
+    th{
+        min-width: 165px !important;
     }
 }

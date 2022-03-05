@@ -1,10 +1,10 @@
 @php
 $name = $element->name;
 if(!property_exists($data,$name)){ $data->$name = ''; }
-$element_type = $element->ui->type == 'textfield' ? 'text' : $element->ui->type;
+$element_type = $element->ui->type == 'textfield' || $element->ui->type =='external textfield' ? 'text' : $element->ui->type;
 @endphp
 
-<div class="{{$element->ui->container}} mb-3">
+<div class="{{$element->ui->container}} mb-4">
     <div class="field">
         <label>{{$element->ui->label}} @if($element->ui->required) * @endif</label>
         <input type="{{$element_type}}" name="{{$name}}" @if((int) $element->ui->required==1) required @endif

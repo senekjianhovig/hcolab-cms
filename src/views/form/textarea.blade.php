@@ -1,7 +1,7 @@
 <?php
     $name = $element->name;
 ?>
-<div class="{{$element->ui->container}} mb-3">
+<div class="{{$element->ui->container}} mb-4">
 
     <div class="field">
         <label for="{{$name}}">{{ $element->ui->label }} @if($element->ui->required) * @endif</label>

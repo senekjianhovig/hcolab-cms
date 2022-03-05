@@ -82,16 +82,7 @@ class Page extends Element
 
             foreach ($this->elements as $element) {
                 $field_name = Str::slug($element->name, '_');
-                if (in_array($element->ui->type, ["image", "file"])) {
-                    $extension = "extension_" . $field_name;
-                    $upload_name = "upload_name_" . $field_name;
-                    if (!Schema::hasColumn($this->entity, $extension)) {
-                        $table->string($extension, "10")->nullable();
-                    }
-                    if (!Schema::hasColumn($this->entity, $upload_name)) {
-                        $table->string($upload_name, "255")->nullable();
-                    }
-                } else {
+              
                     if (!Schema::hasColumn($this->entity, $field_name) && isset($element->db->field_type)) {
                         switch ($element->db->field_type) {
                             case "varchar":
@@ -124,9 +115,14 @@ class Page extends Element
                             case "time":
                                 $table->time($field_name, 0)->nullable();
                                 break;
+                            case "image":
+                            case "file":
+                                $table->bigInteger($field_name)->nullable();
+                                break;
+ 
                         }
                     }
-                }
+             
             }
         });
 

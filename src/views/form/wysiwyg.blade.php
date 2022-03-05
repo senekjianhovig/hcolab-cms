@@ -1,7 +1,7 @@
 <?php
     $fieldname = $element->name;
 ?>
-<div class="{{ $element->ui->container }} mb-3">
+<div class="{{ $element->ui->container }} mb-4">
     <div class="field wysiwyg ">
         <label for="{{$fieldname}}">{{ $element->ui->label }} @if($element->ui->required) * @endif</label>
         <textarea class="summernote" name="{{$fieldname}}" id="{{$fieldname}}"

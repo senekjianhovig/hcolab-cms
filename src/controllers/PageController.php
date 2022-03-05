@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
+use hcolab\cms\models\File as FileModel;
+use hcolab\cms\models\TemporaryFile as TemporaryFileModel;
+use Illuminate\Support\Facades\DB;
 
 class PageController extends Controller
 {
@@ -74,20 +77,25 @@ class PageController extends Controller
     }
 
     public function save($page_slug){
-        
         $page = $this->initializeRequest($page_slug);
         if (is_null($page)) {
             return abort(404);
         }
 
+        try {
+         
+            DB::transaction(function () use($page, $page_slug) {
+
+       
+        
         $page->setElements();
-        
         $inputs = [];
-        dd(request()->all());
-        
+      
+        $waiting_id_elements = [];
+
+
         foreach($page->elements as $element){
-          
-           
+        
             switch ($element->ui->type){
                 case "textfield":
                 case "select":
@@ -116,9 +124,38 @@ class PageController extends Controller
                     $inputs[$element->name] = json_encode(request()->input($element->name));
                     break;
                 }
+
+                case "values select":
+                {
+                    $inputs[$element->name] = request()->input($element->name);
+                    break;
+                }
                 case "multiple file":
                 {
-                    $inputs[$element->name] = request()->has('upld_'.$element->name.'[]') ? json_encode(request()->input('upld_'.$element->name.'[]')) : json_encode([]);
+                    $old_files = [];
+                    if(request()->has($element->name)){
+                        $old_files = request()->input($element->name);
+                    }
+                   
+                    $new_files = [];
+                   
+                    if(request()->has('tmp_'.$element->name)){
+                       
+                        $temp_files = TemporaryFileModel::whereIn('id' , request()->input('tmp_'.$element->name) )->where('deleted',0)->get();
+                        foreach($temp_files as $temporary){
+                            $file = (new FileUploadController)->createFileFromTemporary($temporary);
+                            $new_files [] = (string) $file->id;
+                        }
+                       
+                    }
+                    
+                    //merge
+                    $files = array_merge($old_files , $new_files);
+
+                   
+                    // FileModel::
+
+                    $inputs[$element->name] = json_encode($files);
                     break;
                 }
 
@@ -131,19 +168,130 @@ class PageController extends Controller
                 case "image":
                 case "file":
                 {
-                    $inputs[$element->name] =  request()->input('upld_'.$element->name);
+
+                    if(request()->has('tmp_'.$element->name)){
+                        $new_files = [];
+                        $temporary = TemporaryFileModel::where('id' , request()->input('tmp_'.$element->name) )->where('deleted',0)->first();
+                        $file = (new FileUploadController)->createFileFromTemporary($temporary);            
+                        $inputs[$element->name] =  $file->id;
+                    }elseif(request()->has($element->name)){
+                        $inputs[$element->name] =  request()->input($element->name);
+                    }else{
+                        $inputs[$element->name] =  null;
+                    }
+
+                   
                     break;
                 }
+
+                case "variants panel":
+
+                    $waiting_id_elements [] = $element;
+
+                break;
+
                 default: 
                 break;
+
+
+                
+
+
             }
         }
         
-        dd($inputs);
 
-        $id = DB::table($admin_table->name)->insertGetId($inputs);
        
 
+        if(request()->has('id') && !empty(request()->input('id'))){
+            $id = request()->input('id');
+            DB::table($page->entity)->where('id',request()->input('id'))->update($inputs);
+        }else{
+            $id = DB::table($page->entity)->insertGetId($inputs);
+        }
+       
+
+        
+
+        if(count($waiting_id_elements) > 0){
+
+            foreach($waiting_id_elements as $waiting_id_element){
+
+                switch ($waiting_id_element->ui->type) {
+                    case "variants panel":
+                        
+                        $stock_quantity_arr = request()->input('stock_quantity');
+                        $price_arr = request()->input('price');
+                        $discount_arr = request()->input('discount');
+                        $cost_arr = request()->input('cost');
+                        $charge_tax = request()->input('charge_tax') == "on";
+                        $variant_arr = request()->input('variant');
+                        $include_variant = request()->input('include_variant');
+                        $count_variants = count($variant_arr);
+
+                        // Initialize Pages
+                        $target_page = new $waiting_id_element->ui->target_page;
+                        $variant_page = new $waiting_id_element->ui->variant_page;
+                        $product_price_page = new $waiting_id_element->ui->product_price_page;
+                        $product_inventory_page = new $waiting_id_element->ui->product_inventory_page;
+
+                        $products = $target_page->getProductsByGroupID($id);
+                        $prefix_arr = $variant_page->getIDPrefixes();
+
+                      
+
+                            for($i=0; $i<$count_variants ; $i++){
+                                
+                                $check = $include_variant == "on" || !in_array('no-variant',$variant_arr);
+
+                                if($variant_arr[$i] == "no-variant" && $check){
+                                    continue;
+                                }
+                                
+                                
+                               
+                                if(array_key_exists($variant_arr[$i] , $products)){
+                                    $sku_arr = request()->input('sku');
+                                    $barcode_arr = request()->input('barcode');
+                                    $hide_arr = request()->input('hide_product');
+                                    $image_arr = request()->input('image');
+                                   
+                                    $product_id =  $target_page->updateProduct($products[$variant_arr[$i]], $id ,$image_arr[$i] ,$stock_quantity_arr[$i] , $sku_arr[$i] , $barcode_arr[$i] , in_array($variant_arr[$i], $hide_arr) ? 1 : 0);
+                                }else{
+                                    $product_id =  $target_page->createProduct($id, $variant_arr[$i] , $stock_quantity_arr[$i] , $prefix_arr);
+                                }
+
+                                $product_price_page->createPrice($product_id, $price_arr[$i] , $discount_arr[$i] , $cost_arr[$i] , $charge_tax );
+                                $product_inventory_page->createInventory($product_id, $stock_quantity_arr[$i]);
+
+                                if(!$check){ break; }
+                            }
+                       
+
+    
+                    break;
+                    default:
+                    break;
+                }
+
+            }
+
+        }
+
+
+       
+
+        });
+
+        if(request()->has('redirect') && !is_null(request()->input('redirect'))){
+            return redirect(request()->input('redirect'));
+        }
+      
+        return redirect(env('APP_URL').'/cms/page/'.$page->slug);
+    
+    } catch (\Throwable $th) {
+        dd($th);
+    }
     }
 
     public function create($page_slug)

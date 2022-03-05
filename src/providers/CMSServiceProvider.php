@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 
 Class CMSServiceProvider extends ServiceProvider{
     public function boot(){
+        $this->loadMigrationsFrom(__DIR__ . '/../migrations');
+
         $this->loadViewsFrom(__DIR__.'/../views/', 'CMSViews');
         $this->publishes([ __DIR__.'/../config/pages.php' => config_path('pages.php') ], 'config');
 
@@ -16,7 +18,6 @@ Class CMSServiceProvider extends ServiceProvider{
         }
 
         $this->publishes([ __DIR__.'/../../public' => public_path('hcolab/cms') ], 'public');
-
     }
 
     public function register(){
