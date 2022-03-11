@@ -80,14 +80,17 @@ class Page extends Element
                 $table->double("orders", 8, 2)->nullable();
             }
 
+            
+
             foreach ($this->elements as $element) {
                 $field_name = Str::slug($element->name, '_');
-              
+                    
                     if (!Schema::hasColumn($this->entity, $field_name) && isset($element->db->field_type)) {
                         switch ($element->db->field_type) {
                             case "varchar":
                                 $table->string($field_name, $element->db->field_length)->nullable();
                                 break;
+                            case "multiple file":
                             case "text":
                                 $table->text($field_name)->nullable();
                                 break;
@@ -117,7 +120,7 @@ class Page extends Element
                                 break;
                             case "image":
                             case "file":
-                                $table->bigInteger($field_name)->nullable();
+                                $table->string($field_name , 255)->nullable();
                                 break;
  
                         }
@@ -125,8 +128,8 @@ class Page extends Element
              
             }
         });
-
-        $this->updateEntity();
+        
+        // $this->updateEntity();
         }
     }
 

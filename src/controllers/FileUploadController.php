@@ -25,7 +25,7 @@ class FileUploadController extends Controller
             $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $file);
             
             $file_element = view('CMSViews::form.file-preview', [
-                'value'=> $temporary->id ,
+                'value'=> $temporary->name,
                 'name' => $input_name , 
                 'mime_category' => $temporary->mime_category , 
                 'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
@@ -36,7 +36,6 @@ class FileUploadController extends Controller
             
         return response()->json([], 404);
     }
-
 
     public function createTemporaryFromFile($disk , $path , $file){
 
@@ -65,16 +64,21 @@ class FileUploadController extends Controller
 
     public function createFileFromTemporary($temporary){
 
+        $input_file = $temporary->url;
+        $output_file = str_replace("temporary_files" , "files" , $temporary->url);
+
+        Storage::disk($temporary->disk)->move("/".$input_file,"/".$output_file);
+
         $file = new File;
         $file->disk = $temporary->disk;
-        $file->path = $temporary->path;
+        $file->path = "files";
         $file->name = $temporary->name;
         $file->original_name = $temporary->original_name;
         $file->mime_category =  $temporary->mime_category;
         $file->mime_type = $temporary->mime_type;
         $file->extension = $temporary->extension;
         $file->size =  $temporary->size;
-        $file->url = $temporary->url;
+        $file->url = $output_file;
         $file->external = 0;
         $file->save();
 

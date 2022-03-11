@@ -400,7 +400,7 @@ class Element extends Column
         $std = new \StdClass;
         $std->name = $field_name;
         $std->ui = $ui;
-        $std->db = null;
+        $std->db = set_db($field_name, "bigint", null , null, null);
 
 
         $this->elements = $this->elements->push($std);
@@ -421,7 +421,7 @@ class Element extends Column
         $std = new \StdClass;
         $std->name = $field_name;
         $std->ui = $ui;
-        $std->db = null;
+        $std->db = set_db($field_name, "text", null , null, null);
 
         
         

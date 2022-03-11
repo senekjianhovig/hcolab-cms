@@ -141,10 +141,10 @@ class PageController extends Controller
                    
                     if(request()->has('tmp_'.$element->name)){
                        
-                        $temp_files = TemporaryFileModel::whereIn('id' , request()->input('tmp_'.$element->name) )->where('deleted',0)->get();
+                        $temp_files = TemporaryFileModel::whereIn('name' , request()->input('tmp_'.$element->name) )->where('deleted',0)->get();
                         foreach($temp_files as $temporary){
                             $file = (new FileUploadController)->createFileFromTemporary($temporary);
-                            $new_files [] = (string) $file->id;
+                            $new_files [] = (string) $file->name;
                         }
                        
                     }
@@ -152,8 +152,6 @@ class PageController extends Controller
                     //merge
                     $files = array_merge($old_files , $new_files);
 
-                   
-                    // FileModel::
 
                     $inputs[$element->name] = json_encode($files);
                     break;
@@ -171,9 +169,9 @@ class PageController extends Controller
 
                     if(request()->has('tmp_'.$element->name)){
                         $new_files = [];
-                        $temporary = TemporaryFileModel::where('id' , request()->input('tmp_'.$element->name) )->where('deleted',0)->first();
+                        $temporary = TemporaryFileModel::where('name' , request()->input('tmp_'.$element->name) )->where('deleted',0)->first();
                         $file = (new FileUploadController)->createFileFromTemporary($temporary);            
-                        $inputs[$element->name] =  $file->id;
+                        $inputs[$element->name] =  $file->name;
                     }elseif(request()->has($element->name)){
                         $inputs[$element->name] =  request()->input($element->name);
                     }else{

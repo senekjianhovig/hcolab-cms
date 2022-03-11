@@ -13,7 +13,7 @@ if($data && !empty($data->$name)){
        $ids = explode(',', $data->$name); 
     }
 
-    $previews = \hcolab\cms\models\File::whereIn('id', $ids)->where('deleted',0)->get();
+    $previews = \hcolab\cms\models\File::whereIn('name', $ids)->where('deleted',0)->get();
 }
 
 
@@ -33,7 +33,7 @@ if($data && !empty($data->$name)){
         </label>
         @foreach ($previews as $preview)
             @include('CMSViews::form.file-preview', [
-                'value'=> $preview->id,
+                'value'=> $preview->name,
                 'name' => $input_name, 
                 'mime_category' => $preview->mime_category, 
                 'url' => (bool) $preview->external ? $preview->url : env('APP_URL').'/storage/'.$preview->url, 
