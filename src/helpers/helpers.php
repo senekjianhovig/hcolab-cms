@@ -168,3 +168,64 @@ if(!function_exists('get_page_settings')){
         
     }
 }
+
+
+if(!function_exists('get_name_from_url')){
+    function get_name_from_url($name){
+        $temp= explode('.',$name);
+        array_pop($temp);
+        return implode("." , $temp);
+    }
+}
+
+if(!function_exists('get_name_from_urls')){
+    function get_name_from_urls($names){
+        $result = [];
+
+        foreach($names as $name){
+            $temp= explode('.',$name);
+            array_pop($temp);
+            $result [] = implode("." , $temp);
+        }
+
+       return $result;
+    }
+}
+
+
+
+
+
+if(!function_exists('get_media_url')){
+
+ function get_media_url($name, $extension = "jpg" , $type = "optimized" , $resized = null){
+    $temp= explode('.',$name);
+    $original_extension = end($temp);
+    array_pop($temp);
+    $original_name = implode("." , $temp);
+
+    if($type == "resized"){
+        switch($extension){
+            case  "jpg" : return env('APP_URL')."/storage/files/resized/jpg/".$resized."/".$original_name.".jpg";
+            case  "webp" : return env('APP_URL')."/storage/files/resized/webp/".$resized."/".$original_name.".webp"; 
+            default: return env('APP_URL')."/storage/files/resized/".$resized."/".$original_name.".".$original_extension;
+        }
+    }elseif($type == "optimized"){
+        switch($extension){
+            case  "jpg" : return env('APP_URL')."/storage/files/optimized/jpg/".$original_name.".jpg";
+            case  "webp" : return env('APP_URL')."/storage/files/optimized/webp/".$original_name.".webp"; 
+            default: return env('APP_URL')."/storage/files/optimized/".$original_name.".".$original_extension;
+        }
+    }else{
+        return env('APP_URL')."/storage/files/original/".$original_name.".".$original_extension;
+    }
+}
+}
+
+if(!function_exists('get_media_urls')){
+    function get_media_urls($names , $extension = "jpg" , $type = "optimized" , $resized = null){
+            $result = [];
+            foreach($names as $name){ $result [] = get_media_url($name , $extension , $type , $resized); }
+            return $result;
+    }
+}

@@ -387,7 +387,7 @@ class Element extends Column
         return $this;
     }
 
-    public function FileUploadField($label, $container, $required, $field_name , $accept = null)
+    public function FileUploadField($label, $container, $required, $field_name , $accept = null , $resize = null)
     {
 
         $ui = new \StdClass;
@@ -396,11 +396,12 @@ class Element extends Column
         $ui->container = $container;
         $ui->required = $required;
         $ui->accept = $accept;
+        $ui->resize = $resize;
 
         $std = new \StdClass;
         $std->name = $field_name;
         $std->ui = $ui;
-        $std->db = set_db($field_name, "bigint", null , null, null);
+        $std->db = set_db($field_name, "varchar", "255" , null, null);
 
 
         $this->elements = $this->elements->push($std);

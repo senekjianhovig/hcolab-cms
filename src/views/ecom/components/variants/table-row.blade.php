@@ -16,7 +16,7 @@
             <div class="default text">Image</div>
             <div class="menu">
                 @foreach($images as $preview)
-              <div class="item"  data-value="{{$preview->id}}">
+              <div class="item"  data-value="{{$preview->name}}">
                   @php
                       $url = (bool) $preview->external ? $preview->url : env('APP_URL').'/storage/'.$preview->url;
                   @endphp

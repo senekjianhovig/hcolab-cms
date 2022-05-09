@@ -50,6 +50,36 @@
             <li> <a @if(array_key_exists('target' , $item)) target="{{$item['target']}}" @endif
                     href="{{$item['link_to']}}"> {{$item["label"]}} </a> </li>
             @break
+
+            @case('dropdown')
+            <li>
+                <a href="javascript:;" class="has-submenu">
+                    {!!$item["icon"]!!} {{$item["label"]}}
+                </a>
+                <ul>
+
+                    @foreach($item['children'] as $dropdown_page)
+
+                    @php
+                    $link_to = $dropdown_page['link_to'];
+                    $namespace = "\App\Pages\\";
+                    $entity = $namespace.$link_to;
+                    $class_exists = class_exists($entity);
+                    @endphp
+        
+                    @if($class_exists)
+                    @php $class = new $entity; @endphp
+                    <li>
+                        <a href="{{route('page',['page_slug'=> $class->slug ])}}"> {!! isset($class->icon) ?? $class->icon !!}
+                            {{$class->title}}
+                        </a>
+                    </li>
+                    @endif
+                    @endforeach
+                </ul>
+            </li>
+            @break
+
             @case('page')
 
             @php

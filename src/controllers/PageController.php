@@ -141,10 +141,10 @@ class PageController extends Controller
                    
                     if(request()->has('tmp_'.$element->name)){
                        
-                        $temp_files = TemporaryFileModel::whereIn('name' , request()->input('tmp_'.$element->name) )->where('deleted',0)->get();
+                        $temp_files = TemporaryFileModel::whereIn('name' , get_name_from_urls(request()->input('tmp_'.$element->name)) )->where('deleted',0)->get();
                         foreach($temp_files as $temporary){
-                            $file = (new FileUploadController)->createFileFromTemporary($temporary);
-                            $new_files [] = (string) $file->name;
+                            $file = (new FileUploadController)->createFileFromTemporary($temporary , $element->ui->resize);
+                            $new_files [] = $file->name.'.'.$file->extension;
                         }
                        
                     }
@@ -169,9 +169,9 @@ class PageController extends Controller
 
                     if(request()->has('tmp_'.$element->name)){
                         $new_files = [];
-                        $temporary = TemporaryFileModel::where('name' , request()->input('tmp_'.$element->name) )->where('deleted',0)->first();
-                        $file = (new FileUploadController)->createFileFromTemporary($temporary);            
-                        $inputs[$element->name] =  $file->name;
+                        $temporary = TemporaryFileModel::where('name' , get_name_from_url(request()->input('tmp_'.$element->name)) )->where('deleted',0)->first();
+                        $file = (new FileUploadController)->createFileFromTemporary($temporary, $element->ui->resize);            
+                        $inputs[$element->name] = $file->name.'.'.$file->extension;
                     }elseif(request()->has($element->name)){
                         $inputs[$element->name] =  request()->input($element->name);
                     }else{
@@ -253,7 +253,7 @@ class PageController extends Controller
                                     $barcode_arr = request()->input('barcode');
                                     $hide_arr = request()->input('hide_product');
                                     $image_arr = request()->input('image');
-                                   
+                                    if(!is_array($hide_arr)){ $hide_arr = []; }
                                     $product_id =  $target_page->updateProduct($products[$variant_arr[$i]], $id ,$image_arr[$i] ,$stock_quantity_arr[$i] , $sku_arr[$i] , $barcode_arr[$i] , in_array($variant_arr[$i], $hide_arr) ? 1 : 0);
                                 }else{
                                     $product_id =  $target_page->createProduct($id, $variant_arr[$i] , $stock_quantity_arr[$i] , $prefix_arr);

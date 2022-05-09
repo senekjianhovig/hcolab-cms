@@ -14,7 +14,7 @@ if($data && isset($data->id) && !empty($data->id)){
     $existing_products = $target_page->getProductsByGroupID($data->id, $element);
     $is_variants = is_array($existing_products) && !array_key_exists('no-variant' , $existing_products);
     $ids =  json_decode($data->gallery);
-    $previews = \hcolab\cms\models\File::whereIn('id', $ids)->where('deleted',0)->get();
+    $previews = \hcolab\cms\models\File::whereIn('name', $ids)->where('deleted',0)->get();
 
     try {
         // dd($existing_products);

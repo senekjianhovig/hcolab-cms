@@ -8,7 +8,7 @@ use hcolab\cms\models\TemporaryFile;
 use hcolab\cms\models\File;
 use Illuminate\Support\Facades\Storage;
 
-
+use Image;
 
 class FileUploadController extends Controller
 {
@@ -25,7 +25,7 @@ class FileUploadController extends Controller
             $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $file);
             
             $file_element = view('CMSViews::form.file-preview', [
-                'value'=> $temporary->name,
+                'value'=> $temporary->name.".".$temporary->extension,
                 'name' => $input_name , 
                 'mime_category' => $temporary->mime_category , 
                 'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
@@ -42,7 +42,8 @@ class FileUploadController extends Controller
         $file_extension = $file->getClientOriginalExtension();
         $mime_type = $file->getClientMimeType(); 
         $file_size = $file->getSize();
-        $name = uniqid().'-'.now()->timestamp.'.'.$file_extension;
+        $nameWithoutExtension = uniqid().'-'.now()->timestamp;
+        $name = $nameWithoutExtension.'.'.$file_extension;
 
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
         $url = Storage::disk($disk)->putFileAs($path, $file, $name);
@@ -50,7 +51,7 @@ class FileUploadController extends Controller
         $temporary = new TemporaryFile;
         $temporary->disk = $disk;
         $temporary->path = $path;
-        $temporary->name = $name;
+        $temporary->name = $nameWithoutExtension;
         $temporary->original_name = $file->getClientOriginalName();
         $temporary->mime_category =  $mime_category;
         $temporary->mime_type = $mime_type;
@@ -62,12 +63,18 @@ class FileUploadController extends Controller
         return $temporary;
     }
 
-    public function createFileFromTemporary($temporary){
+    public function createFileFromTemporary($temporary , $resize){
 
+        
         $input_file = $temporary->url;
-        $output_file = str_replace("temporary_files" , "files" , $temporary->url);
+    
+        $original_path = "files/original/".$temporary->name.".".$temporary->extension;
+    
+        Storage::disk($temporary->disk)->copy("/".$input_file, $original_path);
 
-        Storage::disk($temporary->disk)->move("/".$input_file,"/".$output_file);
+        if($temporary->mime_category == 'image'){
+            $this->processUpload($temporary , $resize);
+        }
 
         $file = new File;
         $file->disk = $temporary->disk;
@@ -78,12 +85,99 @@ class FileUploadController extends Controller
         $file->mime_type = $temporary->mime_type;
         $file->extension = $temporary->extension;
         $file->size =  $temporary->size;
-        $file->url = $output_file;
+        $file->url = $original_path;
         $file->external = 0;
         $file->save();
 
         return $file;
     }
+
+
+    public function processUpload($temporary , $dimension){
+       
+        $name = $temporary->name;
+        $extension = $temporary->extension;
+        
+        $public_path = storage_path().'/app/public/';
+        
+        $source = $public_path.$temporary->url;
+       
+        $main_optimized_directory = "files/optimized/";
+        $jpg_optimized_directory = "files/optimized/jpg/";
+        $webp_optimized_directory = "files/optimized/webp/";
+
+        $optimized_path = $main_optimized_directory."/".$temporary->name.".".$temporary->extension;
+        $optimized_jpg_path = $jpg_optimized_directory ."/".$temporary->name.".jpg";
+        $optimized_webp_path = $webp_optimized_directory."/".$temporary->name.".webp";
+    
+        Storage::disk($temporary->disk)->makeDirectory($main_optimized_directory);
+        Storage::disk($temporary->disk)->makeDirectory($jpg_optimized_directory);
+        Storage::disk($temporary->disk)->makeDirectory($webp_optimized_directory);
+
+        $IMAGE_OPTIMIZER_MAXWITH = env('IMAGE_OPTIMIZER_MAXWITH' , 2400); 
+        $IMAGE_OPTIMIZER_MAXHEIGHT = env('IMAGE_OPTIMIZER_MAXHEIGHT' , 1800); 
+        $IMAGE_ENABLE_WEBP = env('IMAGE_ENABLE_WEBP' , 1); 
+
+        $OptimizingImage = Image::make($source);
+        $ImageWidth = $OptimizingImage->width();
+        $ImageHeight = $OptimizingImage->height();
+
+        if($ImageWidth > $IMAGE_OPTIMIZER_MAXWITH || $ImageHeight > $IMAGE_OPTIMIZER_MAXHEIGHT){
+            $height = $ImageWidth <= $ImageHeight ? $IMAGE_OPTIMIZER_MAXHEIGHT : null;
+            $width = $ImageWidth > $ImageHeight ? $IMAGE_OPTIMIZER_MAXWITH : null;
+            $OptimizingImage->resize($width, $height, function ($constraint) { $constraint->aspectRatio(); });
+
+            $OptimizingImage->encode($temporary->extension, 80)->save($public_path.$optimized_path);
+            $OptimizingImage->encode('jpg', 80)->save($public_path.$optimized_jpg_path);
+            $OptimizingImage->encode('webp', 80)->save($public_path.$optimized_webp_path);
+        }else{
+            
+            $OptimizingImage->encode($temporary->extension, 80)->save($public_path.$optimized_path);
+            $OptimizingImage->encode('jpg', 80)->save($public_path.$optimized_jpg_path);
+            $OptimizingImage->encode('webp', 80)->save($public_path.$optimized_webp_path);
+        }
+
+        if($dimension != null){
+            $main_resize_directory = "files/resized/".$dimension;
+            $jpg_resized_directory = "files/resized/jpg/".$dimension;
+            $webp_resized_directory = "files/resized/webp/".$dimension;
+
+            $resized_path = $main_resize_directory."/".$temporary->name.".".$temporary->extension;
+            $resized_jpg_path = $jpg_resized_directory ."/".$temporary->name.".jpg";
+            $resized_webp_path = $webp_resized_directory."/".$temporary->name.".webp";
+            
+            Storage::disk($temporary->disk)->makeDirectory($main_resize_directory);
+            Storage::disk($temporary->disk)->makeDirectory($jpg_resized_directory);
+            Storage::disk($temporary->disk)->makeDirectory($webp_resized_directory);
+            
+            $ResizingImage = Image::make($source);
+            $ImageWidth = $ResizingImage->width();
+            $ImageHeight = $ResizingImage->height();
+           
+
+            $dimension_array = explode('_',$dimension);
+            $DIMENSION_WIDTH = $dimension_array[0]; 
+            $DIMENSION_HEIGHT = $dimension_array[1];
+
+            $height = $ImageWidth <= $ImageHeight ? $DIMENSION_HEIGHT : null;
+            $width = $ImageWidth > $ImageHeight ? $DIMENSION_WIDTH : null;
+            $ResizingImage->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+
+            $ResizingImage->encode($temporary->extension, 80)->save($public_path.$resized_path);
+            $ResizingImage->encode('jpg', 80)->save($public_path.$resized_jpg_path);
+            $ResizingImage->encode('webp', 80)->save($public_path.$resized_webp_path);
+        }
+           
+    }
+
+
+    
+        
+    
+ 
+
 
 
 }
