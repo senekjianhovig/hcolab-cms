@@ -7,11 +7,38 @@ use Illuminate\Http\Request;
 use hcolab\cms\models\TemporaryFile;
 use hcolab\cms\models\File;
 use Illuminate\Support\Facades\Storage;
+use hcolab\cms\traits\ApiTrait;
 
 use Image;
 
 class FileUploadController extends Controller
 {
+
+    use ApiTrait;
+
+    public function UploadToTemporaryAPI(){
+
+        if(request()->header('uploader_key') !=  env('UPLOADER_KEY')){
+            return $this->responseError(1 , "Wrong Uploader Key" , "Wrong Uploader Key");
+        }
+
+        if(!request()->has('file')){
+            return $this->responseError(1 , "file is required" , "file is required");
+        }
+
+        $file = request()->file('file');
+        $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $file);
+        
+        return $this->responseData(1 ,[
+            'temporary_id'=> $temporary->id,
+            'value'=> $temporary->name.".".$temporary->extension,
+            'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
+            'display_name' => $temporary->original_name ,
+            'mime_category' => $temporary->mime_category,
+            'mime_type' => $temporary->mime_type
+        ]);
+    }
+
     public function UploadToTemporary(){
  
         if(request()->has('file') && request()->has('input_name')){
@@ -63,20 +90,30 @@ class FileUploadController extends Controller
         return $temporary;
     }
 
-    public function createFileFromTemporary($temporary , $resize){
+    public function createFileFromTemporary($temporary , $resize = null){
 
         
         $input_file = $temporary->url;
     
         $original_path = "files/original/".$temporary->name.".".$temporary->extension;
     
-        Storage::disk($temporary->disk)->copy("/".$input_file, $original_path);
+        try {
+            Storage::disk($temporary->disk)->copy("/".$input_file, $original_path);
+        } catch (\Throwable $th) {
+            
+        }
+
+        
 
         if($temporary->mime_category == 'image'){
             $this->processUpload($temporary , $resize);
         }
 
-        $file = new File;
+        $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
+        if(!$file){
+            $file = new File;
+        }
+        
         $file->disk = $temporary->disk;
         $file->path = "files";
         $file->name = $temporary->name;
