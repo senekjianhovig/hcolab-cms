@@ -18,7 +18,9 @@ class FileUploadController extends Controller
 
     public function UploadToTemporaryAPI(){
 
-        if(request()->header('uploader_key') !=  env('UPLOADER_KEY')){
+        $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
+
+        if($uploader_key !=  env('UPLOADER_KEY')){
             return $this->responseError(1 , "Wrong Uploader Key" , "Wrong Uploader Key");
         }
 
