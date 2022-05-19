@@ -104,10 +104,12 @@ class FileUploadController extends Controller
         }
 
         
-
+        
         if($temporary->mime_category == 'image'){
             $this->processUpload($temporary , $resize);
         }
+
+        
 
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
         if(!$file){
@@ -136,7 +138,7 @@ class FileUploadController extends Controller
         $extension = $temporary->extension;
         
         $public_path = storage_path().'/app/public/';
-        
+       
         $source = $public_path.$temporary->url;
        
         $main_optimized_directory = "files/optimized/";
@@ -154,8 +156,10 @@ class FileUploadController extends Controller
         $IMAGE_OPTIMIZER_MAXWITH = env('IMAGE_OPTIMIZER_MAXWITH' , 2400); 
         $IMAGE_OPTIMIZER_MAXHEIGHT = env('IMAGE_OPTIMIZER_MAXHEIGHT' , 1800); 
         $IMAGE_ENABLE_WEBP = env('IMAGE_ENABLE_WEBP' , 1); 
-
+       
+       
         $OptimizingImage = Image::make($source);
+       
         $ImageWidth = $OptimizingImage->width();
         $ImageHeight = $OptimizingImage->height();
 

@@ -45,10 +45,10 @@ class PageController extends Controller
     
         $page->setColumns();
 
-
         try {
             $page->generateTable();
         } catch (\Throwable $th) {
+            
             return abort(403, "Error Generating Table");
         }
 

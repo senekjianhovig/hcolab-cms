@@ -13,7 +13,7 @@ if($data && !empty($data->$name)){
        $ids = explode(',', $data->$name); 
     }
 
-    $previews = \hcolab\cms\models\File::whereIn('name', $ids)->where('deleted',0)->get();
+    $previews = \hcolab\cms\models\File::whereIn('name', get_name_from_urls($ids))->where('deleted',0)->get();
 }
 
 

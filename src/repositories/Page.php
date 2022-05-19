@@ -23,17 +23,18 @@ class Page extends Element
 
 
     public function checkEntity(){
-
+       
         if (!Schema::hasTable($this->entity)) {
             return false;
         }
+       
 
         $page = DB::table('entity_versions')->where('page', $this->page)->where('deleted',0)->first();
         
         if(!$page){
             return false;
         }
-        
+       
         if($this->version != $page->version){
             return false;
         }
@@ -49,6 +50,8 @@ class Page extends Element
 
     public function generateTable()
     {
+
+        
 
         if(!$this->checkEntity()){
           
