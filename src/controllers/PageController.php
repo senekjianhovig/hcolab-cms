@@ -121,6 +121,7 @@ class PageController extends Controller
                 }
                 case "multiple select":
                 {
+                   
                     $inputs[$element->name] = json_encode(request()->input($element->name));
                     break;
                 }

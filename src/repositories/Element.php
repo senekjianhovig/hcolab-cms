@@ -106,7 +106,7 @@ class Element extends Column
         return $this;
     }
 
-    public function MultipleSelect($label, $container, $required, $field_name)
+    public function MultipleSelect($label, $container, $required, $field_name , $options = [])
     {
 
         $ui = new \StdClass;
@@ -114,6 +114,7 @@ class Element extends Column
         $ui->label = $label;
         $ui->container = $container;
         $ui->required = $required;
+        $ui->options = $options;
 
         $std = new \StdClass;
         $std->name = $field_name;

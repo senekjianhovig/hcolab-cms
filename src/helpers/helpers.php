@@ -199,6 +199,9 @@ if(!function_exists('get_name_from_urls')){
 if(!function_exists('get_media_url')){
 
  function get_media_url($name, $extension = "jpg" , $type = "optimized" , $resized = null){
+
+    if(is_null($name)){ return ""; }
+    
     $temp= explode('.',$name);
     $original_extension = end($temp);
     array_pop($temp);
@@ -225,6 +228,7 @@ if(!function_exists('get_media_url')){
 if(!function_exists('get_media_urls')){
     function get_media_urls($names , $extension = "jpg" , $type = "optimized" , $resized = null){
             $result = [];
+            if(is_null($names)){ return $result; }
             foreach($names as $name){ $result [] = get_media_url($name , $extension , $type , $resized); }
             return $result;
     }
