@@ -431,4 +431,20 @@ class Element extends Column
         
         return $this;
     }
+
+    public function HiddenJsonField($field_name)
+    {
+
+        $ui = new \StdClass;
+        $ui->type = "hidden json field";
+    
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "longtext", NULL, NULL, false);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
 }

@@ -9,7 +9,7 @@
     <div class="body CustomScrollbar">
         <ul>
 
-            <li><a href="/"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</a></li>
+            <li><a href="/"> Dashboard</a></li>
 
             <?php $sidebar = config('pages')['menu']; ?>
             {{-- @foreach ($pages as $page)

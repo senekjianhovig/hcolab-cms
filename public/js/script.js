@@ -2,7 +2,9 @@ const TABLE_DATA_URL = "/cms/page/{page_slug}/query";
 
 
 function semanticInit(){
-    $('.ui.dropdown').dropdown();
+    $('.ui.dropdown').dropdown({
+        clearable : true
+    });
     $('.ui.checkbox').checkbox();
 }
 

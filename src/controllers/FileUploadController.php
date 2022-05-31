@@ -107,7 +107,7 @@ class FileUploadController extends Controller
 
         
         
-        if($temporary->mime_category == 'image'){
+        if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
             $this->processUpload($temporary , $resize);
         }
 

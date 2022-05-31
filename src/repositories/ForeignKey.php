@@ -59,5 +59,29 @@ public static function tripleTableQuery(){
        
 }
 
+public static function getRelatedTables($foreign_keys)
+{
+
+    $list = self::list();
+    $results = [];
+
+    if (!is_array($foreign_keys)) {
+        $foreign_keys = [];
+    }
+
+    foreach ($foreign_keys as $foreign_key) {
+        if (array_key_exists($foreign_key, $list)) {
+
+            $data = $list[$foreign_key]->get();
+            $results[$foreign_key] = [
+                'data' => $data,
+                'indexed_data' => set_id_index($data)
+            ];
+        }
+    }
+
+    return $results;
+}
+
 
 }

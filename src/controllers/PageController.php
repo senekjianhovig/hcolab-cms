@@ -144,7 +144,7 @@ class PageController extends Controller
                        
                         $temp_files = TemporaryFileModel::whereIn('name' , get_name_from_urls(request()->input('tmp_'.$element->name)) )->where('deleted',0)->get();
                         foreach($temp_files as $temporary){
-                            $file = (new FileUploadController)->createFileFromTemporary($temporary , $element->ui->resize);
+                            $file = (new FileUploadController)->createFileFromTemporary($temporary , isset($element->ui->resize) ? $element->ui->resize : null);
                             $new_files [] = $file->name.'.'.$file->extension;
                         }
                        
@@ -164,6 +164,14 @@ class PageController extends Controller
                     $inputs[$element->db->field_name] = request()->has($element->db->field_name) ? request()->input($element->db->field_name) : 0;
                     break;
                 }
+
+                case "hidden json field":
+                {
+
+                    $inputs[$element->db->field_name] = request()->has($element->db->field_name) ? json_encode(request()->input($element->db->field_name)) : null;
+                break;
+                }
+
                 case "image":
                 case "file":
                 {
