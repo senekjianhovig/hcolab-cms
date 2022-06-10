@@ -106,6 +106,26 @@ class Element extends Column
         return $this;
     }
 
+    public function Tags($label, $container, $required, $field_name , $options = [])
+    {
+
+        $ui = new \StdClass;
+        $ui->type = "tags";
+        $ui->label = $label;
+        $ui->container = $container;
+        $ui->required = $required;
+        $ui->options = $options;
+
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "text", NULL, NULL, false);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
+
     public function MultipleSelect($label, $container, $required, $field_name , $options = [])
     {
 

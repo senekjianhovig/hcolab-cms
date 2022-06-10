@@ -119,6 +119,7 @@ class PageController extends Controller
                     $inputs[$element->db->field_name] = date("Y-m-d H:i:s",strtotime(request()->input($element->db->field_name)));
                     break;
                 }
+                case "tags":
                 case "multiple select":
                 {
                    

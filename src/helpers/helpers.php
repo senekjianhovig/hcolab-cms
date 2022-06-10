@@ -97,6 +97,10 @@ if(!function_exists('process_form_field')){
                 return view('CMSViews::form.select', [ "element" => $element, "data" => $data ]);
                 break;
 
+                case 'tags':
+                return view('CMSViews::form.tags', [ "element" => $element, "data" => $data ]);
+                break;
+
                 case 'hidden json field' :
                 // return "<div class='col-lg-12'><div data-field='".$element->name."' > </div></div>"; 
                 break;
@@ -241,6 +245,11 @@ if(!function_exists('get_media_urls')){
 
 if(!function_exists('json_decode_to_array')){
     function json_decode_to_array($payload){
+
+        if(is_array($payload)){
+            return $payload;
+        }
+
         try {
             $arr = json_decode($payload);
         } catch (\Throwable $th) {
@@ -263,7 +272,7 @@ if(!function_exists('query_string_to_array')){
             foreach($arr as $value){
               $object = explode("=" , $value);
               if(strpos(" ".$object[0] , '%5B%5D')){
-                $result[str_replace('%5B%5D' , '' , $object[0])] [] = str_replace('%20' , '' , $object[1]);
+                $result[str_replace('%5B%5D' , '' , $object[0])] [] = str_replace('%20' , ' ' , $object[1]);
               }else{
                 $result[$object[0]] = str_replace(['%20' , '%3F'] , [' ', '?' ] , $object[1]);
               }
