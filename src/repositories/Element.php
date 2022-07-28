@@ -203,6 +203,24 @@ class Element extends Column
         return $this;
     }
 
+    public function ReadOnlyTextField($label, $container,$required ,$field_name)
+    {
+        $ui = new \StdClass;
+        $ui->type = "readonly_textfield";
+        $ui->label = $label;
+        $ui->container = $container;
+        $ui->required = false;
+
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "varchar", 255, NULL, 0);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
+
     public function HiddenTextField($label, $container, $required, $field_name,  $field_length = 255, $field_default = NULL, $is_multi_language = false)
     {
         $ui = new \StdClass;

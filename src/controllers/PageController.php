@@ -97,6 +97,7 @@ class PageController extends Controller
         foreach($page->elements as $element){
         
             switch ($element->ui->type){
+                case "readonly_textfield":
                 case "textfield":
                 case "select":
                 case "disabled_textfield" :

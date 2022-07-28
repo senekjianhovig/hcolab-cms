@@ -39,6 +39,12 @@ if(!function_exists('process_form_field')){
                 case "disabled_textfield":
                 return view('CMSViews::form.disabled-textfield', [ "element" => $element, "data" => $data ]);
                 break;
+
+                case "readonly_textfield":
+                  
+                return view('CMSViews::form.readonly-textfield', [ "element" => $element, "data" => $data ]);
+                break;
+                
                 case "select":
                 case "multiple select":
                 return view('CMSViews::form.select', [ "element" => $element, "data" => $data , 'related_tables' =>

@@ -37,7 +37,8 @@ class FileUploadController extends Controller
             'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
             'display_name' => $temporary->original_name ,
             'mime_category' => $temporary->mime_category,
-            'mime_type' => $temporary->mime_type
+            'mime_type' => $temporary->mime_type,
+            'low_resoltion' => env('APP_URL').'/storage/low_resolution/'.$temporary->name.".jpg"
         ]);
     }
 
@@ -77,6 +78,8 @@ class FileUploadController extends Controller
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
         $url = Storage::disk($disk)->putFileAs($path, $file, $name);
 
+      
+
         $temporary = new TemporaryFile;
         $temporary->disk = $disk;
         $temporary->path = $path;
@@ -89,6 +92,17 @@ class FileUploadController extends Controller
         $temporary->url = $url;
         $temporary->save();
         
+        $result = "low_resolution/".$name;
+        $public_path = storage_path().'/app/public/';
+        $source = $public_path.$temporary->url;
+        
+        Storage::disk('public')->makeDirectory('low_resolution');
+        $img = Image::make($source);
+        
+
+        $img->resize(300, function ($constraint) { $constraint->aspectRatio(); });
+        $img->encode("jpg", 80)->save($public_path.$result);
+
         return $temporary;
     }
 
@@ -105,14 +119,11 @@ class FileUploadController extends Controller
             
         }
 
-        
-        
         if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
             $this->processUpload($temporary , $resize);
         }
 
         
-
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
         if(!$file){
             $file = new File;
@@ -215,6 +226,19 @@ class FileUploadController extends Controller
            
     }
 
+    // public function createFileFromUrl($url , $resize = null){
+
+    //     $info = pathinfo($url);
+    //     $contents = file_get_contents($url);
+    //     $file = '/tmp/' . $info['basename'];
+    //     file_put_contents($file, $contents);
+    //     $uploaded_file = new \Illuminate\Http\UploadedFile($file, $info['basename']);
+
+    
+    //     $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $uploaded_file);
+
+    //     return $this->createFileFromTemporary($temporary , $resize);
+    // }
 
     
         
