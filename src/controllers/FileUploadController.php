@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace hcolab\cms\controllers;
 
 use App\Http\Controllers\Controller;
@@ -8,6 +10,7 @@ use hcolab\cms\models\TemporaryFile;
 use hcolab\cms\models\File;
 use Illuminate\Support\Facades\Storage;
 use hcolab\cms\traits\ApiTrait;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 use Image;
 
@@ -17,6 +20,9 @@ class FileUploadController extends Controller
     use ApiTrait;
 
     public function UploadToTemporaryAPI(){
+
+        ini_set('post_max_size', '500M');
+  
 
         $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
 
@@ -31,6 +37,9 @@ class FileUploadController extends Controller
         $file = request()->file('file');
         $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $file);
         
+
+
+
         return $this->responseData(1 ,[
             'temporary_id'=> $temporary->id,
             'value'=> $temporary->name.".".$temporary->extension,
@@ -38,7 +47,7 @@ class FileUploadController extends Controller
             'display_name' => $temporary->original_name ,
             'mime_category' => $temporary->mime_category,
             'mime_type' => $temporary->mime_type,
-            'low_resoltion' => env('APP_URL').'/storage/low_resolution/'.$temporary->name.".jpg"
+            'low_resoltion' => $temporary->thumbnail
         ]);
     }
 
@@ -78,12 +87,12 @@ class FileUploadController extends Controller
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
         $url = Storage::disk($disk)->putFileAs($path, $file, $name);
 
-      
+     
 
         $temporary = new TemporaryFile;
         $temporary->disk = $disk;
         $temporary->path = $path;
-        $temporary->name = $nameWithoutExtension;
+        $temporary->name = $name;
         $temporary->original_name = $file->getClientOriginalName();
         $temporary->mime_category =  $mime_category;
         $temporary->mime_type = $mime_type;
@@ -97,27 +106,52 @@ class FileUploadController extends Controller
         $source = $public_path.$temporary->url;
         
         Storage::disk('public')->makeDirectory('low_resolution');
-        $img = Image::make($source);
+       
         
+        if($mime_category == "image"){
+            $img = Image::make($source);
+            $img->resize(300, function ($constraint) { $constraint->aspectRatio(); });
+            $img->encode("jpg", 80)->save($public_path.$result);
+        }elseif($mime_category == "video"){
+            $result_video = "low_resolution/".$nameWithoutExtension.".jpg";
+            $res = FFMpeg::open($file)
+            ->getFrameFromSeconds(2)
+            ->export()
+            ->toDisk('public')
+            ->save($result_video);
+        }
 
-        $img->resize(300, function ($constraint) { $constraint->aspectRatio(); });
-        $img->encode("jpg", 80)->save($public_path.$result);
-
+        $temporary->thumbnail =  env('APP_URL').'/storage/low_resolution/'.$nameWithoutExtension.".jpg";
+    
         return $temporary;
     }
 
     public function createFileFromTemporary($temporary , $resize = null){
 
+        ini_set('max_execution_time' , 50000);
         
         $input_file = $temporary->url;
     
-        $original_path = "files/original/".$temporary->name.".".$temporary->extension;
+        $original_path = "files/original/".$temporary->name;
     
         try {
             Storage::disk($temporary->disk)->copy("/".$input_file, $original_path);
         } catch (\Throwable $th) {
             
         }
+
+        $external = 0;
+        if(env('VIMEO_ENABLED', 0) == 1){
+
+            $file_source = Storage::disk($temporary->disk)->get("/".$input_file);
+           
+            $uri =  \Vimeo\Laravel\Facades\Vimeo::upload($file_source , array(
+                "name" => get_name_from_url($temporary->name),
+                "description" => get_name_from_url($temporary->name)
+            ));
+            $external = 1;
+        }
+
 
         if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
             $this->processUpload($temporary , $resize);
@@ -137,8 +171,8 @@ class FileUploadController extends Controller
         $file->mime_type = $temporary->mime_type;
         $file->extension = $temporary->extension;
         $file->size =  $temporary->size;
-        $file->url = $original_path;
-        $file->external = 0;
+        $file->url = $external == 1 ? $uri : $original_path;
+        $file->external = $external;
         $file->save();
 
         return $file;
@@ -225,6 +259,8 @@ class FileUploadController extends Controller
         }
            
     }
+
+   
 
     // public function createFileFromUrl($url , $resize = null){
 
