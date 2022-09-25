@@ -147,7 +147,7 @@ class PageController extends Controller
                         $temp_files = TemporaryFileModel::whereIn('name' , get_name_from_urls(request()->input('tmp_'.$element->name)) )->where('deleted',0)->get();
                         foreach($temp_files as $temporary){
                             $file = (new FileUploadController)->createFileFromTemporary($temporary , isset($element->ui->resize) ? $element->ui->resize : null);
-                            $new_files [] = $file->name.'.'.$file->extension;
+                            $new_files [] = $file->name;
                         }
                        
                     }
@@ -182,7 +182,7 @@ class PageController extends Controller
                         $new_files = [];
                         $temporary = TemporaryFileModel::where('name' , get_name_from_url(request()->input('tmp_'.$element->name)) )->where('deleted',0)->first();
                         $file = (new FileUploadController)->createFileFromTemporary($temporary, $element->ui->resize);            
-                        $inputs[$element->name] = $file->name.'.'.$file->extension;
+                        $inputs[$element->name] = $file->name;
                     }elseif(request()->has($element->name)){
                         $inputs[$element->name] =  request()->input($element->name);
                     }else{

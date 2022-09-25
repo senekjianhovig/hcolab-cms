@@ -141,7 +141,7 @@ class FileUploadController extends Controller
         }
 
         $external = 0;
-        if(env('VIMEO_ENABLED', 0) == 1){
+        if(env('VIMEO_ENABLED', 0) == 1 && $temporary->mime_category == 'video'){
 
             $file_source = Storage::disk($temporary->disk)->get("/".$input_file);
            
