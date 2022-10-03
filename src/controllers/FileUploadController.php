@@ -183,7 +183,7 @@ class FileUploadController extends Controller
        
         $name = $temporary->name;
         $extension = $temporary->extension;
-        $nameWithoutExtension = str_replace([$extension] , [''] , $name);
+        $nameWithoutExtension = str_replace([$extension , '.'] , ['',''] , $name);
         
         $public_path = storage_path().'/app/public/';
        
