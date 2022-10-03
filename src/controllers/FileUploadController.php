@@ -183,6 +183,7 @@ class FileUploadController extends Controller
        
         $name = $temporary->name;
         $extension = $temporary->extension;
+        $nameWithoutExtension = str_replace([$extension] , [''] , $name);
         
         $public_path = storage_path().'/app/public/';
        
@@ -193,8 +194,8 @@ class FileUploadController extends Controller
         $webp_optimized_directory = "files/optimized/webp/";
 
         $optimized_path = $main_optimized_directory."/".$temporary->name.".".$temporary->extension;
-        $optimized_jpg_path = $jpg_optimized_directory ."/".$temporary->name.".jpg";
-        $optimized_webp_path = $webp_optimized_directory."/".$temporary->name.".webp";
+        $optimized_jpg_path = $jpg_optimized_directory ."/".$nameWithoutExtension.".jpg";
+        $optimized_webp_path = $webp_optimized_directory."/".$nameWithoutExtension.".webp";
     
         Storage::disk($temporary->disk)->makeDirectory($main_optimized_directory);
         Storage::disk($temporary->disk)->makeDirectory($jpg_optimized_directory);
@@ -230,9 +231,9 @@ class FileUploadController extends Controller
             $jpg_resized_directory = "files/resized/jpg/".$dimension;
             $webp_resized_directory = "files/resized/webp/".$dimension;
 
-            $resized_path = $main_resize_directory."/".$temporary->name.".".$temporary->extension;
-            $resized_jpg_path = $jpg_resized_directory ."/".$temporary->name.".jpg";
-            $resized_webp_path = $webp_resized_directory."/".$temporary->name.".webp";
+            $resized_path = $main_resize_directory."/".$temporary->name;
+            $resized_jpg_path = $jpg_resized_directory ."/".$nameWithoutExtension.".jpg";
+            $resized_webp_path = $webp_resized_directory."/".$nameWithoutExtension.".webp";
             
             Storage::disk($temporary->disk)->makeDirectory($main_resize_directory);
             Storage::disk($temporary->disk)->makeDirectory($jpg_resized_directory);
