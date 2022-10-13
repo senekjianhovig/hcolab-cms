@@ -35,10 +35,8 @@ class FileUploadController extends Controller
         }
 
         $file = request()->file('file');
-        $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $file);
+        $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
         
-
-
 
         return $this->responseData(1 ,[
             'temporary_id'=> $temporary->id,
@@ -61,7 +59,7 @@ class FileUploadController extends Controller
             $input_name = str_replace('upld' , 'tmp' ,  $input_name);
             if($is_multiple){ $input_name = $input_name.'[]'; }
 
-            $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $file);
+            $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
             
             $file_element = view('CMSViews::form.file-preview', [
                 'value'=> $temporary->name.".".$temporary->extension,
@@ -76,7 +74,9 @@ class FileUploadController extends Controller
         return response()->json([], 404);
     }
 
-    public function createTemporaryFromFile($disk , $path , $file){
+    public function createTemporaryFromFile($path , $file){
+
+        $disk = env('STORAGE_DISK' , 'public');
 
         $file_extension = $file->getClientOriginalExtension();
         $mime_type = $file->getClientMimeType(); 
@@ -86,8 +86,6 @@ class FileUploadController extends Controller
 
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
         $url = Storage::disk($disk)->putFileAs($path, $file, $name);
-
-     
 
         $temporary = new TemporaryFile;
         $temporary->disk = $disk;
@@ -102,22 +100,27 @@ class FileUploadController extends Controller
         $temporary->save();
         
         $result = "low_resolution/".$name;
+        $jpgResult = "low_resolution/".str_replace([$file_extension], ["jpg"] , $name);
         $public_path = storage_path().'/app/public/';
         $source = $public_path.$temporary->url;
         
         Storage::disk('public')->makeDirectory('low_resolution');
        
-        
+       
         if($mime_category == "image"){
-            $img = Image::make($source);
-            $img->resize(300, function ($constraint) { $constraint->aspectRatio(); });
-            $img->encode("jpg", 80)->save($public_path.$result);
+            
+           $img = Image::make($source)
+            ->resize(300, null, function ($constraint) { $constraint->aspectRatio(); $constraint->upsize(); })
+            ->encode("jpg", 80);
+            
+            $this->saveFromIntervention($img , $jpgResult , $disk);
+
         }elseif($mime_category == "video"){
             $result_video = "low_resolution/".$nameWithoutExtension.".jpg";
             $res = FFMpeg::open($file)
             ->getFrameFromSeconds(2)
             ->export()
-            ->toDisk('public')
+            ->toDisk($disk)
             ->save($result_video);
         }
 
@@ -193,7 +196,7 @@ class FileUploadController extends Controller
         $jpg_optimized_directory = "files/optimized/jpg/";
         $webp_optimized_directory = "files/optimized/webp/";
 
-        $optimized_path = $main_optimized_directory."/".$temporary->name.".".$temporary->extension;
+        $optimized_path = $main_optimized_directory."/".$temporary->name;
         $optimized_jpg_path = $jpg_optimized_directory ."/".$nameWithoutExtension.".jpg";
         $optimized_webp_path = $webp_optimized_directory."/".$nameWithoutExtension.".webp";
     
@@ -216,14 +219,16 @@ class FileUploadController extends Controller
             $width = $ImageWidth > $ImageHeight ? $IMAGE_OPTIMIZER_MAXWITH : null;
             $OptimizingImage->resize($width, $height, function ($constraint) { $constraint->aspectRatio(); });
 
-            $OptimizingImage->encode($temporary->extension, 80)->save($public_path.$optimized_path);
-            $OptimizingImage->encode('jpg', 80)->save($public_path.$optimized_jpg_path);
-            $OptimizingImage->encode('webp', 80)->save($public_path.$optimized_webp_path);
-        }else{
+            $this->saveFromIntervention($OptimizingImage->encode($temporary->extension, 80) , $optimized_path , $temporary->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $temporary->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $temporary->disk);
             
-            $OptimizingImage->encode($temporary->extension, 80)->save($public_path.$optimized_path);
-            $OptimizingImage->encode('jpg', 80)->save($public_path.$optimized_jpg_path);
-            $OptimizingImage->encode('webp', 80)->save($public_path.$optimized_webp_path);
+        }else{
+
+            $this->saveFromIntervention($OptimizingImage->encode($temporary->extension, 80) , $optimized_path , $temporary->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $temporary->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $temporary->disk);
+
         }
 
         if($dimension != null){
@@ -254,34 +259,18 @@ class FileUploadController extends Controller
                 $constraint->aspectRatio();
             });
 
-            $ResizingImage->encode($temporary->extension, 80)->save($public_path.$resized_path);
-            $ResizingImage->encode('jpg', 80)->save($public_path.$resized_jpg_path);
-            $ResizingImage->encode('webp', 80)->save($public_path.$resized_webp_path);
+            $this->saveFromIntervention($ResizingImage->encode($temporary->extension, 80) , $resized_path , $temporary->disk);
+            $this->saveFromIntervention($ResizingImage->encode('jpg', 80) , $resized_jpg_path , $temporary->disk);
+            $this->saveFromIntervention($ResizingImage->encode('webp', 80) , $resized_webp_path , $temporary->disk);
+
         }
            
     }
 
-   
 
-    // public function createFileFromUrl($url , $resize = null){
-
-    //     $info = pathinfo($url);
-    //     $contents = file_get_contents($url);
-    //     $file = '/tmp/' . $info['basename'];
-    //     file_put_contents($file, $contents);
-    //     $uploaded_file = new \Illuminate\Http\UploadedFile($file, $info['basename']);
-
+    public function saveFromIntervention($interventionInstance , $path , $disk = 'public'){ 
+        Storage::disk($disk)->put($path, $interventionInstance->stream() , 'public');
+    }
     
-    //     $temporary = $this->createTemporaryFromFile('public' , 'temporary_files' , $uploaded_file);
-
-    //     return $this->createFileFromTemporary($temporary , $resize);
-    // }
-
-    
-        
-    
- 
-
-
 
 }
