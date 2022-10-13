@@ -144,15 +144,18 @@ class FileUploadController extends Controller
         }
 
         $external = 0;
-        if(env('VIMEO_ENABLED', 0) == 1 && $temporary->mime_category == 'video'){
+        if($temporary->mime_category == 'video'){
 
             $file_source = Storage::disk($temporary->disk)->get("/".$input_file);
            
-            $uri =  \Vimeo\Laravel\Facades\Vimeo::upload($file_source , array(
-                "name" => get_name_from_url($temporary->name),
-                "description" => get_name_from_url($temporary->name)
-            ));
-            $external = 1;
+            // $uri =  \Vimeo\Laravel\Facades\Vimeo::upload($file_source , array(
+            //     "name" => get_name_from_url($temporary->name),
+            //     "description" => get_name_from_url($temporary->name)
+            // ));
+            // $external = 1;
+
+            Storage::disk($temporary->disk)->put($original_path, $file_source , 'public');
+
         }
 
 
