@@ -101,7 +101,7 @@ class FileUploadController extends Controller
         
         $result = "low_resolution/".$name;
         $jpgResult = "low_resolution/".str_replace([$file_extension], ["jpg"] , $name);
-        $public_path = storage_path().'/app/public/';
+        $public_path = env('STORAGE_DISK') == "public" ? storage_path().'/app/public/' : env('DATA_URL')."/";
         $source = $public_path.$temporary->url;
         
         Storage::disk('public')->makeDirectory('low_resolution');
@@ -124,7 +124,7 @@ class FileUploadController extends Controller
             ->save($result_video);
         }
 
-        $temporary->thumbnail =  env('APP_URL').'/storage/low_resolution/'.$nameWithoutExtension.".jpg";
+        $temporary->thumbnail =  env('DATA_URL').'/low_resolution/'.$nameWithoutExtension.".jpg";
     
         return $temporary;
     }
