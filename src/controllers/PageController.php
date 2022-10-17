@@ -94,8 +94,13 @@ class PageController extends Controller
         $waiting_id_elements = [];
 
 
+     
+        
         foreach($page->elements as $element){
         
+            $value = request()->input($element->name); 
+            
+
             switch ($element->ui->type){
                 case "readonly_textfield":
                 case "textfield":
@@ -106,35 +111,42 @@ class PageController extends Controller
                 case "url":
                 case "wysiwyg":
                 {
-                    $inputs[$element->db->field_name] = request()->input($element->db->field_name);
+                    if($value == null){ break; }
+                    $inputs[$element->db->field_name] = $value;
                     break;
                 }
                 case "password":
                 {
+                    if($value == null){ break; }
                     $inputs[$element->db->field_name] = Hash::make(request()->input($element->db->field_name));
                     break;
                 }
                 case "date time picker":
                 case "date picker":
                 {
-                    $inputs[$element->db->field_name] = date("Y-m-d H:i:s",strtotime(request()->input($element->db->field_name)));
+
+                    if($value == null){ break; }
+                    $value = date("Y-m-d H:i:s",strtotime($value));
+                    $inputs[$element->db->field_name] = $value;
                     break;
                 }
                 case "tags":
                 case "multiple select":
                 {
-                   
+                    if($value == null){ break; }
                     $inputs[$element->name] = json_encode(request()->input($element->name));
                     break;
                 }
 
                 case "values select":
                 {
+                    if($value == null){ break; }
                     $inputs[$element->name] = request()->input($element->name);
                     break;
                 }
                 case "multiple file":
                 {
+                   
                     $old_files = [];
                     if(request()->has($element->name)){
                         $old_files = request()->input($element->name);
@@ -142,10 +154,16 @@ class PageController extends Controller
                    
                     $new_files = [];
                    
+                    
                     if(request()->has('tmp_'.$element->name)){
                        
-                        $temp_files = TemporaryFileModel::whereIn('name' , get_name_from_urls(request()->input('tmp_'.$element->name)) )->where('deleted',0)->get();
+                        
+
+                        $temp_files = TemporaryFileModel::whereIn('name' , request()->input('tmp_'.$element->name) )->where('deleted',0)->get();
                         foreach($temp_files as $temporary){
+
+                            
+
                             $file = (new FileUploadController)->createFileFromTemporary($temporary , isset($element->ui->resize) ? $element->ui->resize : null);
                             $new_files [] = $file->name;
                         }
@@ -163,13 +181,14 @@ class PageController extends Controller
                 
                 case "boolean checkbox":
                 {
+                    if($value == null){ break; }
                     $inputs[$element->db->field_name] = request()->has($element->db->field_name) ? request()->input($element->db->field_name) : 0;
                     break;
                 }
 
                 case "hidden json field":
                 {
-
+                    if($value == null){ break; }
                     $inputs[$element->db->field_name] = request()->has($element->db->field_name) ? json_encode(request()->input($element->db->field_name)) : null;
                 break;
                 }
@@ -177,10 +196,12 @@ class PageController extends Controller
                 case "image":
                 case "file":
                 {
+                    
 
                     if(request()->has('tmp_'.$element->name)){
                         $new_files = [];
-                        $temporary = TemporaryFileModel::where('name' , get_name_from_url(request()->input('tmp_'.$element->name)) )->where('deleted',0)->first();
+                   
+                        $temporary = TemporaryFileModel::where('name' , request()->input('tmp_'.$element->name) )->where('deleted',0)->first();
                         $file = (new FileUploadController)->createFileFromTemporary($temporary, $element->ui->resize);            
                         $inputs[$element->name] = $file->name;
                     }elseif(request()->has($element->name)){
@@ -199,7 +220,8 @@ class PageController extends Controller
 
                 break;
 
-                default: 
+                default:
+                
                 break;
 
 
@@ -352,6 +374,7 @@ class PageController extends Controller
         $data["data"] = $page->getRow($id);
         $data["id"] = $id;
 
+        
         return view('CMSViews::page.form', $data);
     }
 

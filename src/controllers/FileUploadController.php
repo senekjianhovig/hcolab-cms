@@ -62,7 +62,7 @@ class FileUploadController extends Controller
             $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
             
             $file_element = view('CMSViews::form.file-preview', [
-                'value'=> $temporary->name.".".$temporary->extension,
+                'value'=> $temporary->name,
                 'name' => $input_name , 
                 'mime_category' => $temporary->mime_category , 
                 'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
@@ -133,7 +133,9 @@ class FileUploadController extends Controller
 
         ini_set('max_execution_time' , 50000);
         
+        
         $input_file = $temporary->url;
+
     
         $original_path = "files/original/".$temporary->name;
     
