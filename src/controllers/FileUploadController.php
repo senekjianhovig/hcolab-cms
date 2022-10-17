@@ -65,7 +65,7 @@ class FileUploadController extends Controller
                 'value'=> $temporary->name,
                 'name' => $input_name , 
                 'mime_category' => $temporary->mime_category , 
-                'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
+                'url' =>  env('DATA_URL').'/'.$temporary->url, 
                 'display_name' => $temporary->original_name ])->render();
 
             return response()->json(['file_element'=>$file_element ], 200);
