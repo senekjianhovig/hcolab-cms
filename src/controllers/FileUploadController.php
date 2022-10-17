@@ -193,7 +193,7 @@ class FileUploadController extends Controller
         $extension = $temporary->extension;
         $nameWithoutExtension = str_replace([$extension , '.'] , ['',''] , $name);
         
-        $public_path = storage_path().'/app/public/';
+        $public_path = env('STORAGE_DISK') == "public" ? storage_path().'/app/public/' : env('DATA_URL')."/";
        
         $source = $public_path.$temporary->url;
        

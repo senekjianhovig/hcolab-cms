@@ -36,7 +36,7 @@ if($data && !empty($data->$name)){
                 'value'=> $preview->name,
                 'name' => $input_name, 
                 'mime_category' => $preview->mime_category, 
-                'url' => (bool) $preview->external ? $preview->url : env('APP_URL').'/storage/'.$preview->url, 
+                'url' => (bool) $preview->external ? $preview->url : env('DATA_URL').'/'.$preview->url, 
                 'display_name' => $preview->original_name,
                 'preview' => true
                 ])
