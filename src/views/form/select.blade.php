@@ -25,6 +25,10 @@ try {
     $selected = [];
 }
 
+if(!is_array($selected)){
+    $selected = [];
+}
+
 if ($element->ui->type == 'multiple select') {
     $fieldname = $name . '[]';
 } else {

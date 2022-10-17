@@ -222,18 +222,18 @@ if(!function_exists('get_media_url')){
 
     if($type == "resized"){
         switch($extension){
-            case  "jpg" : return env('APP_URL')."/storage/files/resized/jpg/".$resized."/".$original_name.".jpg";
-            case  "webp" : return env('APP_URL')."/storage/files/resized/webp/".$resized."/".$original_name.".webp"; 
-            default: return env('APP_URL')."/storage/files/resized/".$resized."/".$original_name.".".$original_extension;
+            case  "jpg" : return env('DATA_URL')."/files/resized/jpg/".$resized."/".$original_name.".jpg";
+            case  "webp" : return env('DATA_URL')."/files/resized/webp/".$resized."/".$original_name.".webp"; 
+            default: return env('DATA_URL')."/files/resized/".$resized."/".$original_name.".".$original_extension;
         }
     }elseif($type == "optimized"){
         switch($extension){
-            case  "jpg" : return env('APP_URL')."/storage/files/optimized/jpg/".$original_name.".jpg";
-            case  "webp" : return env('APP_URL')."/storage/files/optimized/webp/".$original_name.".webp"; 
-            default: return env('APP_URL')."/storage/files/optimized/".$original_name.".".$original_extension;
+            case  "jpg" : return env('DATA_URL')."/files/optimized/jpg/".$original_name.".jpg";
+            case  "webp" : return env('DATA_URL')."/files/optimized/webp/".$original_name.".webp"; 
+            default: return env('DATA_URL')."/files/optimized/".$original_name.".".$original_extension;
         }
     }else{
-        return env('APP_URL')."/storage/files/original/".$original_name.".".$original_extension;
+        return env('DATA_URL')."/files/original/".$original_name.".".$original_extension;
     }
 }
 }
