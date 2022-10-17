@@ -85,7 +85,7 @@ class FileUploadController extends Controller
         $name = $nameWithoutExtension.'.'.$file_extension;
 
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
-        $url = Storage::disk($disk)->putFileAs($path, $file, $name);
+        $url = Storage::disk($disk)->putFileAs($path, $file, $name , 'public');
 
         $temporary = new TemporaryFile;
         $temporary->disk = $disk;
