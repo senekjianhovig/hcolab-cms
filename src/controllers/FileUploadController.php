@@ -104,7 +104,7 @@ class FileUploadController extends Controller
         $public_path = env('STORAGE_DISK') == "public" ? storage_path().'/app/public/' : env('DATA_URL')."/";
         $source = $public_path.$temporary->url;
         
-        Storage::disk('public')->makeDirectory('low_resolution');
+        Storage::disk($disk)->makeDirectory('low_resolution');
        
        
         if($mime_category == "image"){
