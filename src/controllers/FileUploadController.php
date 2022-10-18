@@ -40,8 +40,8 @@ class FileUploadController extends Controller
 
         return $this->responseData(1 ,[
             'temporary_id'=> $temporary->id,
-            'value'=> $temporary->name.".".$temporary->extension,
-            'url' =>  env('APP_URL').'/storage/'.$temporary->url, 
+            'value'=> $temporary->name,
+            'url' =>  env('DATA_URL').'/'.$temporary->url, 
             'display_name' => $temporary->original_name ,
             'mime_category' => $temporary->mime_category,
             'mime_type' => $temporary->mime_type,
