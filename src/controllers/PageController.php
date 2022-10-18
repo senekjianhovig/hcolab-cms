@@ -117,7 +117,7 @@ class PageController extends Controller
                 }
                 case "password":
                 {
-                    if($value == null){ break; }
+                    if($value == null || empty($value)){ break; }
                     $inputs[$element->db->field_name] = Hash::make(request()->input($element->db->field_name));
                     break;
                 }
