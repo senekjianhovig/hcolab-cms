@@ -121,6 +121,7 @@ class FileUploadController extends Controller
             ->getFrameFromSeconds(2)
             ->export()
             ->toDisk($disk)
+            ->withVisibility('public')
             ->save($result_video);
         }
 
