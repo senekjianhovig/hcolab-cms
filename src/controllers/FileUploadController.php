@@ -279,4 +279,48 @@ class FileUploadController extends Controller
     }
     
 
+    public function getMedias($file , $force_type = 'array'){
+
+        $array = [];
+
+        if(is_null($file)){
+            return $force_type != "array" ? null : [];
+        }
+
+
+        if($force_type != 'array'){
+            $array [] = $file;
+        }else{
+            $array = $file;
+        }
+       
+
+        $files = File::whereIn('name' , $array)->where('deleted',0)->get()->map(function($f){
+
+            $nameWithoutExtension = str_replace(['.'.$f->extension] , [''] , $f->name);
+
+            if($f->mime_category == 'video'){
+                $thumbnail = env('DATA_URL').'/low_resolution/'.$nameWithoutExtension.".jpg";
+            }else{
+                $thumbnail = env('DATA_URL').'/files/optimized/jpg/'.$nameWithoutExtension.".jpg";
+            }
+
+            $original = env('DATA_URL').'/'.$f->url;
+
+            return [
+                'thumbnail' => $thumbnail,
+                'display_url' => $original,
+                'type' => $f->mime_category
+            ];
+        });
+
+        if($force_type == 'array'){
+            return $files;
+        }else{
+            return count($files) > 0 ? $files[0] : null;
+        }
+        
+
+    }
+
 }
