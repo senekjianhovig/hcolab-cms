@@ -17,9 +17,23 @@ class Column
     }
 
     foreach($this->columns as $column){
-        $column->type = $column->type ? $column->type : $array[$column->name]->ui->type;
-        $column->label = $column->label ? $column->label : $array[$column->name]->ui->label;
+
+      switch ($column->name) {
+        case 'created_at':
+          $column->type = "date time picker";
+          $column->label = "Created";
+          break;
+          default:
+          $column->type = $column->type ? $column->type : $array[$column->name]->ui->type;
+          $column->label = $column->label ? $column->label : $array[$column->name]->ui->label;
+          break;
+      }
+
     }
+
+
+
+
 
     return $this->columns;
   }

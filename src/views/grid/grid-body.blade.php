@@ -25,7 +25,12 @@ $related_tables = $page->getRelatedTables();
                             @endif
                         </a>
 
-                        <a href="javascript:;" onclick="" class="item">Delete</a>
+                        <a href="javascript:;" onclick="deleteRow('{{ route('page.delete', ['page_slug' => $page->slug, 'id' => $row->id]) }}')"
+                            class="item">
+                                Delete
+                        </a>
+
+                     
 
                         @if (isset($page->grid_operations) && is_array($page->grid_operations))
                             @foreach ($page->grid_operations as $operation_key => $operation_value)

@@ -16,5 +16,25 @@
         @if (!request()->has('enableFilter') || (int) request()->input('enableFilter') != 1)
             $('#filter-row').slideUp(0);
         @endif
+    
+        function deleteRow(url){
+            $('.confirm-delete').modal('show');
+
+            $('.confirm-delete').modal({
+                closable  : true,
+                onApprove : function() {
+                    $('.loading-screen').addClass('loading');
+                    $.post( url, {_token : '{{csrf_token()}}'}, 
+                        function( data ){ 
+                            $('tbody').replaceWith(data.table_body);
+                            $('.pagination-area').html(data.pagination);
+                            semanticInit();
+                            $('.loading-screen').removeClass('loading');
+                           
+                        });        
+                    }}).modal('show');
+        }
+    
     </script>
+
 @endsection

@@ -76,6 +76,28 @@ class PageController extends Controller
         ], 200);
     }
 
+    public function delete($page_slug , $id){
+
+        $page = $this->initializeRequest($page_slug);
+        if (is_null($page)) {
+            return response()->json([], 404);
+        }
+
+        $page->setElements();
+        $page->setColumns();
+
+        DB::table($page->entity)->where('id' , $id)->update(['deleted' => 1]);
+
+        $data["page"] = $page;
+
+        return response()->json([
+            'table_body' => view('CMSViews::grid.grid-body', $data)->render(),
+            'pagination' => view('CMSViews::grid.pagination', $data)->render()
+        ], 200);
+
+    }
+
+
     public function save($page_slug){
         $page = $this->initializeRequest($page_slug);
         if (is_null($page)) {

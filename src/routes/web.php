@@ -30,6 +30,7 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSSe
         Route::post('{page_slug}/save', [hcolab\cms\controllers\PageController::class, 'save'])->name('page.save');
         Route::get('{page_slug}/show/{id}', [hcolab\cms\controllers\PageController::class, 'show'])->name('page.show');
         Route::get('{page_slug}/edit/{id}', [hcolab\cms\controllers\PageController::class, 'edit'])->name('page.edit');
+        Route::post('{page_slug}/delete/{id}', [hcolab\cms\controllers\PageController::class, 'delete'])->name('page.delete');
         Route::post('{page_slug}/query', [hcolab\cms\controllers\PageController::class, 'query'])->name('page.table-data');
     });
 });

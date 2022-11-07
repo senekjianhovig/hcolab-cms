@@ -13,7 +13,9 @@
   
     @switch($mime_category)
         @case('image')
-        <img src="{{$url}}" width="50" height="50" style="object-fit: contain ; background-color: #eee" />
+        <a href="{{$url}}" data-fancybox data-type="image">
+        <img src="{{$url}}"  width="50" height="50" style="object-fit: contain ; background-color: #eee" />
+        </a>
         @break
         @case('application')
         <div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file alternate  icon" style="color:#5C258D;font-size:30px ;height:initial "></i></div>
