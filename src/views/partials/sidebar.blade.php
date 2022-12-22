@@ -19,7 +19,7 @@
             @switch($item["type"])
             @case('static')
 
-            @dd($item)
+            
 
             <li> <a @if(array_key_exists('target' , $item)) target="{{$item['target']}}" @endif
                     href="{{$item['link_to']}}"> {{$item["label"]}} </a> </li>
