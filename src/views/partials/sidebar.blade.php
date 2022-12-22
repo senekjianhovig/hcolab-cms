@@ -10,6 +10,7 @@
         <ul>
 
             <li><a href="/cms"> Dashboard</a></li>
+        
 
             <?php $sidebar = config('pages')['menu']; ?>
            
@@ -38,9 +39,6 @@
 
                     @php
                     $entity = $dropdown_page['link_to'];
-                    // $namespace = "\App\Pages\\";
-                
-                    
                     $class_exists = class_exists($entity);
 
 
@@ -71,9 +69,9 @@
 
             @php
             $link_to = $item['link_to'];
-            $namespace = "\App\Pages\\";
-            $entity = $namespace.$link_to;
+            $entity = $dropdown_page['link_to'];
             $class_exists = class_exists($entity);
+
             @endphp
 
             @if($class_exists)
