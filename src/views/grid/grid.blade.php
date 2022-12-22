@@ -1,8 +1,13 @@
+
+
 <div class="d-flex justify-content-between align-items-center">
     <div>
+
+        @if(in_array('create' , $actions))
         <a class="ui button mr-2" type="button" href="{{route('page.create', ['page_slug' => $page->slug ])}}">Create
             new
             Record</a>
+            @endif
 
         <button class="ui icon button filter-button" data-enable="{{request()->input('enableFilter')}}"
             onclick="toggleFilterBox($(this))">
@@ -20,7 +25,7 @@
     <div class="my-3 table-wrapper ui loading-screen" style="overflow-x:auto;">
         <table class="ui  blue  table">
             @include('CMSViews::grid.grid-header', ['page' => $page ])
-            @include('CMSViews::grid.grid-body', ['page' => $page ])
+            @include('CMSViews::grid.grid-body', ['page' => $page , 'actions' => $actions ])
         </table>
     </div>
 </form>

@@ -25,6 +25,7 @@
     "require": {
         "intervention/image": "^2.7",
         "league/flysystem-aws-s3-v3": "^3.6",
-        "pbmedia/laravel-ffmpeg": "^8.1"
+        "pbmedia/laravel-ffmpeg": "^8.1",
+        "consoletvs/charts": "6.*"
     }
 }

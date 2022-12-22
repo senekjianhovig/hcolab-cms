@@ -10,18 +10,34 @@ use Illuminate\Support\Facades\File;
 use hcolab\cms\models\File as FileModel;
 use hcolab\cms\models\TemporaryFile as TemporaryFileModel;
 use Illuminate\Support\Facades\DB;
+use hcolab\cms\models\CmsUserRolePermission;
 
 class PageController extends Controller
 {
 
-   
+   private $custom_pages;
+
+   public function __construct(){
+       $this->custom_pages = [
+         'cms-users' => 'CmsUserPage',
+         'cms-user-roles' => 'CmsUserRolePage',
+         'cms-user-role-permissions' => 'CmsUserRolePermissionPage'
+       ];
+   }
 
     public function initializeRequest($page_slug)
     {
        
-        $class_name = $this->getPageFromSlug($page_slug);
-        $class = "\\App\\Pages\\" . $class_name;
+        $namespace ="\\App\\Pages\\";
+        if(strpos(" ".$page_slug , "cms") > 0){
+            $namespace = "\\hcolab\\cms\\pages\\";
+        }
 
+        $class_name = $this->getPageFromSlug($page_slug);
+        
+        $class = $namespace . $class_name;
+
+       
         try {
             return new $class;
         } catch (\Throwable $th) {
@@ -35,6 +51,7 @@ class PageController extends Controller
 
         
         $page = $this->initializeRequest($page_slug);
+       
         if (is_null($page)) {
             return abort(404);
         }
@@ -55,15 +72,24 @@ class PageController extends Controller
         $data["page"] = $page;
 
 
+        $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
+
+      
+
         return view('CMSViews::page.index', $data);
     }
 
     public function query($page_slug)
     {
+
+       
         $page = $this->initializeRequest($page_slug);
         if (is_null($page)) {
             return response()->json([], 404);
         }
+
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'read');
+        if(!$check){ return abort(404); }
 
         $page->setElements();
         $page->setColumns();
@@ -77,11 +103,15 @@ class PageController extends Controller
     }
 
     public function delete($page_slug , $id){
+       
 
         $page = $this->initializeRequest($page_slug);
         if (is_null($page)) {
             return response()->json([], 404);
         }
+
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'delete');
+        if(!$check){ return response()->json([], 404); }
 
         $page->setElements();
         $page->setColumns();
@@ -355,6 +385,9 @@ class PageController extends Controller
             return abort(404);
         }
 
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'create');
+        if(!$check){ return abort(404); }
+
         $page->setElements();
 
         try {
@@ -380,6 +413,9 @@ class PageController extends Controller
         if (is_null($page)) {
             return abort(404);
         }
+
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'update');
+        if(!$check){ return abort(404); }
 
         $page->setElements();
 
@@ -428,6 +464,13 @@ class PageController extends Controller
             $pages[get_page_settings($newFileName)['slug']] = $newFileName; 
         }
 
+        if(isset($this->custom_pages) && is_array($this->custom_pages)){
+            foreach($this->custom_pages as $slug => $class){
+                $pages[$slug] = $class;
+            }
+        }
+  
+       
         return $pages;
     }
 }

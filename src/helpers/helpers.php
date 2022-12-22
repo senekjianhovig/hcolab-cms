@@ -290,3 +290,56 @@ if(!function_exists('query_string_to_array')){
     }
 }
 
+if(!function_exists('get_name_initials')){
+function get_name_initials($array){
+    $str = "";
+    foreach($array as $item){
+        $str.=$item ? $item[0] : "";
+    }
+    return $str;
+}
+}
+
+if(!function_exists('process_menu_item')){
+    function process_menu_item($item){
+    
+
+        if(isset($item['admin']) && $item['admin']){
+            return null;
+        }
+
+        switch ($item['type']) {
+            case 'page':
+
+                $entity = $item['link_to'];
+                $class_exists = class_exists($entity);
+
+                if(!$class_exists){
+                    return null;
+                }
+
+                $class = new $entity;
+
+                return [
+                    'label' => $class->title, 
+                    'name' => $class->entity
+                ];
+               
+            case 'static' :
+
+                return [
+                    'label' => $item['label'], 
+                    'name' => $item['name']
+                ];
+
+            default:
+                return null;
+                break;
+        }
+
+        if($item['type'] == 'page'){
+
+        }
+
+    }
+}

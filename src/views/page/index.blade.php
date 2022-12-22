@@ -7,7 +7,13 @@
 
 @section('content')
     <div class="container-fluid my-3">
-        @include('CMSViews::grid.grid', ['page' => $page])
+
+        @if(in_array('read' , $actions))
+            @include('CMSViews::grid.grid', ['page' => $page , 'actions' => $actions])
+        
+            @else
+            You dont have permission to view this page
+        @endif
     </div>
 @endsection
 

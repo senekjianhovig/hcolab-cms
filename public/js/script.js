@@ -125,7 +125,7 @@ function addQueryParamsWithoutReloading(key, value) {
 
 function sortByColumn(){
 
-    $( "th" ).on( "click", function() {
+    $( "th[data-attr-column]" ).on( "click", function() {
         var elem = $(this);
         elem.find('.icon').removeClass('up').removeClass('down')
 

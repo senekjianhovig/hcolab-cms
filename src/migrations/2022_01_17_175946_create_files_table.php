@@ -18,12 +18,12 @@ class CreateFilesTable extends Migration
             $table->string('disk', 255);
             $table->string('path', 255);
             $table->string('name', 255);
-            $table->text('original_name', 255);
+            $table->text('original_name');
             $table->string('mime_category', 255);
             $table->string('mime_type' , 255);
             $table->string('size' , 255);
             $table->string('extension', 20);
-            $table->text('url' , 255);
+            $table->text('url');
             $table->boolean('external')->default(0);
             $table->boolean('deleted')->default(0);
             $table->timestamps();

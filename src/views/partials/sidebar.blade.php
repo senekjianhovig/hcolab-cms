@@ -1,5 +1,5 @@
 <div class="nav main">
-    <a href="{{route('dashboard')}}" class="header">
+    <a href="{{env('APP_URL')}}/cms" class="header">
         <img src="{{env('APP_URL')}}/hcolab/cms/assets/svg/logo.svg" width="120">
     </a>
     <form method="post" onsubmit="return false" id="nav-search">
@@ -9,44 +9,18 @@
     <div class="body CustomScrollbar">
         <ul>
 
-            <li><a href="/"> Dashboard</a></li>
+            <li><a href="/cms"> Dashboard</a></li>
 
             <?php $sidebar = config('pages')['menu']; ?>
-            {{-- @foreach ($pages as $page)
-
-            @switch($page["type"])
-            @case('link')
-            <li> <a href="{{route('page',['page_slug'=> $page['key'] ])}}"> {{$page["label"]}} </a> </li>
-            @break
-            @case('dropdown')
-            <li>
-                <a href="javascript:;" class="has-submenu">
-                    {!!$page["icon"]!!} {{$page["label"]}}
-                </a>
-                <ul>
-
-                    @foreach($page['items'] as $dropdown_page)
-                    <li><a href="{{route('page',['page_slug'=> $dropdown_page['key'] ])}}">
-                            {{$dropdown_page["label"]}}</a>
-                    </li>
-                    @endforeach
-
-                </ul>
-            </li>
-            @break
-
-            @case('group label')
-            <li class="grouplabel"> {{$page["label"]}} </li>
-            @break
-            @endswitch
-
-            @endforeach --}}
-
+           
 
             @foreach ($sidebar as $item)
 
             @switch($item["type"])
             @case('static')
+
+            @dd($item)
+
             <li> <a @if(array_key_exists('target' , $item)) target="{{$item['target']}}" @endif
                     href="{{$item['link_to']}}"> {{$item["label"]}} </a> </li>
             @break
@@ -60,11 +34,16 @@
 
                     @foreach($item['children'] as $dropdown_page)
 
+                    @if($dropdown_page['type'] == 'page')
+
                     @php
-                    $link_to = $dropdown_page['link_to'];
-                    $namespace = "\App\Pages\\";
-                    $entity = $namespace.$link_to;
+                    $entity = $dropdown_page['link_to'];
+                    // $namespace = "\App\Pages\\";
+                
+                    
                     $class_exists = class_exists($entity);
+
+
                     @endphp
         
                     @if($class_exists)
@@ -75,6 +54,14 @@
                         </a>
                     </li>
                     @endif
+
+
+
+                    @else
+                    <li> <a @if(array_key_exists('target' , $dropdown_page)) target="{{$dropdown_page['target']}}" @endif
+                        href="{{$dropdown_page['link_to']}}"> {{$dropdown_page["label"]}} </a> </li>
+                    @endif
+
                     @endforeach
                 </ul>
             </li>
