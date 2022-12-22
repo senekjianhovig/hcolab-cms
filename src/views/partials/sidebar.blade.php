@@ -68,8 +68,7 @@
             @case('page')
 
             @php
-            $link_to = $item['link_to'];
-            $entity = $dropdown_page['link_to'];
+            $entity = $item['link_to'];
             $class_exists = class_exists($entity);
 
             @endphp
