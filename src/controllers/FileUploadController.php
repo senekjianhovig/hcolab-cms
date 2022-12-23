@@ -308,6 +308,8 @@ class FileUploadController extends Controller
             $original = env('DATA_URL').'/'.$f->url;
 
             return [
+                'original_name' => $f->original_name,
+                'name' => $f->name,
                 'thumbnail' => $thumbnail,
                 'display_url' => $original,
                 'type' => $f->mime_category
