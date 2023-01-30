@@ -97,6 +97,8 @@ class PageController extends Controller
 
         $data["page"] = $page;
 
+        $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
+
         return response()->json([
             'table_body' => view('CMSViews::grid.grid-body', $data)->render(),
             'pagination' => view('CMSViews::grid.pagination', $data)->render()
