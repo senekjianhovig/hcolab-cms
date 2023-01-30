@@ -18,6 +18,11 @@ if(!function_exists('process_grid_field')){
 
                 return "Values";
 
+
+                case "boolean checkbox":
+            
+                    return $row->{$column->name} == 0 ?  '<i class="red x icon"></i>' : '<i class="green checkmark icon"></i>';
+
                 default:
                 return $row->{$column->name};  
             }

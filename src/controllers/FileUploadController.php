@@ -11,6 +11,8 @@ use hcolab\cms\models\File;
 use Illuminate\Support\Facades\Storage;
 use hcolab\cms\traits\ApiTrait;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use FFMpeg\Coordinate\Dimension;
+use FFMpeg\Format\Video\X264;
 
 use Image;
 
@@ -121,7 +123,7 @@ class FileUploadController extends Controller
             ->getFrameFromSeconds(2)
             ->export()
             ->toDisk($disk)
-            ->withVisibility('public')
+           // ->withVisibility('public')
             ->save($result_video);
         }
 
@@ -133,7 +135,7 @@ class FileUploadController extends Controller
     public function createFileFromTemporary($temporary , $resize = null){
 
         ini_set('max_execution_time' , 50000);
-        
+      
         
         $input_file = $temporary->url;
 
@@ -147,29 +149,48 @@ class FileUploadController extends Controller
         }
 
         $external = 0;
-        if($temporary->mime_category == 'video'){
+      
+        // if($temporary->mime_category == 'video'){
+            
+        //     $file_source = Storage::disk($temporary->disk)->get("/".$input_file);
 
-            $file_source = Storage::disk($temporary->disk)->get("/".$input_file);
+        //     $lowBitrateFormat = (new X264)->setKiloBitrate(500);
+        //     $midBitrateFormat  = (new X264)->setKiloBitrate(1500);
+        //     $highBitrateFormat = (new X264)->setKiloBitrate(3000);
+
            
-            // $uri =  \Vimeo\Laravel\Facades\Vimeo::upload($file_source , array(
-            //     "name" => get_name_from_url($temporary->name),
-            //     "description" => get_name_from_url($temporary->name)
-            // ));
-            // $external = 1;
+        //     FFMpeg::fromDisk($temporary->disk)
+        //         ->open("/".$input_file)
+        //         ->addFilter(function ($filters) {
+        //             $filters->resize(new Dimension(640, 480));
+        //         })
+        //         ->export()
+        //         ->toDisk($temporary->disk)
+        //         ->inFormat($lowBitrateFormat)
+        //         ->save("files/downloadable/".get_name_from_url($temporary->name) .'.mp4');
 
-            Storage::disk($temporary->disk)->put($original_path, $file_source , 'public');
 
-        }
+        //         FFMpeg::fromDisk($temporary->disk)
+        //         ->open("/".$input_file)
+        //         ->exportForHLS()
+        //         ->toDisk($temporary->disk)
+        //         ->addFormat($lowBitrateFormat)
+        //         ->addFormat($midBitrateFormat)
+        //         ->addFormat($highBitrateFormat)
+        //         ->save("files/streamable/".get_name_from_url($temporary->name) . '.m3u8');
+    
+        // }
 
 
-        if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
-            $this->processUpload($temporary , $resize);
-        }
+        // if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
+        //     $this->processUpload($temporary , $resize);
+        // }
 
         
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
         if(!$file){
             $file = new File;
+            $file->processed = 0;
         }
         
         $file->disk = $temporary->disk;
@@ -181,34 +202,119 @@ class FileUploadController extends Controller
         $file->extension = $temporary->extension;
         $file->size =  $temporary->size;
         $file->url = $external == 1 ? $uri : $original_path;
+        $file->resize = $resize;
         $file->external = $external;
+        
         $file->save();
 
         return $file;
     }
 
 
-    public function processUpload($temporary , $dimension){
+    public function processMediaCron(){
+
+        ini_set('max_execution_time' , 50000);
+        ini_set('post_max_size', '500M');
+
+        $files = File::where('processed' , 0)->where('deleted',0)->get();
+
+        foreach($files as $file){
+            if(in_array($file->extension , ['svg'])){ continue; }
+            
+            switch($file->mime_category){
+                case "video" :  
+                    try {
+                        $this->processVideoUpload($file);
+                        $file->processed = 1;
+                    } catch (\Throwable $th) {
+                        $file->processed = 0;
+                    }
+                    break;
+                case "image" :  
+                    try {
+                        $this->processImageUpload($file); 
+                        $file->processed = 1;
+                    } catch (\Throwable $th) {
+                        $file->processed = 0;
+                    }
+                    break;
+            }
+
+            $file->save();
+        }
+
+    }
+
+    public function processVideoUpload($file){
+
+        $input_file = $file->url;
+        $file_source = Storage::disk($file->disk)->get("/".$input_file);
+
        
-        $name = $temporary->name;
-        $extension = $temporary->extension;
+
+        $lowBitrate = 250;
+        $midBitrate = 500;
+        $highBitrate = 800;
+        $superBitrate = 1600;
+
+    
+        $this->generateVideoResolution($file , $lowBitrate , 640 , 480);
+        $this->generateVideoResolution($file , $midBitrate , 1280 , 720);
+        $this->generateVideoResolution($file , $highBitrate , 1920 , 1080);
+        $this->generateVideoResolution($file , $superBitrate , 2560 , 1440);
+
+        FFMpeg::fromDisk($file->disk)
+        ->open("/".$input_file)
+        ->exportForHLS()
+        ->toDisk($file->disk)
+        ->addFormat((new X264)->setKiloBitrate($lowBitrate), function($media) { $media->scale(640, 480); })
+        ->addFormat((new X264)->setKiloBitrate($midBitrate), function($media) { $media->scale(1280, 720); })
+        ->addFormat((new X264)->setKiloBitrate($highBitrate), function ($media) { $media->scale(1920, 1080); })  
+        ->addFormat((new X264)->setKiloBitrate($superBitrate), function($media) { $media->scale(2560, 1440); })
+        ->save("files/streamable/".get_name_from_url($file->name) . '.m3u8');
+
+    }
+
+
+    public function generateVideoResolution($file , $bitrate_value , $w , $h){
+
+        $bitrate = (new X264)->setKiloBitrate($bitrate_value);
+
+        FFMpeg::fromDisk($file->disk)
+        ->open("/".$file->url)
+        ->addFilter(function ($filters) use($w , $h) {
+            $filters->resize(new Dimension($w, $h));
+        })
+        ->export()
+        ->toDisk($file->disk)
+        ->inFormat($bitrate)
+        ->save("files/downloadable/".$h."p/".get_name_from_url($file->name) .'.mp4');
+
+
+    }
+
+    public function processImageUpload($file){
+       
+        $dimension = $file->resize;
+        $name = $file->name;
+        $extension = $file->extension;
         $nameWithoutExtension = str_replace([$extension , '.'] , ['',''] , $name);
         
         $public_path = env('STORAGE_DISK') == "public" ? storage_path().'/app/public/' : env('DATA_URL')."/";
        
-        $source = $public_path.$temporary->url;
+        $source = $public_path.$file->url;
        
         $main_optimized_directory = "files/optimized/";
         $jpg_optimized_directory = "files/optimized/jpg/";
         $webp_optimized_directory = "files/optimized/webp/";
 
-        $optimized_path = $main_optimized_directory."/".$temporary->name;
+        $optimized_path = $main_optimized_directory."/".$file->name;
         $optimized_jpg_path = $jpg_optimized_directory ."/".$nameWithoutExtension.".jpg";
         $optimized_webp_path = $webp_optimized_directory."/".$nameWithoutExtension.".webp";
     
-        Storage::disk($temporary->disk)->makeDirectory($main_optimized_directory);
-        Storage::disk($temporary->disk)->makeDirectory($jpg_optimized_directory);
-        Storage::disk($temporary->disk)->makeDirectory($webp_optimized_directory);
+        Storage::disk($file->disk)->makeDirectory($main_optimized_directory);
+        Storage::disk($file->disk)->makeDirectory($jpg_optimized_directory);
+        Storage::disk($file->disk)->makeDirectory($webp_optimized_directory);
 
         $IMAGE_OPTIMIZER_MAXWITH = env('IMAGE_OPTIMIZER_MAXWITH' , 2400); 
         $IMAGE_OPTIMIZER_MAXHEIGHT = env('IMAGE_OPTIMIZER_MAXHEIGHT' , 1800); 
@@ -225,15 +331,15 @@ class FileUploadController extends Controller
             $width = $ImageWidth > $ImageHeight ? $IMAGE_OPTIMIZER_MAXWITH : null;
             $OptimizingImage->resize($width, $height, function ($constraint) { $constraint->aspectRatio(); });
 
-            $this->saveFromIntervention($OptimizingImage->encode($temporary->extension, 80) , $optimized_path , $temporary->disk);
-            $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $temporary->disk);
-            $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $temporary->disk);
+            $this->saveFromIntervention($OptimizingImage->encode($file->extension, 80) , $optimized_path , $file->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $file->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $file->disk);
             
         }else{
 
-            $this->saveFromIntervention($OptimizingImage->encode($temporary->extension, 80) , $optimized_path , $temporary->disk);
-            $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $temporary->disk);
-            $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $temporary->disk);
+            $this->saveFromIntervention($OptimizingImage->encode($file->extension, 80) , $optimized_path , $file->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $file->disk);
+            $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $file->disk);
 
         }
 
@@ -242,13 +348,13 @@ class FileUploadController extends Controller
             $jpg_resized_directory = "files/resized/jpg/".$dimension;
             $webp_resized_directory = "files/resized/webp/".$dimension;
 
-            $resized_path = $main_resize_directory."/".$temporary->name;
+            $resized_path = $main_resize_directory."/".$file->name;
             $resized_jpg_path = $jpg_resized_directory ."/".$nameWithoutExtension.".jpg";
             $resized_webp_path = $webp_resized_directory."/".$nameWithoutExtension.".webp";
             
-            Storage::disk($temporary->disk)->makeDirectory($main_resize_directory);
-            Storage::disk($temporary->disk)->makeDirectory($jpg_resized_directory);
-            Storage::disk($temporary->disk)->makeDirectory($webp_resized_directory);
+            Storage::disk($file->disk)->makeDirectory($main_resize_directory);
+            Storage::disk($file->disk)->makeDirectory($jpg_resized_directory);
+            Storage::disk($file->disk)->makeDirectory($webp_resized_directory);
             
             $ResizingImage = Image::make($source);
             $ImageWidth = $ResizingImage->width();
@@ -265,9 +371,9 @@ class FileUploadController extends Controller
                 $constraint->aspectRatio();
             });
 
-            $this->saveFromIntervention($ResizingImage->encode($temporary->extension, 80) , $resized_path , $temporary->disk);
-            $this->saveFromIntervention($ResizingImage->encode('jpg', 80) , $resized_jpg_path , $temporary->disk);
-            $this->saveFromIntervention($ResizingImage->encode('webp', 80) , $resized_webp_path , $temporary->disk);
+            $this->saveFromIntervention($ResizingImage->encode($file->extension, 80) , $resized_path , $file->disk);
+            $this->saveFromIntervention($ResizingImage->encode('jpg', 80) , $resized_jpg_path , $file->disk);
+            $this->saveFromIntervention($ResizingImage->encode('webp', 80) , $resized_webp_path , $file->disk);
 
         }
            
