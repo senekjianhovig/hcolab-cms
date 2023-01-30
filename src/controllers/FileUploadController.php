@@ -261,10 +261,10 @@ class FileUploadController extends Controller
         $superBitrate = 1600;
 
     
-        $this->generateVideoResolution($file , $lowBitrate , 640 , 480);
-        $this->generateVideoResolution($file , $midBitrate , 1280 , 720);
-        $this->generateVideoResolution($file , $highBitrate , 1920 , 1080);
-        $this->generateVideoResolution($file , $superBitrate , 2560 , 1440);
+        try { $this->generateVideoResolution($file , $lowBitrate , 640 , 480); } catch (\Throwable $th) { }
+        try { $this->generateVideoResolution($file , $midBitrate , 1280 , 720); } catch (\Throwable $th) { }
+        try { $this->generateVideoResolution($file , $highBitrate , 1920 , 1080); } catch (\Throwable $th) { }
+        try { $this->generateVideoResolution($file , $superBitrate , 2560 , 1440); } catch (\Throwable $th) { }
 
         FFMpeg::fromDisk($file->disk)
         ->open("/".$input_file)
