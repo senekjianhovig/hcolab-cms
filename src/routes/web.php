@@ -34,6 +34,9 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
     Route::get('/role-permissions/{id}/{token}' , [\hcolab\cms\controllers\UserController::class , 'renderRolePermissions'])->name('role-permissions');   
     Route::post('/role-permissions/{id}/{token}' , [\hcolab\cms\controllers\UserController::class , 'rolePermissions'])->name('role-permissions');
  
+    Route::get('/settings' ,  [ \hcolab\cms\controllers\SettingController::class , 'render'])->name('settings');   
+    Route::post('/settings' , [ \hcolab\cms\controllers\SettingController::class , 'save'])->name('settings');
+    
     
     Route::prefix('theme-builder')->group(function () {
         Route::get('/{id}',  function($id){ return view('CMSViews::page.theme-builder' , ['id' => $id]);});

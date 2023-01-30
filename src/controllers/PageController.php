@@ -21,13 +21,14 @@ class PageController extends Controller
        $this->custom_pages = [
          'cms-users' => 'CmsUserPage',
          'cms-user-roles' => 'CmsUserRolePage',
-         'cms-user-role-permissions' => 'CmsUserRolePermissionPage'
+         'cms-user-role-permissions' => 'CmsUserRolePermissionPage',
+         'cms-settings' => 'CmsSettingPage'
        ];
    }
 
     public function initializeRequest($page_slug)
     {
-       
+     
         $namespace ="\\App\\Pages\\";
         if(strpos(" ".$page_slug , "cms") > 0){
             $namespace = "\\hcolab\\cms\\pages\\";
