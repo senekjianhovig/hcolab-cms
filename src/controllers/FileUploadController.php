@@ -221,6 +221,9 @@ class FileUploadController extends Controller
         foreach($files as $file){
             if(in_array($file->extension , ['svg'])){ continue; }
             
+            $file->processed = 1;
+            $file->save();
+
             switch($file->mime_category){
                 case "video" :  
                     try {
