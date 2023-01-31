@@ -21,6 +21,28 @@
 
 </div>
 
+
+@if(isset($page->grid_menu) && is_array($page->grid_menu) && count($page->grid_menu) > 0)
+
+@php
+    $active_menu = false;
+    foreach(collect($page->grid_menu)->pluck('field') as $field){
+        if(request()->input($field) != null || request()->input($field) != ""){
+            $active_menu = true;
+            break;
+        }
+    }
+@endphp
+
+<div class="ui pointing menu">
+    <a href="{{route('page' , ['page_slug' => $page->slug ])}}" class="item @if(!$active_menu) active @endif"> All </a>
+    @foreach($page->grid_menu as $grid_menu_item)
+        <a href="{{route('page' , ['page_slug' => $page->slug , $grid_menu_item["field"] => $grid_menu_item["value"] ])}}" class="@if(request()->input($grid_menu_item["field"]) == $grid_menu_item["value"] ) active @endif item"> {{ $grid_menu_item["label"] }}</a>
+    @endforeach
+
+</div>
+@endif
+
 <form id="filters-form" action="">
     <div class="my-3 table-wrapper ui loading-screen" style="overflow-x:auto;">
         <table class="ui  blue  table">
