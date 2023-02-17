@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => 'web'] , function(){
 
+    Route::get('/get-notifications' , function(){
+        return view('CMSViews::components.notification-panel');
+    });
+
 Route::group(['prefix' => 'cms'], function(){
     Route::post('/login' , [ \hcolab\cms\controllers\UserController::class , 'login'])->name('login');
     Route::get('/login' , [ \hcolab\cms\controllers\UserController::class , 'renderLoginPage'])->name('login');
@@ -25,7 +29,9 @@ Route::group(['prefix' => 'cms'], function(){
 
 Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAuth::class,\hcolab\cms\middlewares\CMSSetup::class]], function(){
     Route::post('/upload', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporary']); 
-    Route::get('/',  function(){ return view('CMSViews::dashboard.index');})->name('dashboard');
+    Route::get('/dashboard',  function(){ return view('CMSViews::dashboard.index');})->name('dashboard');
+    Route::get('/',  function(){ return view('CMSViews::dashboard.default');})->name('dashboard-2');
+    
 
     Route::get('/logout' , [\hcolab\cms\controllers\UserController::class , 'logout'])->name('logout');
     Route::get('/change-password' , [\hcolab\cms\controllers\UserController::class , 'renderChangePassword'])->name('change-password');

@@ -341,3 +341,24 @@ i{
         min-width: 165px !important;
     }
 }
+
+.t-center{
+    text-align: center;
+}
+
+.video-thumb{
+    position: relative;
+    display: inline-block;
+  
+  &:after{
+    position: absolute;
+    content: "\f144";
+    font-family: "Font Awesome 5 Free";
+    font-weight: bold;
+    top:50%;
+    left:50%;
+    transform: translate(-50% , -50%); 
+    color: black;
+    font-size: 35px;
+  }
+}

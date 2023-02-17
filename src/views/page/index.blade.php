@@ -1,15 +1,18 @@
-@extends('CMSViews::layout.layout', ['title' => $page->title])
+@php $layout = request()->has("compact") && request()->has("compact") == 1 ? "layout-minimal" : "layout";  @endphp
+
+
+@extends('CMSViews::layout.'.$layout, ['title' => $page->title])
 
 @section('head')
-    <meta name="entity" content="{{ $page->entity }}">
+    <meta name="entity" content="{{ $page->slug }}">
     <title> {{ $page->title }} </title>
 @endsection
 
 @section('content')
-    <div class="container-fluid my-3">
+    <div class="@if($layout == "layout") container-fluid my-3 @endif ">
 
         @if(in_array('read' , $actions))
-            @include('CMSViews::grid.grid', ['page' => $page , 'actions' => $actions])
+            @include('CMSViews::grid_v2.grid', ['page' => $page , 'actions' => $actions])
         
             @else
             You dont have permission to view this page

@@ -1,8 +1,10 @@
+@php
+$compact = request()->has("compact") && request()->has("compact") == 1
+@endphp
 
-
+@if(!$compact)
 <div class="d-flex justify-content-between align-items-center">
     <div>
-
         @if(in_array('create' , $actions))
         <a class="ui button mr-2" type="button" href="{{route('page.create', ['page_slug' => $page->slug ])}}">Create
             new
@@ -20,6 +22,7 @@
     </div>
 
 </div>
+@endif
 
 
 @if(isset($page->grid_menu) && is_array($page->grid_menu) && count($page->grid_menu) > 0)
@@ -44,10 +47,10 @@
 @endif
 
 <form id="filters-form" action="">
-    <div class="my-3 table-wrapper ui loading-screen" style="overflow-x:auto;">
+    <div class="@if(!$compact) my-3 @endif table-wrapper ui loading-screen" style="overflow-x:auto;">
         <table class="ui  blue  table">
             @include('CMSViews::grid.grid-header', ['page' => $page ])
-            @include('CMSViews::grid.grid-body', ['page' => $page , 'actions' => $actions ])
+            @include('CMSViews::grid.grid-body', ['page' => $page , 'actions' => $actions  ])
         </table>
     </div>
 </form>

@@ -13,17 +13,22 @@ if($elements[0]->ui->type == 'open div'){
 if(request()->has("redirect_url")){
     $prev_url = request()->input('redirect_url');
 }else{
-    if(app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName() == "page"){ $prev_url = $_SERVER['HTTP_REFERER']; }
+    if(in_array(app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName() , ["page" , "page.show"])){ $prev_url = $_SERVER['HTTP_REFERER']; }
 }
-?>
 
-@extends('CMSViews::layout.layout', ['title' => $page->title])
+?>
+@php 
+$layout = request()->has("compact") && request()->has("compact") == 1 ? "layout-minimal" : "layout";  
+$compact = $layout != "layout"; 
+@endphp
+@extends('CMSViews::layout.'.$layout, ['title' => $page->title])
 
 @section('head') @endsection
 
 @section('content')
 
 <div class="container-fluid my-3">
+    @if(!$compact)
     <div class="ui segment raised  mb-3">
         <div class="ui tiny breadcrumb">
             <a href="{{route('page', ['page_slug'=>$page->slug])}}" class="section">{{$page->title}}</a>
@@ -31,9 +36,10 @@ if(request()->has("redirect_url")){
             <div class="section active "> @isset($id) Edit Page {{$page->title}} @else Create Page @endisset </div>
         </div>
     </div>
+    @endif
 
     <div id="page-fields-segment" 
-    class="@if(!$opened) ui segment raised mb-3 @endif"
+    class="@if(!$opened) ui  @if(!$compact) segment @endif raised mb-3 @endif"
     >
     @if(!$opened)
         <h3> Add new record </h3>
@@ -53,9 +59,11 @@ if(request()->has("redirect_url")){
                 @endforeach
                 @if(!$opened)  </div> @endif
       
+              
+
             <div class="ui divider"></div>
             <div class="d-flex justify-content-between align-items-center">
-                <a href="{{route('page', ['page_slug'=>$page->slug])}}" class="ui button red"> Cancel </a>
+                <a href="{{ $prev_url == "" ? route('page', ['page_slug'=>$page->slug]) :  $prev_url}}" class="ui button red"> Cancel </a>
                 <button class="ui button" type="submit">Submit</button>
             </div>
 
@@ -67,4 +75,6 @@ if(request()->has("redirect_url")){
 </div>
 @endsection
 
-@section('scripts') @endsection
+@section('scripts') 
+
+@endsection

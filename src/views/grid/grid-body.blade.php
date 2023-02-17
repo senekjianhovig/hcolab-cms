@@ -2,6 +2,8 @@
 $rows = $page->getRows();
 $columns = $page->getColumns();
 $related_tables = $page->getRelatedTables();
+
+$compact = request()->has("compact") && request()->has("compact") == 1;
 @endphp
 
 
@@ -10,15 +12,16 @@ $related_tables = $page->getRelatedTables();
         <tr class="row-{{ $row->id }} ui-state-default" data-attr-id="{{ $row->id }}"
             @if ($page->sortable) data-attr-order={{ $row->orders }} @endif>
 
+            @if(!$compact)
             <td>
-                @if(in_array('update' , $actions) || in_array('delete' , $actions) || (isset($page->grid_operations) && is_array($page->grid_operations)) )
+                @if((in_array('update' , $actions) || in_array('delete' , $actions) || (isset($page->grid_operations) && is_array($page->grid_operations))) )
                
                 <div class="ui icon top left pointing dropdown button">
                     <i class="ellipsis  vertical icon"></i>
                     <div class="menu">
 
 
-                        @if(in_array('update' , $actions))
+                        @if(in_array('update' , $actions) )
 
                         <a href="@if (isset($page->grid_operations['edit']['link'])) {{ str_replace( '{id}' , $row->id , $page->grid_operations['edit']['link']) }} @else {{ route('page.edit', ['page_slug' => $page->slug, 'id' => $row->id]) }} @endif"
                             class="item">
@@ -50,8 +53,10 @@ $related_tables = $page->getRelatedTables();
                 </div>
               @endif
             </td>
+            @endif
 
             @foreach ($columns as $column)
+          
                 <td> {!! process_grid_field($row, $column, $related_tables) !!}</td>
             @endforeach
         </tr>

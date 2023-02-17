@@ -35,14 +35,20 @@ if ($element->ui->type == 'multiple select') {
     $fieldname = $name;
 }
 
+$label_exists = !isset($element->ui->disable_label) || isset($element->ui->disable_label) && $element->ui->disable_label == false;
+$margin_exists = !isset($element->ui->disable_margin) || isset($element->ui->disable_margin) && $element->ui->disable_margin == false;
+
+
 @endphp
 
-<div class="{{ $element->ui->container }} mb-4">
+<div class="{{ $element->ui->container }} @if($margin_exists) mb-4 @endif">
     <div class="field">
+        @if($label_exists)
         <label>{{ $element->ui->label }} @if ($element->ui->required)
                 *
             @endif
         </label>
+        @endif
 
         <select id="{{ $name }}" @if ($element->ui->type == 'multiple select') multiple @endif name="{{ $fieldname }}"
             class="ui fluid search dropdown" @if ($element->ui->required) required @endif>

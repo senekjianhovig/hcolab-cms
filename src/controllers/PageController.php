@@ -22,7 +22,8 @@ class PageController extends Controller
          'cms-users' => 'CmsUserPage',
          'cms-user-roles' => 'CmsUserRolePage',
          'cms-user-role-permissions' => 'CmsUserRolePermissionPage',
-         'cms-settings' => 'CmsSettingPage'
+         'cms-settings' => 'CmsSettingPage',
+         'cms-notifications' => 'CmsNotificationPage'
        ];
    }
 
@@ -63,6 +64,11 @@ class PageController extends Controller
     
         $page->setColumns();
 
+        if(isset($page->sections)){
+            $page->setSections();
+        }
+   
+        
         try {
             $page->generateTable();
         } catch (\Throwable $th) {
@@ -70,6 +76,7 @@ class PageController extends Controller
             return abort(403, "Error Generating Table");
         }
 
+      
         $data["page"] = $page;
 
 
@@ -77,7 +84,7 @@ class PageController extends Controller
 
       
 
-        return view('CMSViews::page.index', $data);
+        return view('CMSViews::page.index_v2', $data);
     }
 
     public function query($page_slug)
@@ -89,6 +96,7 @@ class PageController extends Controller
             return response()->json([], 404);
         }
 
+     
         $check = CmsUserRolePermission::checkPermissions($page->entity , 'read');
         if(!$check){ return abort(404); }
 
@@ -100,8 +108,8 @@ class PageController extends Controller
         $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
 
         return response()->json([
-            'table_body' => view('CMSViews::grid.grid-body', $data)->render(),
-            'pagination' => view('CMSViews::grid.pagination', $data)->render()
+            'table_body' => view('CMSViews::grid_v2.grid-body', $data)->render(),
+            'pagination' => view('CMSViews::grid_v2.pagination', $data)->render()
         ], 200);
     }
 
@@ -122,10 +130,11 @@ class PageController extends Controller
         DB::table($page->entity)->where('id' , $id)->update(['deleted' => 1]);
 
         $data["page"] = $page;
-
+        $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
+        
         return response()->json([
-            'table_body' => view('CMSViews::grid.grid-body', $data)->render(),
-            'pagination' => view('CMSViews::grid.pagination', $data)->render()
+            'table_body' => view('CMSViews::grid_v2.grid-body', $data)->render(),
+            'pagination' => view('CMSViews::grid_v2.pagination', $data)->render()
         ], 200);
 
     }
@@ -441,7 +450,50 @@ class PageController extends Controller
 
     public function show($page_slug, $id)
     {
-        return view('CMSViews::page.show');
+
+        $page = $this->initializeRequest($page_slug);
+        if (is_null($page)) {
+            return abort(404);
+        }
+
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'update');
+        if(!$check){ return abort(404); }
+
+
+        $notification = \App\Models\CmsNotification::where('deleted',0)->where('id', $id)->where('page_slug' , $page->slug)->first();
+        if($notification){
+            $notification->read = 1;
+            $notification->save();
+        }
+
+
+
+
+        $page->setElements();
+
+        try {
+            $page->setSections();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+
+        
+        try {
+            $page->generateTable();
+        } catch (\Throwable $th) {
+            return abort(403, "Error Generating Table");
+        }
+
+        $page->getRow($id);
+
+        $data["page"] = $page;
+
+        $data["data"] = $page->getRow($id);
+        $data["id"] = $id;
+
+        
+
+        return view('CMSViews::page.show' , $data);
     }
 
     public function getPageFromSlug($slug)

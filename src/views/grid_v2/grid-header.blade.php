@@ -18,16 +18,16 @@ if(!function_exists('checkOrder')){
 
 $data = new \stdClass();
 $data->id = request()->input('id');
-$compact = request()->has("compact") && request()->has("compact") == 1;
+
 
 @endphp
 <thead>
     <tr>
-        @if(!$compact)
-        <th class="text-center" data-attr-column=""></th>
-        @endif
+        
+        <th style="min-width:unset;width: 120px !important;" class="text-center" data-attr-column=""></th>
+    
         @foreach ($columns as $column)
-        <th data-attr-column="{{ Str::slug($column->name,'_') }}"
+        <th @if($loop->first) style="min-width:unset;width: 100px !important;" @endif data-attr-column="{{ Str::slug($column->name,'_') }}"
             data-attr-order="{{checkOrder(Str::slug($column->name,'_'))}}">{{$column->label}}
             <i class="sort {{checkDirection(Str::slug($column->name,'_'))}} icon"></i>
         </th>
@@ -35,14 +35,18 @@ $compact = request()->has("compact") && request()->has("compact") == 1;
 
     </tr>
 
-    <tr class="ui form no-animation filter-row-initial" id="filter-row">
+    {{-- <tr class="ui form no-animation filter-row-initial" id="filter-row">
         <td class="text-center">
-            <button class="blue ui button" type="button" onclick="filterTable()"> Filter</button>
+            <button class="blue ui button semantic-popup" type="button"> Filter</button>
+
+
+
+
             </th>
             @foreach($columns AS $column)
             @php $data->{$column->name} = request()->input($column->name); @endphp
         <td class="text-center"> @include('CMSViews::grid.filter-item', ['column'=> $column , 'data'=>$data]) </td>
         @endforeach
-    </tr>
+    </tr> --}}
 
 </thead>

@@ -1,3 +1,6 @@
+@php
+$current_url = url()->current();
+@endphp
 <div class="nav main">
     <a href="{{env('APP_URL')}}/cms" class="header">
         <img src="{{env('APP_URL')}}/hcolab/cms/assets/svg/logo.svg" width="120">
@@ -16,14 +19,18 @@
            
 
             @foreach ($sidebar as $item)
-
+           
             @switch($item["type"])
             @case('static')
 
-            
+            @php
+                $link_to = str_replace( env('APP_URL') , '' , $item['link_to']);
+                $current_to = str_replace(env('APP_URL') , '' , $current_url);
+               
+            @endphp
 
             <li> <a @if(array_key_exists('target' , $item)) target="{{$item['target']}}" @endif
-                    href="{{$item['link_to']}}"> {{$item["label"]}} </a> </li>
+                    href="{{$item['link_to']}}" class="@if(str_contains($link_to, $current_to)) active @endif"> {{$item["label"]}} </a> </li>
             @break
 
             @case('dropdown')
@@ -47,7 +54,7 @@
                     @if($class_exists)
                     @php $class = new $entity; @endphp
                     <li>
-                        <a href="{{route('page',['page_slug'=> $class->slug ])}}"> {!! isset($class->icon) ?? $class->icon !!}
+                        <a href="{{route('page',['page_slug'=> $class->slug ])}}" class="@if(str_contains($current_url, $class->slug)) active @endif"> {!! isset($class->icon) ?? $class->icon !!}
                             {{$class->title}}
                         </a>
                     </li>
@@ -74,9 +81,13 @@
             @endphp
 
             @if($class_exists)
-            @php $class = new $entity; @endphp
+            @php 
+            
+            $class = new $entity; 
+            
+            @endphp
             <li>
-                <a href="{{route('page',['page_slug'=> $class->slug ])}}"> {!! isset($class->icon) ?? $class->icon !!}
+                <a href="{{route('page',['page_slug'=> $class->slug ])}}" class="@if(str_contains($current_url, $class->slug)) active @endif"> {!! isset($class->icon) ?? $class->icon !!}
                     {{$class->title}}
                 </a>
             </li>

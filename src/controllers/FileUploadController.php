@@ -39,6 +39,9 @@ class FileUploadController extends Controller
         $file = request()->file('file');
         $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
         
+        if(!$temporary){
+            return $this->responseError(1 , "file not uploaded" , "file not uploaded");
+        }
 
         return $this->responseData(1 ,[
             'temporary_id'=> $temporary->id,
@@ -63,6 +66,10 @@ class FileUploadController extends Controller
 
             $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
             
+            if(!$temporary){
+                return response()->json([], 404); 
+            }
+
             $file_element = view('CMSViews::form.file-preview', [
                 'value'=> $temporary->name,
                 'name' => $input_name , 
@@ -81,6 +88,11 @@ class FileUploadController extends Controller
         $disk = env('STORAGE_DISK' , 'public');
 
         $file_extension = $file->getClientOriginalExtension();
+
+        if(empty($file_extension)){
+            return null;
+        }
+
         $mime_type = $file->getClientMimeType(); 
         $file_size = $file->getSize();
         $nameWithoutExtension = uniqid().'-'.now()->timestamp;
@@ -182,15 +194,23 @@ class FileUploadController extends Controller
         // }
 
 
-        // if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
-        //     $this->processUpload($temporary , $resize);
-        // }
+        $processed = 0;
+        if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
+            
+            try {
+                $this->processImageUpload($temporary , $resize);
+                $processed = 1;
+            } catch (\Throwable $th) {
+                $processed = 0;
+            }
+        
+
+        }
 
         
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
         if(!$file){
             $file = new File;
-            $file->processed = 0;
         }
         
         $file->disk = $temporary->disk;
@@ -204,6 +224,7 @@ class FileUploadController extends Controller
         $file->url = $external == 1 ? $uri : $original_path;
         $file->resize = $resize;
         $file->external = $external;
+        $file->processed = $processed;
         
         $file->save();
 

@@ -20,6 +20,7 @@ class Page extends Element
     public $sort_field;
     public $sort_direction;
     public $foreign_keys;
+    public $sections;
 
 
     public function checkEntity(){
@@ -54,7 +55,7 @@ class Page extends Element
         
 
         if(!$this->checkEntity()){
-          
+            
         if (!Schema::hasTable($this->entity)) {
             Schema::create($this->entity, function (Blueprint $table) {
                 $table->id();
@@ -151,10 +152,17 @@ class Page extends Element
 
         $columns = $this->getColumns();
 
+
+        // dd(request()->all());
         $table_data->where(function ($query) use ($columns) {
             foreach ($columns as $column) {
+
+                if(empty(request()->input('filter_'.$column->name))){
+                    continue;
+                }
+
                 $search = request()->input($column->name);
-                if ($search) {
+                
                     $words = explode(" ", $search);
                     foreach ($words as $word) {
                         $trim_word = trim($word);
@@ -166,7 +174,7 @@ class Page extends Element
                                 ->orWhere($searchField, $trim_word);
                         });
                     }
-                }
+                
             }
 
             if (request()->input('id')) {

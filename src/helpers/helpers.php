@@ -12,6 +12,7 @@ if(!function_exists('process_grid_field')){
                 return "<div class='ui  label grey'>".$row->{$column->name}."</div>";
                 
                 case 'select':
+                    // dd($column);
                 try { return $related_tables[$column->name]["indexed_data"][$row->{$column->name}]->label; } catch (\Throwable $th) { return "hovig"; }
                 
                 case 'multiple select':  
@@ -29,6 +30,7 @@ if(!function_exists('process_grid_field')){
       
     }
 }
+
 
 if(!function_exists('process_form_field')){
     function process_form_field($element , $data , $related_tables = null){
@@ -52,6 +54,7 @@ if(!function_exists('process_form_field')){
                 
                 case "select":
                 case "multiple select":
+
                 return view('CMSViews::form.select', [ "element" => $element, "data" => $data , 'related_tables' =>
                 $related_tables]);
                 break;
@@ -136,6 +139,167 @@ if(!function_exists('process_form_field')){
             }
       
     }
+}
+
+
+if(!function_exists('render_form_field')){
+    function render_form_field($element , $data , $related_tables = null){
+       
+        switch ($element->ui->type) {
+            
+                case 'open div': return  '';
+                case 'close div': return "";
+
+                case 'file':
+               
+
+                    $file =  \hcolab\cms\models\File::where('name' , $data->{$element->name})->where('deleted',0)->first();
+
+                    if(!$file){ return ""; }
+
+                    if($file->mime_category == "image"){
+                        $value = "<a href='".get_media_url($file->name)."' data-fancybox data-type='image'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                    }elseif($file->mime_category == "video"){
+                        $value = "<a href='".env('DATA_URL')."/files/".$file->name."' data-fancybox data-type='video'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                        
+                    }
+
+
+
+
+                   
+                    break;
+                    case 'multiple file': 
+                        
+                        $files =  \hcolab\cms\models\File::whereIn('name' , json_decode_to_array($data->{$element->name}))->where('deleted',0)->get();
+
+                        if(count($files) < 0){ return ""; }
+    
+                        $value = "";
+                        foreach($files as $file){
+                            if($file->mime_category == "image"){
+                                $value .= "<a href='".get_media_url($file->name)."' data-fancybox data-type='image' class='mr-2' > <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                            }elseif($file->mime_category == "video"){
+                                $value .= "<a href='".env('DATA_URL')."/files/".$file->name."' data-fancybox data-type='video' class='mr-2'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                            }
+                        }
+                         break;
+
+                case 'text': return '';
+               
+                case "tags":
+
+                    $name = $element->name;
+
+                    if (!property_exists($data, $name)) {
+                        $data->$name = [];
+                    }
+
+                    if(!$data->$name){
+                        $data->$name = [];
+                    }
+
+                    $result = "<div>";
+                    foreach(json_decode_to_array($data->$name) as $option){
+                        $result .=  '<div class="ui grey horizontal label">'.$option.'</div>';
+                    }
+                    $result.="</div>";
+
+                    $value = $result;
+
+
+
+                break;
+
+                case "multiple select":
+                    $name = $element->name;
+
+                    if (!property_exists($data, $name)) {
+                        $data->$name = '';
+                    }
+
+                  
+                    if (isset($related_tables) && !is_null($related_tables) && !empty($related_tables) && isset($related_tables[$name]['data'])) {
+                        try {
+                            $options = $related_tables[$name]['data'];
+                        } catch (\Throwable $th) {
+                            $options = collect([]);
+                        }
+
+                    }else {
+                        try {
+                            $options = collect(json_decode(json_encode($element->ui->options)));
+                        } catch (\Throwable $th) {
+                            $options = collect([]);
+                        }
+                    }
+
+                    
+
+                    $result = "<div>";
+                    foreach($options as $option){
+                        $result .=  '<div class="ui grey horizontal label">'.$option->label.'</div>';
+                    }
+                    $result.="</div>";
+
+                    $value = $result;
+
+                case "select":
+                    $name = $element->name;
+                    if (!property_exists($data, $name)) {
+                        $data->$name = '';
+                    }
+
+                    if (isset($related_tables) && !is_null($related_tables) && !empty($related_tables) && isset($related_tables[$name]['data'])) {
+                        try {
+                            $options = $related_tables[$name]['data'];
+                        } catch (\Throwable $th) {
+                            $options = collect([]);
+                        }
+
+                    }else {
+                        try {
+                            $options = collect(json_decode(json_encode($element->ui->options)));
+                        } catch (\Throwable $th) {
+                            $options = collect([]);
+                        }
+                    }
+
+                    $result = $options->where('id', $data->{$element->name} )->first();
+
+                    if($result){
+                        $value = $result->label;
+                    }
+              
+                    break;
+            default:
+            
+               
+                $value = $data->{$element->name};
+
+            break;
+
+
+        }
+        $label = $element->ui->label;
+        // return "
+        // <div class='col-lg-12 b-b d-flex'>   
+        //     <div> ".$label." </div>
+        //     <div> ".$value."</div>
+        // </div>
+        // ";
+
+        return "
+        <tr>
+            <td style='width:250px'><b> ".$label."</b> </td>
+            <td> ".($value ?? '')."</td>
+        </tr>
+        ";
+
+      
+
+        
+}
 }
 
 if(!function_exists('set_db')){
@@ -308,6 +472,7 @@ function get_name_initials($array){
 if(!function_exists('process_menu_item')){
     function process_menu_item($item){
     
+  
 
         if(isset($item['admin']) && $item['admin']){
             return null;
@@ -318,7 +483,7 @@ if(!function_exists('process_menu_item')){
 
                 $entity = $item['link_to'];
                 $class_exists = class_exists($entity);
-
+              
                 if(!$class_exists){
                     return null;
                 }
@@ -331,10 +496,10 @@ if(!function_exists('process_menu_item')){
                 ];
                
             case 'static' :
-
+                
                 return [
                     'label' => $item['label'], 
-                    'name' => $item['name']
+                    'name' => $item['label']
                 ];
 
             default:
