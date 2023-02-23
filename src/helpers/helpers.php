@@ -521,9 +521,13 @@ if(!function_exists('process_menu_item')){
 
                 $result = [];
                 foreach($array as $array_value){
+                    $new_dictionary = [];
                     foreach($dictionary as $key => $value){
-                        $result [] = str_replace(["*".$key."*" , "<".$key.">"] , $value , $array_value);
+                        $new_dictionary [] = "*".$key."*";
+                        $new_dictionary [] = "<".$key.">";
                     }
+
+                    $result [] = str_replace($new_dictionary , $value , $array_value);
                 }
 
                 return $result;
