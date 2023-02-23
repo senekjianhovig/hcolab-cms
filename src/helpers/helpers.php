@@ -512,4 +512,46 @@ if(!function_exists('process_menu_item')){
         }
 
     }
+
+    if(!function_exists('replace_template_dictionary')){
+        function replace_template_dictionary($array , $dictionary){
+                if(!is_array($dictionary) || (is_array($dictionary) && count($dictionary) == 0)){
+                    return $array;
+                }
+
+                $result = [];
+                foreach($array as $array_value){
+                    foreach($dictionary as $key => $value){
+                        $result [] = str_replace(["*".$key."*" , "<".$key.">"] , $value , $array_value);
+                    }
+                }
+
+                return $result;
+        }
+    }
+
+    
+
+    if(!function_exists('send_cms_notification')){
+        function send_cms_notification($action , $dictionary = [] , $page_slug = null , $row_id = null){
+            
+            $template = \hcolab\cms\models\CmsNotificationTemplate::where('action' , $action)->where('deleted',0)->first();
+            if(!$template){ return false; }
+
+
+            $notification = new \hcolab\cms\models\CmsNotification;
+
+            $replace_template_dictionary = replace_template_dictionary([$template->title , $template->description] , $dictionary);
+
+            $notification->title = $replace_template_dictionary[0]; 
+            $notification->description =$replace_template_dictionary[1]; 
+            $notification->read = 0;
+            $notification->page_slug = $page_slug;
+            $notification->row_id = $row_id;
+            $notification->save();
+
+            return true;
+            
+        }
+    }
 }

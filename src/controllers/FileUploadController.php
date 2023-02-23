@@ -89,9 +89,9 @@ class FileUploadController extends Controller
 
         $file_extension = $file->getClientOriginalExtension();
 
-        if(empty($file_extension)){
-            return null;
-        }
+        // if(empty($file_extension)){
+        //     return null;
+        // }
 
         $mime_type = $file->getClientMimeType(); 
         $file_size = $file->getSize();

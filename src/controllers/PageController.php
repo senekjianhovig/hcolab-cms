@@ -23,7 +23,8 @@ class PageController extends Controller
          'cms-user-roles' => 'CmsUserRolePage',
          'cms-user-role-permissions' => 'CmsUserRolePermissionPage',
          'cms-settings' => 'CmsSettingPage',
-         'cms-notifications' => 'CmsNotificationPage'
+         'cms-notifications' => 'CmsNotificationPage',
+         'cms-notification-templates' => 'CmsNotificationTemplatePage'
        ];
    }
 
