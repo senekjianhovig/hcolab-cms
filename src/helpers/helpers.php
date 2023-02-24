@@ -579,6 +579,8 @@ if(!function_exists('process_menu_item')){
                 Mail::to($email)->queue(new EmailTemplateMail($action,$dictionary));
                 return true;
             } catch (\Throwable $th) {
+
+                dd($th);
                 return false;
             }
             

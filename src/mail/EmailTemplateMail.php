@@ -1,5 +1,4 @@
 <?php
-
 namespace hcolab\cms\mail;
 
 use Illuminate\Bus\Queueable;
