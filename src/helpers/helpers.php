@@ -1,5 +1,6 @@
 <?php
-//composer dump-autoload
+ use hcolab\cms\mail\EmailTemplateMail;
+ use Illuminate\Support\Facades\Mail;
 
 if(!function_exists('process_grid_field')){
     function process_grid_field($row, $column , $related_tables){
@@ -570,10 +571,12 @@ if(!function_exists('process_menu_item')){
     }
 
 
+   
+    
     if(!function_exists('send_email_notification')){
         function send_email_notification($email , $action , $dictionary = []){
             try {
-                \Illuminate\Support\Facades\Mail::to($email)->queue(new \hcolab\cms\mail\EmailTemplateMail($action,$dictionary));
+                Mail::to($email)->queue(new EmailTemplateMail($action,$dictionary));
                 return true;
             } catch (\Throwable $th) {
                 return false;
