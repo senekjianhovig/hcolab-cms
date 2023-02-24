@@ -272,6 +272,16 @@ if(!function_exists('render_form_field')){
                     }
               
                     break;
+
+                   case 'boolean checkbox': 
+                    
+                    if($data->{$element->name} == 1){
+                        $value = "Yes";
+                    }else{
+                        $value = "No";
+                    }
+
+                    break;
             default:
             
                
