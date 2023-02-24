@@ -238,7 +238,7 @@ if(!function_exists('render_form_field')){
 
                     $result = "<div>";
                     foreach($options as $option){
-                        $result .=  '<div class="ui grey horizontal label">'.$option->label.'</div>';
+                        $result .=  '<div class="ui grey horizontal label mb-2">'.$option->label.'</div>';
                     }
                     $result.="</div>";
 
