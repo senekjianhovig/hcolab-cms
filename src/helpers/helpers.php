@@ -13,7 +13,7 @@ if(!function_exists('process_grid_field')){
                 
                 case 'select':
                     // dd($column);
-                try { return $related_tables[$column->name]["indexed_data"][$row->{$column->name}]->label; } catch (\Throwable $th) { return "hovig"; }
+                try { return $related_tables[$column->name]["indexed_data"][$row->{$column->name}]->label; } catch (\Throwable $th) { return ""; }
                 
                 case 'multiple select':  
 
@@ -178,9 +178,9 @@ if(!function_exists('render_form_field')){
                         $value = "";
                         foreach($files as $file){
                             if($file->mime_category == "image"){
-                                $value .= "<a href='".get_media_url($file->name)."' data-fancybox data-type='image' class='mr-2' > <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                                $value .= "<a href='".get_media_url($file->name)."' data-fancybox data-type='image' class='mr-2 mb-2' > <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
                             }elseif($file->mime_category == "video"){
-                                $value .= "<a href='".env('DATA_URL')."/files/".$file->name."' data-fancybox data-type='video' class='mr-2'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                                $value .= "<a href='".env('DATA_URL')."/files/".$file->name."' data-fancybox data-type='video' class='mr-2 mb-2'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
                             }
                         }
                          break;
@@ -201,7 +201,7 @@ if(!function_exists('render_form_field')){
 
                     $result = "<div>";
                     foreach(json_decode_to_array($data->$name) as $option){
-                        $result .=  '<div class="ui grey horizontal label">'.$option.'</div>';
+                        $result .=  '<div class="ui grey horizontal label mb-2">'.$option.'</div>';
                     }
                     $result.="</div>";
 
