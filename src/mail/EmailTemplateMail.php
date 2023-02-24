@@ -1,4 +1,5 @@
 <?php
+
 namespace hcolab\cms\mail;
 
 use Illuminate\Bus\Queueable;
@@ -7,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use hcolab\cms\models\EmailTemplate;
 
 class EmailTemplateMail extends Mailable
 {
