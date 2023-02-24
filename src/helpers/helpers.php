@@ -568,4 +568,19 @@ if(!function_exists('process_menu_item')){
             
         }
     }
+
+
+    if(!function_exists('send_email_notification')){
+        function send_email_notification($email , $action , $dictionary = []){
+            try {
+                \Illuminate\Support\Facades\Mail::to($email)->queue(new \hcolab\cms\mail\EmailTemplateMail($action,$dictionary));
+                return true;
+            } catch (\Throwable $th) {
+                return false;
+            }
+            
+        }
+    }
+
+
 }
