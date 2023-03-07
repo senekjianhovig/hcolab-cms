@@ -145,8 +145,8 @@ class Page extends Element
         if (request()->input('sortColumn') && request()->input('sortOrder')) {
             $table_data->orderBy(request()->input('sortColumn'), request()->input('sortOrder'));
         } elseif ($this->sortable) {
-            $table_data->orderBy('orders' , $this->sort_direction);
-        }else{
+           
+            // $table_data->orderBy('orders' , $this->sort_direction);
             $table_data->orderBy($this->sort_field, $this->sort_direction);
         }
 
@@ -168,9 +168,9 @@ class Page extends Element
                         $trim_word = trim($word);
                         $searchField = $column->name;
                         $query->where(function ($query1) use ($trim_word, $searchField) {
-                            $query1->orWhere($searchField, 'LIKE', $trim_word . ' %')
-                                ->orWhere($searchField, 'LIKE', '% ' . $trim_word . ' %')
-                                ->orWhere($searchField, 'LIKE', '% ' . $trim_word)
+                            $query1->orWhere($searchField, 'LIKE', $trim_word . '%')
+                                ->orWhere($searchField, 'LIKE', '%' . $trim_word . '%')
+                                ->orWhere($searchField, 'LIKE', '%' . $trim_word)
                                 ->orWhere($searchField, $trim_word);
                         });
                     }

@@ -1,6 +1,6 @@
 @php
 
-$notifications = App\Models\CmsNotification::where('deleted',0)->orderBy('id', 'desc')->get()->take(10);
+$notifications = App\Models\CmsNotification::where('deleted',0)->orderBy('id', 'desc')->get()->take(5);
 
 @endphp
 
@@ -18,6 +18,7 @@ $notifications = App\Models\CmsNotification::where('deleted',0)->orderBy('id', '
   </div>
 </a>
 @endforeach
+<a style="width:100%;height: 45px;text-align: center;display: flex;align-items: center;justify-content: center;background-color: #f9f9f9;border-top: 1px solid #eee;color: #000" href="{{route('notification-center')}}"> View All</a>
 
 @else
 <div style="text-align:center;font-weight: bold; height:100px; display:flex;    align-items: center;

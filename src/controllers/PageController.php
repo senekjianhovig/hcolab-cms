@@ -48,6 +48,7 @@ class PageController extends Controller
         }
     }
 
+  
 
     public function render($page_slug)
     {
