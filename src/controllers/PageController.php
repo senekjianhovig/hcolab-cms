@@ -163,7 +163,9 @@ class PageController extends Controller
      
         
         foreach($page->elements as $element){
-        
+            
+            if(!request()->has($element->name)){ continue; }
+
             $value = request()->input($element->name); 
             
 
@@ -386,9 +388,9 @@ class PageController extends Controller
       
         return redirect(env('APP_URL').'/cms/page/'.$page->slug);
     
-    } catch (\Throwable $th) {
-        dd($th);
-    }
+        } catch (\Throwable $th) {
+            dd($th);
+        }
     }
 
     public function create($page_slug)
