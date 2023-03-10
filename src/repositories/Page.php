@@ -213,4 +213,22 @@ class Page extends Element
 
         return $results;
     }
+
+    public function compareEdit($old_record , $new_record){
+      $old = json_decode(json_encode($old_record) , 1);
+      $new = json_decode(json_encode($new_record) , 1);
+
+      $updated_fields = [];
+      foreach($old as $key => $value){
+          if($value != $new[$key]){
+              $updated_fields [] = $key;
+          } 
+      }
+
+      return $updated_fields;
+    }
+
+    public function callback($id){
+        return false;
+    }
 }

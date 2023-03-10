@@ -304,11 +304,23 @@ class PageController extends Controller
 
         if(request()->has('id') && !empty(request()->input('id'))){
             $id = request()->input('id');
+            $old_record = DB::table($page->entity)->where('id',request()->input('id'))->first();
             DB::table($page->entity)->where('id',request()->input('id'))->update($inputs);
+            $new_record = DB::table($page->entity)->where('id',request()->input('id'))->first();
+            $new_entry = false;
         }else{
             $id = DB::table($page->entity)->insertGetId($inputs);
+            $new_entry = true;
         }
        
+
+        try {
+            $updated_fields = !$new_entry ? $page->compareEdit($old_record , $new_record) : null;
+            $page->callback($id, $updated_fields);
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+        
 
         
 
@@ -381,6 +393,8 @@ class PageController extends Controller
        
 
         });
+
+        
 
         if(request()->has('redirect') && !is_null(request()->input('redirect'))){
             return redirect(request()->input('redirect'));
