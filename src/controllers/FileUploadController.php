@@ -32,15 +32,21 @@ class FileUploadController extends Controller
             return $this->responseError(1 , "Wrong Uploader Key" , "Wrong Uploader Key");
         }
 
+        if(request()->debug == 1){
+            return $this->responseError(1 , "File could not be uploaded" , "The size you are trying to upload is too big or File extension is not supported!");
+        }
+
         if(!request()->has('file')){
             return $this->responseError(1 , "file is required" , "file is required");
         }
+
+    
 
         $file = request()->file('file');
         $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
         
         if(!$temporary){
-            return $this->responseError(1 , "file not uploaded" , "file not uploaded");
+            return $this->responseError(1 , "File could not be uploaded" , "The size you are trying to upload is too big or File extension is not supported!");
         }
 
         return $this->responseData(1 ,[
@@ -98,7 +104,23 @@ class FileUploadController extends Controller
         $nameWithoutExtension = uniqid().'-'.now()->timestamp;
         $name = $nameWithoutExtension.'.'.$file_extension;
 
+
+        $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','avi','divx',
+        'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
+        'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
+        'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
+        'xltm','xlam','pptx','pptm','ppsx','ppsm','potx','potm', 'ppam','sldx','sldm','onetoc','onetoc2','onetmp','onepkg','odt','odp',
+        'ods','odg','odc','odb','odf','wp','wpd'
+        ];
+
+        if(!in_array(strtolower($file_extension) , $allowed_extensions)){ return null; }
+
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
+
+        $bytes_size_per_megabyte = 1048576;
+        $max_size = ($mime_category == "video" ? 100 : 5) * $bytes_size_per_megabyte;
+        if($file_size > $max_size){ return null; }
+
         $url = Storage::disk($disk)->putFileAs($path, $file, $name , 'public');
 
         $temporary = new TemporaryFile;
