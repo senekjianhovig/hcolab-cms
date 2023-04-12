@@ -1,7 +1,7 @@
 <?php
 
 
-$page = new \App\Pages\ThemeBuilderPage;
+$page = new \hcolab\cms\pages\CmsThemeBuilderPage;
 $page->setElements();
 $elements = $page->getElements();
 $related_tables = $page->getRelatedTables();
@@ -9,6 +9,9 @@ $related_tables = $page->getRelatedTables();
 $page->getRow($id);
 
 $data = $page->getRow($id);
+
+
+$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->get();
 
 
 $prev_url = "";
@@ -76,7 +79,6 @@ $path = app_path() . '/Sections';
         </div>
     </div>
 
-  
 
     <div class="row">
           
@@ -105,7 +107,11 @@ $path = app_path() . '/Sections';
                                         $entity = str_replace('.php', '', $file->getFileName());
                                         $namespace = 'App\\Sections\\' . $entity;
                                         $section = new $namespace;
-                                       
+                                     
+                                        if(!in_array($data->location , $section->locations) && !empty($section->locations)){
+                                            continue;
+                                        }
+
                                     @endphp
                                     <option value="{{ $section->section }}"> {{ $section->title }} </option>
                                 @endforeach
@@ -123,30 +129,17 @@ $path = app_path() . '/Sections';
                 
             </div>
         </div>
-        @php
-            try {
-                $payload = json_decode($data->payload);
-            } catch (\Throwable $th) {
-                $payload = [];
-            }
-            if(is_null($payload)){
-                $payload = [];
-            }
     
-        @endphp
         <div class="col-lg-6">
             
             <div  class="ui segment raised ">
                 <h3>Selected Sections</h3>
                 <div id="sections" style="min-height:500px">
-                    @foreach($payload as $key => $val)
-                        @php
-                            $val_arr = query_string_to_array($val);
-                        @endphp
-                        <div class="ui segment section-element" data-key="{{$key}}" data-section="{{$val_arr['section_name']}}" onclick="editElement($(this))">  
+                    @foreach($sections as $section)
+                        <div class="ui segment section-element" data-key="{{$section->id}}" data-section="{{$section->name}}" onclick="editElement($(this))">  
                             <div class="info">
-                            {{$val_arr['section_title'] }}
-                        <input type="hidden" name="{{$key}}" value="{{$val}}" id="{{$key}}" /> 
+                            {{$section->title }}
+                            
                             </div>
                             <button class="remove-element" onclick="removeElement($(this))"> <i class="trash alternate outline icon"></i> </button>
                         </div>
@@ -171,14 +164,6 @@ $path = app_path() . '/Sections';
             <input type="hidden" name="id" value="{{$id}}" />
             @endisset
 
-            <div class='col-lg-12'>
-            <div data-field="payload">
-                @foreach($payload as $key => $val)
-                    <input type="hidden" name="payload[{{$key}}]" value="{{$val}}" /> 
-                @endforeach
-            </div>
-        </div>
-
             @if(!$opened) <div class="row"> @endif
 
             
@@ -188,19 +173,13 @@ $path = app_path() . '/Sections';
                 @if(!$opened)  </div> @endif
       
            
-               
-
         
-          
             <div class="ui divider"></div>
             <div class="d-flex justify-content-between align-items-center">
                 <a href="{{route('page', ['page_slug'=>$page->slug])}}" class="ui button red"> Cancel </a>
                 <button class="ui button" type="submit">Submit</button>
             </div>
 
-
-
-          
         </form>
     </div>
 </div>
@@ -272,13 +251,14 @@ function editElement(elem) {
     // let section = $('#section').val();
 
     $.ajax({
-        url: `/cms/theme-builder/section/${section}?${query}&edit_mode=true&key=${key}`,
+        url: `/cms/theme-builder/section/${section}?edit_mode=true&key=${key}`,
         method : "GET" ,  
         success: function(data){
             $("#section-form").html(data);
             $("#form-container").removeClass('loading');
             DisplayFormSection();
             semanticInit();
+            fileUploadInit();
         },
         error : function(){
             $("#form-container").removeClass('loading');
@@ -299,42 +279,89 @@ function sortableInit(){
 
 function AddSection(elem) {
     event.preventDefault();
-   let query = elem.serialize();
+    let query = elem.serializeArray();
+
+    // var data = query.split("&");
+    // var obj={};
+    // for(var key in data){ obj[data[key].split("=")[0]] = data[key].split("=")[1]; }
+
+
+    let title = elem.find('#section-title').val();
+    let section = elem.find('#section-name').val();
+
+    $.ajax({
+        url: `/cms/theme-builder/section/temporary/create`,
+        method : "POST" , 
+        data : {
+            payload : query,
+            title : title,
+            name : section,
+            theme_builder_id : '{{$id}}',
+            _token : $('meta[name=csrf-token]').attr("content")
+        }, 
+        success: function(data){
+            
+            // let key = Math.floor(Date.now() / 1000);
+           
+
+            let element = `<div class="ui segment section-element" data-key="${data}" data-section="${section}" onclick="editElement($(this))"> 
+                <div class="info"> ${title}
+                 </div>
+                    <button class="remove-element" onclick="removeElement($(this))"> <i class="trash alternate outline icon"></i> </button>
+                </div>`;
+
+            $('#sections').append(element);
+
    
-   let key = Math.floor(Date.now() / 1000);
-   let title = elem.find('#section-title').val();
-   let section = elem.find('#section-name').val();
+            processElements();
+            DisplaySelectSection();
+            elem.remove();
+            $.toast({ class: 'success', message: `Successfully created!` });
+            },
+            error : function(){
+                $.toast({ class: 'error', message: `Unable to create section` });
+            }
+    });
+    
 
 
-
-   let element = `<div class="ui segment section-element" data-key="${key}" data-section="${section}" onclick="editElement($(this))"> 
-    <div class="info"> ${title}
-    <input type="hidden" name="${key}" value="${query}" id="${key}" /> 
-    </div>
-    <button class="remove-element" onclick="removeElement($(this))"> <i class="trash alternate outline icon"></i> </button>
-                        
-    </div>`;
-
-    $('#sections').append(element);
-
-   
-    processElements();
-    DisplaySelectSection();
-    elem.remove();
+    
 }
 
 function EditSection(elem , key){
 
     event.preventDefault();
-    let query = elem.serialize();
+    let query = elem.serializeArray();
 
-    let element = $("[data-key="+key+"]");
-    element.find('input').val(query);
+    // var data = query.split("&");
+    // var obj={};
+    // for(var key in data){ obj[data[key].split("=")[0]] = data[key].split("=")[1]; }
 
-    processElements();
-    elem.remove();
+    $.ajax({
+        url: `/cms/theme-builder/section/temporary/edit`,
+        method : "POST" ,  
+        data : {
+            id : key,
+           
+            payload : query,
+            _token : $('meta[name=csrf-token]').attr("content")
+        },
+        success: function(data){
+            processElements();
+            elem.remove();
+            DisplaySelectSection();
 
-    DisplaySelectSection();
+            $.toast({ class: 'success', message: `Successfully updated!` });
+        },
+        error : function(){
+                $.toast({ class: 'error', message: `Unable to create section` });
+        }
+    });
+
+    // let element = $("[data-key="+key+"]");
+    // element.find('input').val(JSON.stringify(query));
+
+  
 }
 
 function processElements(){
@@ -372,9 +399,13 @@ function CreateSection(elem) {
             $("#form-container").removeClass('loading');
             DisplayFormSection();
             semanticInit();
+            fileUploadInit();
         },
         error : function(){
             // elem.removeClass('loading');
+
+
+
             $("#form-container").removeClass('loading');
         }
     });

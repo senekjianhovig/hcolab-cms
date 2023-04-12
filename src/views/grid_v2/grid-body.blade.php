@@ -52,7 +52,7 @@ $has_sections = isset($page->sections) && count($page->sections) > 0;
                         @if(in_array('update' , $actions) && $enable_operations)
 
                         <a  
-                           href="@if (isset($page->grid_operations['edit']['link'])) {{ str_replace( '{id}' , $row->id , $page->grid_operations['edit']['link']) }} @else {{ route('page.edit', ['page_slug' => $page->slug, 'id' => $row->id ]) }}"  @endif
+                           href="@if(isset($page->grid_operations['edit']['link'])) {{ str_replace( '{id}' , $row->id , $page->grid_operations['edit']['link']) }} @else {{ route('page.edit', ['page_slug' => $page->slug, 'id' => $row->id ]) }}  @endif"
                             class="item"
                             >
                             @if (isset($page->grid_operations['edit']['label']))
@@ -68,8 +68,13 @@ $has_sections = isset($page->sections) && count($page->sections) > 0;
                         <a  
                         
                        
-                        href="@if (isset($page->grid_operations['show']['link'])) {{ str_replace( '{id}' , $row->id , $page->grid_operations['show']['link']) }} @else {{ route('page.show', ['page_slug' => $page->slug, 'id' => $row->id]) }}"  @endif
+                        href="@if (isset($page->grid_operations['show']['link'])) 
+                        {{ str_replace( '{id}' , $row->id , $page->grid_operations['show']['link']) }} 
                         
+                        @else {{ route('page.show', ['page_slug' => $page->slug, 'id' => $row->id]) }}  
+                        
+                        @endif
+                        "
                         class="item"
                             >
                             @if (isset($page->grid_operations['show']['label']))

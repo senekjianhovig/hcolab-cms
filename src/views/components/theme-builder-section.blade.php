@@ -4,11 +4,11 @@
      $Section->setElements();
      $elements = $Section->elements;
 
-     $data = new \StdClass;
+   //   $data = new \StdClass;
 
-     foreach (request()->all() as $key => $value) {
-        $data->{$key} = is_array($value) ? json_encode($value) : $value;
-     }
+   //   foreach (request()->all() as $key => $value) {
+   //      $data->{$key} = is_array($value) ? json_encode($value) : $value;
+   //   }
      
      if(isset($Section->foreign_keys)){
         $related_tables = \hcolab\cms\repositories\ForeignKey::getRelatedTables($Section->foreign_keys);
@@ -40,10 +40,6 @@ onsubmit="AddSection($(this))"
     {!! process_form_field($element , $data , $related_tables) !!}
     @endforeach
     <div class="col-lg-12 d-flex align-items-center  @if($edit_mode) justify-content-end @else justify-content-between @endif">
-
-      
-
-
         @if($edit_mode)
         <button class="ui button green"> Edit </button>
         @else

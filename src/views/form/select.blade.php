@@ -20,7 +20,11 @@ if (isset($related_tables) && !is_null($related_tables) && !empty($related_table
 }
 
 try {
-    $selected = $element->ui->type == 'select' || $element->ui->type == 'values select' ? [$data->$name] : json_decode($data->$name, 1);
+    if($element->ui->type == 'select' || $element->ui->type == 'values select'){
+      $selected = [$data->$name];
+    }else{
+        $selected = is_array($data->$name) ? $data->$name : json_decode($data->$name, 1);
+    }
 } catch (\Throwable $th) {
     $selected = [];
 }

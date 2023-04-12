@@ -55,7 +55,7 @@ if(!function_exists('process_form_field')){
                 
                 case "select":
                 case "multiple select":
-
+                   
                 return view('CMSViews::form.select', [ "element" => $element, "data" => $data , 'related_tables' =>
                 $related_tables]);
                 break;

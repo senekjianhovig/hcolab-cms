@@ -110,7 +110,7 @@ class FileUploadController extends Controller
         'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
         'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
         'xltm','xlam','pptx','pptm','ppsx','ppsm','potx','potm', 'ppam','sldx','sldm','onetoc','onetoc2','onetmp','onepkg','odt','odp',
-        'ods','odg','odc','odb','odf','wp','wpd'
+        'ods','odg','odc','odb','odf','wp','wpd' , 'svg'
         ];
 
         if(!in_array(strtolower($file_extension) , $allowed_extensions)){ return null; }
@@ -142,15 +142,18 @@ class FileUploadController extends Controller
         
         Storage::disk($disk)->makeDirectory('low_resolution');
        
-       
+    
         if($mime_category == "image"){
             
-           $img = Image::make($source)
-            ->resize(300, null, function ($constraint) { $constraint->aspectRatio(); $constraint->upsize(); })
-            ->encode("jpg", 80);
-            
-            $this->saveFromIntervention($img , $jpgResult , $disk);
+            if(!in_array($temporary->extension , ['svg'])){
+                $img = Image::make($source)
+                    ->resize(300, null, function ($constraint) { $constraint->aspectRatio(); $constraint->upsize(); })
+                    ->encode("jpg", 80);
+                    $this->saveFromIntervention($img , $jpgResult , $disk);
+            }else{
 
+            }
+            
         }elseif($mime_category == "video"){
             $result_video = "low_resolution/".$nameWithoutExtension.".jpg";
             $res = FFMpeg::open($file)
@@ -183,39 +186,7 @@ class FileUploadController extends Controller
         }
 
         $external = 0;
-      
-        // if($temporary->mime_category == 'video'){
-            
-        //     $file_source = Storage::disk($temporary->disk)->get("/".$input_file);
-
-        //     $lowBitrateFormat = (new X264)->setKiloBitrate(500);
-        //     $midBitrateFormat  = (new X264)->setKiloBitrate(1500);
-        //     $highBitrateFormat = (new X264)->setKiloBitrate(3000);
-
-           
-        //     FFMpeg::fromDisk($temporary->disk)
-        //         ->open("/".$input_file)
-        //         ->addFilter(function ($filters) {
-        //             $filters->resize(new Dimension(640, 480));
-        //         })
-        //         ->export()
-        //         ->toDisk($temporary->disk)
-        //         ->inFormat($lowBitrateFormat)
-        //         ->save("files/downloadable/".get_name_from_url($temporary->name) .'.mp4');
-
-
-        //         FFMpeg::fromDisk($temporary->disk)
-        //         ->open("/".$input_file)
-        //         ->exportForHLS()
-        //         ->toDisk($temporary->disk)
-        //         ->addFormat($lowBitrateFormat)
-        //         ->addFormat($midBitrateFormat)
-        //         ->addFormat($highBitrateFormat)
-        //         ->save("files/streamable/".get_name_from_url($temporary->name) . '.m3u8');
     
-        // }
-
-
         $processed = 0;
         if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
             

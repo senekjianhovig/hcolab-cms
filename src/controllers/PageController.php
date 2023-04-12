@@ -24,7 +24,9 @@ class PageController extends Controller
          'cms-user-role-permissions' => 'CmsUserRolePermissionPage',
          'cms-settings' => 'CmsSettingPage',
          'cms-notifications' => 'CmsNotificationPage',
-         'cms-notification-templates' => 'CmsNotificationTemplatePage'
+         'cms-notification-templates' => 'CmsNotificationTemplatePage',
+         'cms-theme-builders' => 'CmsThemeBuilderPage',
+         'cms-theme-builder-sections' => 'CmsThemeBuilderSectionPage'
        ];
    }
 
@@ -53,7 +55,6 @@ class PageController extends Controller
     public function render($page_slug)
     {
 
-        
         $page = $this->initializeRequest($page_slug);
        
         if (is_null($page)) {
@@ -159,12 +160,10 @@ class PageController extends Controller
       
         $waiting_id_elements = [];
 
-
-     
         
         foreach($page->elements as $element){
             
-            if(!request()->has($element->name)){ continue; }
+            if(!request()->has("tmp_".$element->name) && !request()->has($element->name)){ continue; }
 
             $value = request()->input($element->name); 
             
@@ -266,6 +265,7 @@ class PageController extends Controller
                 {
                     
 
+                  
                     if(request()->has('tmp_'.$element->name)){
                         $new_files = [];
                    
