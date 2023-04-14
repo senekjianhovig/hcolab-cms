@@ -26,7 +26,8 @@ class PageController extends Controller
          'cms-notifications' => 'CmsNotificationPage',
          'cms-notification-templates' => 'CmsNotificationTemplatePage',
          'cms-theme-builders' => 'CmsThemeBuilderPage',
-         'cms-theme-builder-sections' => 'CmsThemeBuilderSectionPage'
+         'cms-theme-builder-sections' => 'CmsThemeBuilderSectionPage',
+         'cms-alerts' => 'CmsAlertPage'
        ];
    }
 
