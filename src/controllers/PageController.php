@@ -436,6 +436,28 @@ class PageController extends Controller
     }
 
 
+    public function validateSlug($page_slug , $key ,$slug){
+        $page = $this->initializeRequest($page_slug);
+        if (is_null($page)) {
+            return abort(404);
+        }
+
+        if(method_exists($page , 'validateSlug')){
+            return $page->validateSlug($slug);
+        }else{
+
+          $record =  DB::table($page->entity)->where($key , $slug)->where('deleted',0)->first();
+
+          if($record){
+              return response()->json(0, 200);
+          }else{
+              return response()->json(1, 200);
+          }
+
+        }
+       
+    }
+
 
     public function edit($page_slug, $id)
     {

@@ -69,6 +69,11 @@ $related_tables = $page->getRelatedTables();
 
 @section('content')
         <div class="container-fluid  my-3 ">
+
+            @if(in_array('read' , $actions))
+            
+    
+
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                   
@@ -125,6 +130,7 @@ $related_tables = $page->getRelatedTables();
                 </div>
             </div>
 
+            
             @if(isset($page->grid_menu) && is_array($page->grid_menu) && count($page->grid_menu) > 0)
 
 @php
@@ -153,6 +159,9 @@ $related_tables = $page->getRelatedTables();
                 @include('CMSViews::grid_v2.pagination', ['page' => $page ])
             </div>
 
+            @else
+            You dont have permission to view this page
+        @endif
         </div>
 
 

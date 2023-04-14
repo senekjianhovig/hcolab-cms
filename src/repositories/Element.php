@@ -87,6 +87,26 @@ class Element extends Column
         return $this;
     }
 
+    public function Slug($label, $container, $required, $field_name,  $slugable_by ,$field_length = 255, $field_default = NULL, $is_multi_language = false)
+    {
+        $ui = new \StdClass;
+        $ui->type = "slug";
+        $ui->label = $label;
+        $ui->container = $container;
+        $ui->required = $required;
+        $ui->slugable_by = $slugable_by;
+    
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "varchar", $field_length, $field_default, $is_multi_language);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
+
+
     public function ForeignKey($label, $container, $required, $field_name)
     {
 

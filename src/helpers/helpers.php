@@ -112,6 +112,10 @@ if(!function_exists('process_form_field')){
                 return view('CMSViews::form.select', [ "element" => $element, "data" => $data ]);
                 break;
 
+                case 'slug':
+                  return view('CMSViews::form.slug', [ "element" => $element, "data" => $data ]);
+                break;
+
                 case 'tags':
                 return view('CMSViews::form.tags', [ "element" => $element, "data" => $data ]);
                 break;
