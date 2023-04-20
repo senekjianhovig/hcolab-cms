@@ -27,7 +27,8 @@ class PageController extends Controller
          'cms-notification-templates' => 'CmsNotificationTemplatePage',
          'cms-theme-builders' => 'CmsThemeBuilderPage',
          'cms-theme-builder-sections' => 'CmsThemeBuilderSectionPage',
-         'cms-alerts' => 'CmsAlertPage'
+         'cms-alerts' => 'CmsAlertPage',
+         'cms-theme-builder-locations'=>'CmsThemeBuilderLocationPage'
        ];
    }
 
@@ -177,6 +178,7 @@ class PageController extends Controller
                 case "hidden_textfield" : 
                 case "textarea":
                 case "url":
+                case "slug": 
                 case "wysiwyg":
                 {
                     if($value == null){ break; }
