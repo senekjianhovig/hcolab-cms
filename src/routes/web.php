@@ -41,6 +41,11 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
     Route::post('/role-permissions/{id}/{token}' , [\hcolab\cms\controllers\UserController::class , 'rolePermissions'])->name('role-permissions');
  
     Route::get('/settings' ,  [ \hcolab\cms\controllers\SettingController::class , 'render'])->name('settings');   
+
+    Route::get('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'render'])->name('seo-configuration');   
+    Route::post('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'renderModify'])->name('seo-configuration');   
+    Route::post('/seo/modify' ,  [ \hcolab\cms\controllers\SEOController::class , 'modify'] )->name('seo-modify');
+
     Route::post('/settings' , [ \hcolab\cms\controllers\SettingController::class , 'save'])->name('settings');
     
     Route::get('/notification-center' ,  function(){ return view('CMSViews::page.notification-center');})->name('notification-center');
@@ -53,6 +58,8 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
         Route::post('/section/temporary/edit',  [\hcolab\cms\controllers\ThemeBuilderController::class , 'update']);
 
         Route::get('section/{section}', [\hcolab\cms\controllers\ThemeBuilderController::class , 'section']);
+        Route::post('section/{section}/delete/{key}', [\hcolab\cms\controllers\ThemeBuilderController::class , 'deleteSection']);
+
     
     
         

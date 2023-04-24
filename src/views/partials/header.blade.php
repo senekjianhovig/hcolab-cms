@@ -1,4 +1,10 @@
-<div class="header-hovig d-flex justify-content-between align-items-center">
+<div class="header-hovig d-flex justify-content-between align-items-center" 
+
+{{-- style="background: #E90009" --}}
+@if(env('CMS_HEADER_COLOR'))
+style="background: {{env('CMS_HEADER_COLOR')}}"
+@endif
+>
     <h4 class="title my-0">{{$title}}</h4>
     <div class="d-flex align-items-center">
 

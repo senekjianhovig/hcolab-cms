@@ -11,7 +11,7 @@ $page->getRow($id);
 $data = $page->getRow($id);
 
 
-$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->get();
+$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->where('deleted' , 0)->get();
 
 
 $prev_url = "";
@@ -231,8 +231,27 @@ function removeElement(elem){
         
         },
         onApprove : function() {
-            elem.parents('.section-element').remove();
-            processElements();
+            
+            let key = elem.parents('.section-element').attr('data-key');
+
+            $.ajax({
+                url: `/cms/theme-builder/section/${section}/delete/${key}`,
+                method : "POST",
+                data : {
+                    _token : $('meta[name=csrf-token]').attr("content")
+                },   
+                success: function(data){
+
+                    elem.parents('.section-element').remove();
+                    processElements();
+                   
+                },
+                error : function(){
+                   
+                }
+             });
+
+          
            
         }
     }).modal('show');

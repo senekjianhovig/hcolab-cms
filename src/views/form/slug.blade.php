@@ -10,7 +10,7 @@ $margin_exists = !isset($element->ui->disable_margin) || isset($element->ui->dis
 <div class="{{$element->ui->container}} @if($margin_exists) mb-4 @endif">
     <div class="field">
       @if($label_exists)  <label>{{$element->ui->label}} @if($element->ui->required) * @endif</label> @endif
-        <input readonly type="text" name="{{$name}}" @if((int) $element->ui->required==1) required @endif
+        <input  type="text" name="{{$name}}" @if((int) $element->ui->required==1) required @endif
         placeholder="Enter {{strtolower($element->ui->label)}}"
         value="@if($data){{ $data->$name }}@endif" >
     </div>

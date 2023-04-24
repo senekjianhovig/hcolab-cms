@@ -107,7 +107,7 @@ class Element extends Column
     }
 
 
-    public function ForeignKey($label, $container, $required, $field_name)
+    public function ForeignKey($label, $container, $required, $field_name , $field_type ="bigint" , $field_length = NULL)
     {
 
         $ui = new \StdClass;
@@ -119,7 +119,7 @@ class Element extends Column
         $std = new \StdClass;
         $std->name = $field_name;
         $std->ui = $ui;
-        $std->db = set_db($field_name, "bigint", NULL, NULL, false);
+        $std->db = set_db($field_name, $field_type, $field_length, NULL, false);
 
         $this->elements = $this->elements->push($std);
 

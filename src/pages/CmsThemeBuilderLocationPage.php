@@ -30,9 +30,11 @@ class CmsThemeBuilderLocationPage extends Page
 
         return $this
         ->DisabledTextField("ID", "col-lg-12", false , "id", false)
-        ->TextField("Label" , "col-lg-4" , true , "label")
-        ->Slug("Slug", "col-lg-4", false, "slug" , 'label')
-        ->BooleanCheckbox("Hide", "col-lg-4", false, "hide")
+        ->TextField("Label" , "col-lg-6" , true , "label")
+        ->Slug("Slug", "col-lg-6", false, "slug" , 'label')
+        ->TextAreaField("Description" , "col-lg-12" , true , "description")
+      
+        // ->BooleanCheckbox("Hide", "col-lg-4", false, "hide")
         ;
     }
 
@@ -41,7 +43,7 @@ class CmsThemeBuilderLocationPage extends Page
        ->Column("id", null , "primary_field")
        ->Column("label")
        ->Column("slug")
-       ->Column('hide')
+    //    ->Column('hide')
        ;  
     }
     

@@ -22,6 +22,9 @@ class CmsThemeBuilderPage extends Page
         $this->sort_direction = "asc"; 
         $this->elements = collect([]);
         $this->columns = collect([]);
+        $this->foreign_keys = [
+            'cms_theme_builder_location'
+        ];
         $this->grid_operations = [
             'edit' => ['label' => 'Edit' ,  'link' => '/cms/theme-builder/{id}']  
         ];
@@ -29,20 +32,10 @@ class CmsThemeBuilderPage extends Page
         
  
     public function setElements(){
-
-
-        $config = config('pages');
-
-        $theme_pages = [];
-        if(isset($config['theme_pages'])){
-            $theme_pages =  $config['theme_pages'];
-        }
-
-
         return $this
         ->DisabledTextField("ID", "col-lg-12", false , "id", false)
         ->TextField("Label" , "col-lg-4" , true , "label")
-        ->Select("Location", "col-lg-4", false, "location" , $theme_pages)
+        ->ForeignKey("Location", "col-lg-4", true, "cms_theme_builder_location" , "varchar" , 255)
         ->BooleanCheckbox('Publish' , "col-lg-4" , false , "publish")
         ->HiddenJsonField("payload");
     }

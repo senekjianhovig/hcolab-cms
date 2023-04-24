@@ -334,8 +334,15 @@ if(!function_exists('set_db')){
 if(!function_exists('set_id_index')){
     function set_id_index($rows){
       $array = [];
+ 
         foreach($rows as $row){
-          $array[$row->id] = $row;
+            if(isset($row->id)){
+                $array[$row->id] = $row;
+            }
+
+            if(isset($row->slug)){
+                $array[$row->slug] = $row;
+            }
         }
         return $array;
     }

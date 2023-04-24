@@ -3,7 +3,11 @@ $current_url = url()->current();
 @endphp
 <div class="nav main">
     <a href="{{env('APP_URL')}}/cms" class="header">
+        @if(env('CMS_LOGO'))
+        <img src="{{env('CMS_LOGO')}}" width="180">
+        @else
         <img src="{{env('APP_URL')}}/hcolab/cms/assets/svg/logo.svg" width="120">
+        @endif
     </a>
     <form method="post" onsubmit="return false" id="nav-search">
         <i class="search icon"></i>

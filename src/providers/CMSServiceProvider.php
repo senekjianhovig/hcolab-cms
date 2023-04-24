@@ -24,6 +24,7 @@ Class CMSServiceProvider extends ServiceProvider{
     public function register(){
         include_once(__DIR__.'/../helpers/helpers.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/console.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
     }
 

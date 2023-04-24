@@ -45,7 +45,7 @@ public static function list(){
 }
 
 public static function singleTableQuery($table , $key , $value){
-    return DB::table($table)->select($key, $value.' as label')->where('deleted',0);
+    return DB::table($table)->select($key.' as id', $value.' as label')->where('deleted',0);
 }
 
 public static function doubleTableQuery($main_table, $related_table,  $main_table_value , $related_table_value , $main_key, $foreign_key, $seperator = '/'){

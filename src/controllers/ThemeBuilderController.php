@@ -87,6 +87,21 @@ class ThemeBuilderController extends Controller
     }
 
 
+    public function deleteSection($section_model, $key){
+
+        $section = CmsThemeBuilderSection::find($key);
+        
+        if(!$section){
+            return response()->json([], 404);
+        }
+
+        $section->deleted = 1;
+        $section->save();
+
+        return response()->json([], 200);
+
+    }
+
     public function section($section_model){
         $data = [];
 
@@ -141,15 +156,16 @@ class ThemeBuilderController extends Controller
 
 
     public function renderSections($location){
-        $theme_builder = CmsThemeBuilder::where('deleted',0)->where('location' , $location)->where('publish', 1)->orderBy('id' , 'DESC')->first();
-     
+
+        $theme_builder = CmsThemeBuilder::where('deleted',0)->where('cms_theme_builder_location' , $location)->where('publish', 1)->orderBy('id' , 'DESC')->first();
+    
         if(!$theme_builder){
             return abort(403 , "No theme found from the CMS");
         }
    
        $components = CmsThemeBuilderSection::where('deleted',0)->orderBy('orders' , 'ASC')->where('theme_builder_id' , $theme_builder->id)->get();
-       
-   
+    
+    
        $config = config('pages');
    
        

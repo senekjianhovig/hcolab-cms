@@ -5,6 +5,9 @@ if (!property_exists($data, $name)) {
     $data->$name = '';
 }
 
+
+
+
 if (isset($related_tables) && !is_null($related_tables) && !empty($related_tables) && isset($related_tables[$name]['data'])) {
     try {
         $options = $related_tables[$name]['data'];
@@ -19,6 +22,7 @@ if (isset($related_tables) && !is_null($related_tables) && !empty($related_table
     }
 }
 
+
 try {
     if($element->ui->type == 'select' || $element->ui->type == 'values select'){
       $selected = [$data->$name];
@@ -28,6 +32,7 @@ try {
 } catch (\Throwable $th) {
     $selected = [];
 }
+
 
 if(!is_array($selected)){
     $selected = [];
