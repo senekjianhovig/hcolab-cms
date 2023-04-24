@@ -9,6 +9,9 @@
     @csrf
 <div class="container-fluid my-3">
 
+
+    <a href="{{route("sitemap-generate")}}" class="ui button green "> Update Sitemap </a>
+
     <table class="ui celled striped table">
 
         <thead>

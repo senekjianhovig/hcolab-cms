@@ -17,7 +17,9 @@ class SEOController extends Controller
         
         $result = Storage::disk('public')->get('sitemap.xml');
 
-       if(!$result){ return false; }
+       if(!$result){ 
+           return false; 
+        }
 
        $cms_seo = CmsSEO::where('deleted' , 0)->get()->keyBy('url');
 

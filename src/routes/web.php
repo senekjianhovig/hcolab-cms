@@ -42,6 +42,7 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
  
     Route::get('/settings' ,  [ \hcolab\cms\controllers\SettingController::class , 'render'])->name('settings');   
 
+    Route::get('/sitemap/generate' ,  function(){ (new \hcolab\cms\controllers\SitemapController)->generateSitemap(); return redirect()->back(); })->name('sitemap-generate'); 
     Route::get('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'render'])->name('seo-configuration');   
     Route::post('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'renderModify'])->name('seo-configuration');   
     Route::post('/seo/modify' ,  [ \hcolab\cms\controllers\SEOController::class , 'modify'] )->name('seo-modify');
