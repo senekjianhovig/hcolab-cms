@@ -50,6 +50,18 @@ class SEOController extends Controller
     }
 
 
+    public function renderSEO(){
+        $path = request()->path();
+        if($path[0] != "/"){
+            $path = '/'.$path;
+        }
+
+        $seo =  CmsSEO::where('url' , $path)->whereNotNull('title')->where('deleted' , 0)->first();
+        $default_seo =  CmsSEO::where('url' , "/")->whereNotNull('title')->where('deleted' , 0)->first();
+
+        return view('CMSViews::page.seo' , compact('seo' , 'default_seo'));
+    }
+
     public function renderModify(){
 
         $urls = request()->input('url');
