@@ -30,7 +30,8 @@ class PageController extends Controller
          'cms-alerts' => 'CmsAlertPage',
          'cms-theme-builder-locations'=>'CmsThemeBuilderLocationPage',
          'cms-seo' => 'CmsSEOPage',
-         'cms-push-notifications' => 'CmsPushNotificationPage'
+         'cms-push-notifications' => 'CmsPushNotificationPage',
+         'cms-sent-push-notifications' => 'CmsSentPushNotificationPage'
        ];
    }
 
