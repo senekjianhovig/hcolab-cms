@@ -21,5 +21,13 @@ Route::prefix('api/v1')->group(function () {
         Route::get('{page_slug}', [hcolab\cms\controllers\PageController::class, 'renderAPI']);
     });
 
+
+    Route::prefix('push-notifications')->group(function () {
+        Route::get('/', [hcolab\cms\controllers\PushNotificationController::class, 'getNotifications']);
+        Route::post('set-all-read', [hcolab\cms\controllers\PushNotificationController::class, 'setAllNotificationsRead']);
+        Route::post('set-read', [hcolab\cms\controllers\PushNotificationController::class, 'setNotificationsRead']);
+    });
+
+   
 });
 

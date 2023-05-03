@@ -36,7 +36,8 @@ class CmsPushNotificationPage extends Page
         ->HiddenTextField("Api", "col-lg-12", true , "api")
         ->HiddenTextField("Page Slug", "col-lg-12", true , "page_slug")
         ->TextField("Title", "col-lg-12", true , "title")
-        ->TextField("Message", "col-lg-12", true , "message")
+        ->TextAreaField("Message", "col-lg-12", true , "message")
+        ->TextAreaField("Text", "col-lg-12", true , "text")
         ->FileUploadField("Image", "col-lg-12", false, "image")
         ->TextAreaField("Device Tokens" , "col-lg-12" , false , "device_tokens");
     }

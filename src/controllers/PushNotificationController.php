@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use hcolab\cms\traits\ApiTrait;
 use hcolab\cms\models\CmsPushNotification;
+use hcolab\cms\models\CmsSentPushNotification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Kutia\Larafirebase\Facades\Larafirebase;
@@ -78,14 +79,67 @@ class PushNotificationController extends Controller
             return redirect("/cms/page/cms-push-notifications?notification_type=error&notification_message=Failed!");
         }
         
-        $notification->device_tokens = json_encode($firebaseTokens);
-        $notification->save();
-        
+        // $notification->device_tokens = json_encode($firebaseTokens);
+        // $notification->save();
+
+        $data = collect($firebaseTokens)->map(function($fT) use ($id){
+            return [
+                'device_token' => $ft,
+                'notification_id' => $id,
+                'read' => 0
+            ];
+        });
+
+        CmsSentPushNotification::insert($data);
+
         Larafirebase::withTitle($notification->title)
         ->withBody($notification->message)
         ->sendMessage($firebaseTokens);
 
         return redirect("/cms/page/cms-push-notifications?notification_type=success&notification_message=Success!");
+    }
+
+    public function getNotifications(){
+
+        $device_token = request()->device_token;
+        $notification_ids = CmsSentPushNotification::select('notification_id')->where('device_token' , $device_token)->where('deleted' , 0)->pluck('notification_id');
+        $notifications = CmsPushNotification::whereIn('id' , $notification_ids )->where('deleted', 0)->get()->paginate(20)->map(function($notification){
+            return [
+                'id' => $notification->id,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'text' => $notification->text,
+                'created_at'=> $notification->created_at,
+                'image' => get_media_url($notification->image)
+            ];
+        });
+
+        return $this->responseData(1, $notifications);
+
+    }
+
+    public function setAllNotificationsRead(){
+
+        $device_token = request()->device_token;
+        $notification_ids = CmsSentPushNotification::where('device_token' , $device_token)->where('deleted' , 0)
+        ->update(['read' => 1]);
+
+        return response()->json([] , 200);
+
+    }
+
+    public function setNotificationsRead(){
+
+        $device_token = request()->device_token;
+        $notification_id = request()->notification_id;
+       
+        $notification_ids = CmsSentPushNotification::where('device_token' , $device_token)
+        ->where('notification_id' , $notification_id)
+        ->where('deleted' , 0)
+        ->update(['read' => 1]);
+       
+        return response()->json([] , 200);
+
     }
 
 
