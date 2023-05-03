@@ -110,7 +110,8 @@ class PushNotificationController extends Controller
                 'message' => $notification->message,
                 'text' => $notification->text,
                 'created_at'=> $notification->created_at,
-                'image' => get_media_url($notification->image)
+                'image' => get_media_url($notification->image),
+                'read'=> $notification->read
             ];
         });
 
