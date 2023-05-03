@@ -20,5 +20,6 @@ Route::prefix('api/v1')->group(function () {
     Route::prefix('page')->group(function () {
         Route::get('{page_slug}', [hcolab\cms\controllers\PageController::class, 'renderAPI']);
     });
+
 });
 

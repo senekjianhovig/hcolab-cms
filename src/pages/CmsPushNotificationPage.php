@@ -12,7 +12,7 @@ class CmsPushNotificationPage extends Page
     */
     public function __construct()
     {
-        $this->version = "1.0";
+        $this->version = "1.1";
         $this->page = "CmsPushNotificationPage";
         $this->entity = "cms_push_notifications";
         $this->slug = "cms-push-notifications";
@@ -37,7 +37,8 @@ class CmsPushNotificationPage extends Page
         ->HiddenTextField("Page Slug", "col-lg-12", true , "page_slug")
         ->TextField("Title", "col-lg-12", true , "title")
         ->TextField("Message", "col-lg-12", true , "message")
-        ->FileUploadField("Image", "col-lg-12", false, "image");
+        ->FileUploadField("Image", "col-lg-12", false, "image")
+        ->TextAreaField("Device Tokens" , "col-lg-12" , false , "device_tokens");
     }
 
     public function setColumns(){

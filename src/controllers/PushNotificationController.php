@@ -60,29 +60,32 @@ class PushNotificationController extends Controller
         $key = $page->push_notification_key;
         $entity_page = $page->push_notification_page;
 
-        // $response = Http::get($notification->api);
+        $response = Http::get($notification->api);
 
-        // if(!$response->successfull()){
-        //     return abort(404);
-        // }
+        if(!$response->successfull()){
+            return abort(404);
+        }
 
-        // $result = collect($response->json())->pluck($key)->unique()->values()->toArray();
+        $result = collect($response->json())->pluck($key)->unique()->values()->toArray();
 
-        $result = [1,2,3];
+        // $result = [1,2,3];
 
         $target = new $entity_page;
         
         $firebaseTokens = DB::table($target->entity)->select('device_token')->whereIn('id' , $result)->pluck('device_token')->unique()->filter()->values()->toArray();
 
         if(count($firebaseTokens) == 0){
-
+            return redirect("/cms/page/cms-push-notifications?notification_type=error&notification_message=Failed!");
         }
+        
+        $notification->device_tokens = json_encode($firebaseTokens);
+        $notification->save();
         
         Larafirebase::withTitle($notification->title)
         ->withBody($notification->message)
         ->sendMessage($firebaseTokens);
 
-        return redirect("/cms/page/cms-push-notifications");
+        return redirect("/cms/page/cms-push-notifications?notification_type=success&notification_message=Success!");
     }
 
 

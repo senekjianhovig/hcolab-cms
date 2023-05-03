@@ -85,14 +85,14 @@ $path = app_path() . '/Sections';
         <div class="col-lg-6">
             <div id="form-container" class="ui segment raised ">
 
-                <h3>Section Settings</h3>
+            <h3>Section Settings</h3>
 
-             <div class="section-settings" style="min-height:500px" >
+            <div class="section-settings" style="min-height:500px" >
                 <div id="add-new-section" class="ui form">
                     <br> 
                     Please select a component which you want to add it to your theme.
                     <br>
-                    {{-- <br> --}}
+                   
                     After you select a component, you need to fill all required properties. 
                     <br>
                     <br>

@@ -112,6 +112,13 @@
           notificationsWrapper.show();
         });
       </script> --}}
+
+      @if(request()->has('notification_type') && request()->notification_message)
+      <script>
+        $.toast({ class: "{{request()->input('notification_type')}}", message: `{{request()->input('notification_message')}}` });
+      </script>
+      @endif
+
 </body>
 
 </html>
