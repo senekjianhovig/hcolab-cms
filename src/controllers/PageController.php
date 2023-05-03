@@ -29,7 +29,8 @@ class PageController extends Controller
          'cms-theme-builder-sections' => 'CmsThemeBuilderSectionPage',
          'cms-alerts' => 'CmsAlertPage',
          'cms-theme-builder-locations'=>'CmsThemeBuilderLocationPage',
-         'cms-seo' => 'CmsSEOPage'
+         'cms-seo' => 'CmsSEOPage',
+         'cms-push-notifications' => 'CmsPushNotificationPage'
        ];
    }
 
@@ -53,9 +54,22 @@ class PageController extends Controller
         }
     }
 
-  
 
-    public function render($page_slug)
+    public function renderAPI($page_slug){
+        $page = $this->initializeRequest($page_slug);
+       
+        if (is_null($page)) {
+            return abort(404);
+        }
+
+        $page->setElements();    
+        $page->setColumns();
+
+        $rows = $page->getRows(false);
+        return response()->json($rows , 200);
+    }
+
+    public function render($page_slug , $API = false)
     {
 
         $page = $this->initializeRequest($page_slug);
@@ -85,10 +99,15 @@ class PageController extends Controller
       
         $data["page"] = $page;
 
+     
 
-        $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
-
+        if(!$API){
+            $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
+        }
       
+        if($API){
+            return $data;
+        }
 
         return view('CMSViews::page.index_v2', $data);
     }

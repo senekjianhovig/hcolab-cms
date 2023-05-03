@@ -66,6 +66,11 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
         
     });
 
+
+    Route::get('/push-notification/{id}/{token}' , [\hcolab\cms\controllers\PushNotificationController::class , 'send'])->name('push-notification');
+    
+    Route::post('/push-notification' , [\hcolab\cms\controllers\PushNotificationController::class , 'save'])->name('push-notification');
+
     Route::get('generate', function(){ return view('CMSViews::generate');});
     Route::prefix('page')->group(function () {
         Route::get('{page_slug}', [hcolab\cms\controllers\PageController::class, 'render'])->name('page');

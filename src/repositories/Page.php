@@ -138,7 +138,20 @@ class Page extends Element
     }
 
 
-    public function getRows()
+    public function hasPushNotification(){
+
+        if(!(isset($this->push_notification_key) && $this->push_notification_key &&!empty($this->push_notification_key))){
+            return false;
+        }
+
+        if(!(isset($this->push_notification_page) && $this->push_notification_page &&!empty($this->push_notification_page))){
+            return false;
+        }
+        
+        return true;
+    }
+
+    public function getRows($pagination = true)
     {
         $table_data = DB::table($this->entity)->where('deleted', 0);
         
@@ -181,6 +194,10 @@ class Page extends Element
                 $query->where('id', request()->input('id'));
             }
         });
+
+        if(!$pagination){
+            return $table_data->get();
+        }
 
         return $table_data->paginate(20);
     }

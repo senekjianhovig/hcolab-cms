@@ -108,7 +108,7 @@ $path = app_path() . '/Sections';
                                         $namespace = 'App\\Sections\\' . $entity;
                                         $section = new $namespace;
                                      
-                                        if(!in_array($data->location , $section->locations) && !empty($section->locations)){
+                                        if(!in_array($data->cms_theme_builder_location , $section->locations) && !empty($section->locations)){
                                             continue;
                                         }
 

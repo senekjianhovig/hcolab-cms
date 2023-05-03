@@ -81,8 +81,40 @@ $related_tables = $page->getRelatedTables();
                     <a class="ui button mr-2" type="button" href="{{route('page.create', ['page_slug' => $page->slug ])}}">Create
                         new
                         Record</a>
-                        @endif
-                   
+                    @endif
+
+                    {{-- <form action="" method="POST" class="ui form">
+                        @csrf
+
+                        <input type="hidden" value="{{url()->current()}}">
+                        <button class="ui button mr-2" > Save Notification </button>
+                    </form> --}}
+
+                    @if($page->hasPushNotification())
+                    <div class="filter-panel" style="display: inline-block">
+                        <button class="ui icon button filter-button popup-trigger" > Create Notification </button>
+                        <div class="popup-panel ui flowing popup hidden"> 
+                            <form action="{{route('push-notification')}}"  method="POST" id="filters-form" class="ui form">
+                                @csrf
+                                <div class="header d-flex align-items-center justify-content-between">
+                                    <div class="title">Push Notification </div>
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <button class="ui button tiny blue" type="submit"> Create </button>
+                                    </div>
+                                </div>
+                                <div class="filter-item">
+                                <div class="field">
+                                    <label>Label</label>
+                                    <input type="text" name="label" placeholder="Label">
+                                </div>
+                                </div>
+                               
+                                <input type="hidden" name="page_slug" value="{{$page->slug}}">
+                                <input type="hidden" name="path" value="{{url()->current()}}">
+                            </form>
+                        </div>
+                    </div>
+                   @endif
                     <div class="filter-panel" style="display: inline-block">
                         <button class="ui icon button filter-button popup-trigger" > <i class="filter icon"></i> <div class="counter"> </div> </button>
                         <div class="popup-panel ui flowing popup hidden"> 

@@ -16,5 +16,9 @@ Route::prefix('api/v1')->group(function () {
     Route::prefix('utilities')->group(function () {
         Route::post('upload/media', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporaryAPI']);
     });
+
+    Route::prefix('page')->group(function () {
+        Route::get('{page_slug}', [hcolab\cms\controllers\PageController::class, 'renderAPI']);
+    });
 });
 
