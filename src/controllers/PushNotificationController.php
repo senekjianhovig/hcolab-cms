@@ -138,7 +138,7 @@ class PushNotificationController extends Controller
                         'title' => $notification->title,
                         'message' => $notification->message,
                         'text' => $notification->text,
-                        'created_at'=> Carbon::parse($notification->created_at)->diffForHumans(),
+                        'created_at'=> $notification->created_at,
                         'image' => get_media_url($notification->image),
                         'btn_label' => $notification->btn_label,
                         'btn_link' => $notification->btn_link,
