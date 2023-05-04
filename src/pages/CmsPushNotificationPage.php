@@ -39,7 +39,12 @@ class CmsPushNotificationPage extends Page
         ->TextAreaField("Message", "col-lg-12", true , "message")
         ->TextAreaField("Text", "col-lg-12", true , "text")
         ->FileUploadField("Image", "col-lg-12", false, "image")
-        ->TextAreaField("Device Tokens" , "col-lg-12" , false , "device_tokens");
+        // ->TextAreaField("Device Tokens" , "col-lg-12" , false , "device_tokens")
+        ->TextField("Button Label", "col-lg-12", true , "btn_label")
+        ->TextField("Button Link", "col-lg-12", false, "btn_link")
+        ;
+
+        
     }
 
     public function setColumns(){

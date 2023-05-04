@@ -63,7 +63,7 @@ class PushNotificationController extends Controller
 
         $response = Http::get($notification->api);
 
-        if(!$response->successfull()){
+        if(!$response->successful()){
             return abort(404);
         }
 
@@ -84,17 +84,18 @@ class PushNotificationController extends Controller
 
         $data = collect($firebaseTokens)->map(function($fT) use ($id){
             return [
-                'device_token' => $ft,
+                'device_token' => $fT,
                 'notification_id' => $id,
                 'read' => 0
             ];
-        });
+        })->toArray();
 
         CmsSentPushNotification::insert($data);
 
         Larafirebase::withTitle($notification->title)
         ->withBody($notification->message)
-        ->sendMessage($firebaseTokens);
+        ->withPriority('high')
+        ->sendNotification($firebaseTokens);
 
         return redirect("/cms/page/cms-push-notifications?notification_type=success&notification_message=Success!");
     }
@@ -102,18 +103,47 @@ class PushNotificationController extends Controller
     public function getNotifications(){
 
         $device_token = request()->device_token;
-        $notification_ids = CmsSentPushNotification::select('notification_id')->where('device_token' , $device_token)->where('deleted' , 0)->pluck('notification_id');
-        $notifications = CmsPushNotification::whereIn('id' , $notification_ids )->where('deleted', 0)->get()->paginate(20)->map(function($notification){
-            return [
-                'id' => $notification->id,
-                'title' => $notification->title,
-                'message' => $notification->message,
-                'text' => $notification->text,
-                'created_at'=> $notification->created_at,
-                'image' => get_media_url($notification->image),
-                'read'=> $notification->read
-            ];
-        });
+        // $notification_ids = CmsSentPushNotification::select('notification_id')->where('device_token' , $device_token)->where('deleted' , 0)->pluck('notification_id');
+        // $notifications = CmsPushNotification::whereIn('id' , $notification_ids )->where('deleted', 0)->paginate(20)->map(function($notification){
+        //     return [
+        //         'id' => $notification->id,
+        //         'title' => $notification->title,
+        //         'message' => $notification->message,
+        //         'text' => $notification->text,
+        //         'created_at'=> $notification->created_at,
+        //         'image' => get_media_url($notification->image),
+        //         'btn_label' => 'Check marketing website',
+        //         'btn_link' => '#',
+        //         'read'=> 0
+        //     ];
+        // });
+
+        $notifications = CmsPushNotification::select([
+            'cms_sent_push_notifications.id',
+            'cms_push_notifications.title',
+            'cms_push_notifications.message',
+            'cms_push_notifications.text',
+            'cms_push_notifications.image',
+            'cms_sent_push_notifications.created_at',
+            'cms_push_notifications.btn_label',
+            'cms_push_notifications.btn_link',
+            'cms_sent_push_notifications.read',
+            ])
+            ->join('cms_sent_push_notifications' ,'cms_push_notifications.id' , 'cms_sent_push_notifications.notification_id')
+            ->where('deleted' , 0)
+            ->paginate(20)->map(function($notification){
+                    return [
+                        'id' => $notification->id,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'text' => $notification->text,
+                        'created_at'=> $notification->created_at,
+                        'image' => get_media_url($notification->image),
+                        'btn_label' => $notification->btn_label,
+                        'btn_link' => $notification->btn_link,
+                        'read'=> $notification->read
+                    ];
+            });
 
         return $this->responseData(1, $notifications);
 
