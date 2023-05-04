@@ -12,6 +12,7 @@ use hcolab\cms\models\CmsSentPushNotification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Kutia\Larafirebase\Facades\Larafirebase;
+use Carbon\Carbon;
 
 class PushNotificationController extends Controller
 {
@@ -137,7 +138,7 @@ class PushNotificationController extends Controller
                         'title' => $notification->title,
                         'message' => $notification->message,
                         'text' => $notification->text,
-                        'created_at'=> $notification->created_at,
+                        'created_at'=> Carbon::parse($notification->created_at)->diffForHumans(),
                         'image' => get_media_url($notification->image),
                         'btn_label' => $notification->btn_label,
                         'btn_link' => $notification->btn_link,
