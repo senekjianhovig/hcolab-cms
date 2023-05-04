@@ -166,7 +166,7 @@ class PushNotificationController extends Controller
         $notification_id = request()->notification_id;
        
         $notification_ids = CmsSentPushNotification::where('device_token' , $device_token)
-        ->where('notification_id' , $notification_id)
+        ->where('id' , $notification_id)
         ->where('deleted' , 0)
         ->update(['read' => 1]);
        
