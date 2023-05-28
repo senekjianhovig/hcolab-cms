@@ -113,6 +113,29 @@ class PageController extends Controller
         return view('CMSViews::page.index_v2', $data);
     }
 
+    public function updatePositions($page_slug){
+
+        $page = $this->initializeRequest($page_slug);
+       
+        if (is_null($page)) {
+            return abort(404);
+        }
+
+      
+        $positions = json_decode(request()->input('positions'));
+        $table_name = $page->entity;
+  
+    
+        foreach($positions as $position){
+          DB::table($page->entity)->where('id',$position[0])->update(
+            ["orders" => $position[1] ]
+        );
+        }
+  
+        return $positions;
+
+    }
+
     public function query($page_slug)
     {
 

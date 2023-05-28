@@ -13,6 +13,14 @@ use hcolab\cms\traits\ApiTrait;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use FFMpeg\Coordinate\Dimension;
 use FFMpeg\Format\Video\X264;
+use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
+use Pion\Laravel\ChunkUpload\Handler\AbstractHandler;
+use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
+use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
+use Pion\Laravel\ChunkUpload\Exceptions\UploadFailedException;
+
+use Pion\Laravel\ChunkUpload\Handler\DropZoneUploadHandler;
+
 
 use Image;
 
@@ -60,37 +68,96 @@ class FileUploadController extends Controller
         ]);
     }
 
-    public function UploadToTemporary(){
+    public function UploadToTemporary(Request $request){
  
-        if(request()->has('file') && request()->has('input_name')){
 
-            $file = request()->file('file');
-            $input_name = request()->input('input_name');
-            $is_multiple = request()->has("is_multiple") && (request()->input("is_multiple") == "true" || request()->input("is_multiple") == "1");
-            $input_name = str_replace('upld' , 'tmp' ,  $input_name);
-            if($is_multiple){ $input_name = $input_name.'[]'; }
 
-            $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
-            
-            if(!$temporary){
-                return response()->json([], 404); 
+        
+
+
+
+            // dd(HandlerFactory::classFromRequest($request));
+            // HandlerFactory::classFromRequest($request)
+
+            // dd(HandlerFactory::classFromRequest($request));
+            $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
+
+            if ($receiver->isUploaded() === false) {
+                throw new UploadMissingFileException();
             }
 
-            $file_element = view('CMSViews::form.file-preview', [
-                'value'=> $temporary->name,
-                'name' => $input_name , 
-                'mime_category' => $temporary->mime_category , 
-                'url' =>  env('DATA_URL').'/'.$temporary->url, 
-                'display_name' => $temporary->original_name ])->render();
+          
+            $save = $receiver->receive();
 
-            return response()->json(['file_element'=>$file_element ], 200);
-        }
+          
+
+        
+            if ($save->isFinished()) {
             
-        return response()->json([], 404);
+             
+                $file = $save->getFile();
+                $input_name = request()->input('input_name');
+                $is_multiple = request()->has("is_multiple") && (request()->input("is_multiple") == "true" || request()->input("is_multiple") == "1");
+                $input_name = str_replace('upld' , 'tmp' ,  $input_name);
+                if($is_multiple){ $input_name = $input_name.'[]'; }
+    
+                $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
+                
+                if(!$temporary){
+                    return response()->json([], 404); 
+                }
+    
+
+                $return = [
+                        'value'=> $temporary->name,
+                        'name' => $input_name , 
+                        'mime_category' => $temporary->mime_category , 
+                        'url' =>  env('DATA_URL').'/'.$temporary->url, 
+                        'display_name' => $temporary->original_name,
+                ];
+
+                return view('CMSViews::form.file-preview' , $return);
+
+               
+
+                // return response()->json([
+                //             'value'=> $temporary->name,
+                //             'name' => $input_name , 
+                //             'mime_category' => $temporary->mime_category , 
+                //             'url' =>  env('DATA_URL').'/'.$temporary->url, 
+                //             'display_name' => $temporary->original_name,
+
+                //             'view' => view('CMSViews::form.file-preview' , [
+
+                //             ])->render()
+                // ], 200); 
+              
+
+            }
+
+              $handler = $save->handler();
+           
+
+            return response()->json([
+                "progress" => $handler->getPercentageDone(),
+                'success' => true
+            ]);
+
+         
+
+        // return response()->json([
+        //     'success' => false,
+        //     'message' => 'File upload failed.',
+        // ]);
+
     }
 
     public function createTemporaryFromFile($path , $file){
 
+
+
+
+        
         $disk = env('STORAGE_DISK' , 'public');
 
         $file_extension = $file->getClientOriginalExtension();
@@ -99,7 +166,7 @@ class FileUploadController extends Controller
         //     return null;
         // }
 
-        $mime_type = $file->getClientMimeType(); 
+        $mime_type = $file->getMimeType(); 
         $file_size = $file->getSize();
         $nameWithoutExtension = uniqid().'-'.now()->timestamp;
         $name = $nameWithoutExtension.'.'.$file_extension;

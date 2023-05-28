@@ -24,7 +24,7 @@ $has_sections = isset($page->sections) && count($page->sections) > 0;
 @endphp
 
 
-<tbody @if ($page->sortable) class="sortable" data-attr-table="{{ $page->entity }}" @endif>
+<tbody @if ($page->sortable) class="sortable" @endif >
     @forelse($rows AS $row)
 
     

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use hcolab\cms\traits\ApiTrait;
 use hcolab\cms\models\CmsThemeBuilderSection;
 use hcolab\cms\models\CmsThemeBuilder;
+use Illuminate\Support\Facades\Schema;
 
 use Illuminate\Support\Facades\DB;
 
@@ -218,7 +219,14 @@ class ThemeBuilderController extends Controller
                    case 'multiple select' :
                      if(isset($arr[$element->name])){
                          
-                         $data = DB::table($foreign_keys[$element->name])->where('deleted',0)->whereIn('id' ,$arr[$element->name])->get();
+                        
+                         $data = DB::table($foreign_keys[$element->name])->where('deleted',0)->whereIn('id' ,$arr[$element->name]);
+                        
+                         if (Schema::hasColumn($foreign_keys[$element->name], 'orders')){
+                            $data->orderBy('orders' , 'ASC');
+                         }
+
+                         $data = $data->get();
    
                      }else{
                          $data = [];

@@ -50,5 +50,9 @@ onsubmit="AddSection($(this))"
 </div> 
 </form>
 
+<script>
+   summernoteInit();
+   </script>
+
 
 

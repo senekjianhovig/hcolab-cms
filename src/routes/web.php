@@ -29,6 +29,9 @@ Route::group(['prefix' => 'cms'], function(){
 
 Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAuth::class,\hcolab\cms\middlewares\CMSSetup::class]], function(){
     Route::post('/upload', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporary']); 
+    
+   
+    Route::get('/file-preview-template',  function(){ return view('CMSViews::form.preview-template');})->name('file-preview-template');
     Route::get('/dashboard',  function(){ return view('CMSViews::dashboard.index');})->name('dashboard');
     Route::get('/',  function(){ return view('CMSViews::dashboard.default');})->name('dashboard-2');
     
@@ -74,6 +77,10 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
     Route::get('generate', function(){ return view('CMSViews::generate');});
     Route::prefix('page')->group(function () {
         Route::get('{page_slug}', [hcolab\cms\controllers\PageController::class, 'render'])->name('page');
+
+        Route::get('{page_slug}/update-positions' , [hcolab\cms\controllers\PageController::class, 'updatePositions'])->name('page.update-positions');
+
+
         Route::get('{page_slug}/create', [hcolab\cms\controllers\PageController::class, 'create'])->name('page.create');
 
         Route::get('{page_slug}/create/validate/slug/{key}/{slug}', [hcolab\cms\controllers\PageController::class, 'validateSlug'])->name('page.validate-slug');

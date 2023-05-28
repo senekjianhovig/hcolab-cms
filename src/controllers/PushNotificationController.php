@@ -130,6 +130,7 @@ class PushNotificationController extends Controller
             'cms_push_notifications.btn_link',
             'cms_sent_push_notifications.read',
             ])
+            ->where('cms_sent_push_notifications.device_token' , $device_token)
             ->join('cms_sent_push_notifications' ,'cms_push_notifications.id' , 'cms_sent_push_notifications.notification_id')
             ->where('cms_sent_push_notifications.deleted' , 0)
             ->paginate(20)->map(function($notification){
