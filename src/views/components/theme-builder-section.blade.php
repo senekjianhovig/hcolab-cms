@@ -52,6 +52,7 @@ onsubmit="AddSection($(this))"
 
 <script>
    summernoteInit();
+   initFilesUpload();
    </script>
 
 

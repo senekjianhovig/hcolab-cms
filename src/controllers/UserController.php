@@ -123,6 +123,9 @@ class UserController extends Controller
         return redirect('/cms')->with('notification', 'Login Successfull');
 
 
+        // return redirect()->intended('/cms');
+
+
     }
 
  
