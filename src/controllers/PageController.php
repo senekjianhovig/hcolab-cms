@@ -204,12 +204,25 @@ class PageController extends Controller
         $page->setElements();
         $inputs = [];
       
+
+        $route_name = app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName();
+
+
+        if($route_name == "page.show"){
+            $page->setSections();
+            $elements = collect($page->sections)->pluck('fields')->flatten()->where('is_editable' , true)->values()->toArray();
+        }else{
+            $elements = $page->elements;
+        }
+
+
+
         $waiting_id_elements = [];
 
         
-        foreach($page->elements as $element){
+        foreach($elements as $element){
             
-            if(!request()->has("tmp_".$element->name) && !request()->has($element->name)){ continue; }
+            // if(!request()->has("tmp_".$element->name) && !request()->has($element->name)){ continue; }
 
             $value = request()->input($element->name); 
             
@@ -225,13 +238,13 @@ class PageController extends Controller
                 case "slug": 
                 case "wysiwyg":
                 {
-                    if($value == null){ break; }
+                    // if($value == null){ break; }
                     $inputs[$element->db->field_name] = $value;
                     break;
                 }
                 case "password":
                 {
-                    if($value == null || empty($value)){ break; }
+                    // if($value == null || empty($value)){ break; }
                     $inputs[$element->db->field_name] = Hash::make(request()->input($element->db->field_name));
                     break;
                 }
@@ -239,7 +252,7 @@ class PageController extends Controller
                 case "date picker":
                 {
 
-                    if($value == null){ break; }
+                    // if($value == null){ break; }
                     $value = date("Y-m-d H:i:s",strtotime($value));
                     $inputs[$element->db->field_name] = $value;
                     break;
@@ -247,14 +260,14 @@ class PageController extends Controller
                 case "tags":
                 case "multiple select":
                 {
-                    if($value == null){ break; }
+                    // if($value == null){ break; }
                     $inputs[$element->name] = json_encode(request()->input($element->name));
                     break;
                 }
 
                 case "values select":
                 {
-                    if($value == null){ break; }
+                    // if($value == null){ break; }
                     $inputs[$element->name] = request()->input($element->name);
                     break;
                 }
@@ -295,14 +308,14 @@ class PageController extends Controller
                 
                 case "boolean checkbox":
                 {
-                    if($value == null){ break; }
+                    // if($value == null){ break; }
                     $inputs[$element->db->field_name] = request()->has($element->db->field_name) ? request()->input($element->db->field_name) : 0;
                     break;
                 }
 
                 case "hidden json field":
                 {
-                    if($value == null){ break; }
+                    // if($value == null){ break; }
                     $inputs[$element->db->field_name] = request()->has($element->db->field_name) ? json_encode(request()->input($element->db->field_name)) : null;
                 break;
                 }
