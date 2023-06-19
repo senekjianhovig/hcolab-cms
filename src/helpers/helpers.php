@@ -220,10 +220,10 @@ if(!function_exists('render_form_field')){
                     $name = $element->name;
 
                     if (!property_exists($data, $name)) {
-                        $data->$name = '';
+                        $data->$name = [];
                     }
 
-                  
+                
                     if (isset($related_tables) && !is_null($related_tables) && !empty($related_tables) && isset($related_tables[$name]['data'])) {
                         try {
                             $options = $related_tables[$name]['data'];
@@ -239,7 +239,16 @@ if(!function_exists('render_form_field')){
                         }
                     }
 
-                    
+
+                    try {
+                        $selected = json_decode($data->$name , 1);
+                    } catch (\Throwable $th) {
+                        $selected = [];
+                    }
+
+                    if(!is_array($selected)){ $selected = []; }
+
+                    $options = $options->whereIn('id' , $selected);
 
                     $result = "<div>";
                     foreach($options as $option){
