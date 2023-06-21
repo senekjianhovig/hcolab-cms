@@ -185,7 +185,7 @@ if(!function_exists('render_form_field')){
                             if($file->mime_category == "image"){
                                 $value .= "<a href='".get_media_url($file->name)."' data-fancybox data-type='image' class='mr-2 mb-2' > <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
                             }elseif($file->mime_category == "video"){
-                                $value .= "<a href='".env('DATA_URL')."/files/".$file->name."' data-fancybox data-type='video' class='mr-2 mb-2'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                                $value .= "<a href='".env('DATA_URL')."/files/original/".$file->name."' data-fancybox data-type='video' class='mr-2 mb-2'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
                             }
                         }
                          break;
