@@ -14,7 +14,8 @@
         $icon = '<div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file alternate  icon" style="color:#5C258D;font-size:30px ;height:initial "></i></div>';
         break;
         case 'video':
-        $icon = '<div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file video    icon" style="color:#4389A2;font-size:30px ; height: initial"></i></div>';
+        $icon = '<a href="'.$url.'" data-fancybox data-type="video" class="video-thumb-remove">
+        <div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file video    icon" style="color:#4389A2;font-size:30px ; height: initial"></i></div></a>';
         break;
         case 'audio' :
         $icon = '<div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file audio    icon" style="color:#c7c5c3;font-size:30px ; height: initial"></i></div>';

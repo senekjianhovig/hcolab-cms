@@ -122,12 +122,16 @@ if($data && !empty($data->$name)){
 
 }
 
+.video-thumb-remove::after{
+    display: none !important;
+}
+
 .dz-details{
     /* width: 200px; */
 }
 
 .dz-image{
-    background-color: #eee;
+    /* background-color: #eee; */
 }
 .dz-image img{
     width: 60px;
