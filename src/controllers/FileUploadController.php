@@ -152,6 +152,57 @@ class FileUploadController extends Controller
 
     }
 
+
+    public function UploadToTemporaryAPIV2(Request $request){
+
+        ini_set('post_max_size', '500M');
+
+        $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
+
+        if($uploader_key !=  env('UPLOADER_KEY')){
+            return $this->responseError(1 , "Wrong Uploader Key" , "Wrong Uploader Key");
+        }
+
+        $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
+
+        if ($receiver->isUploaded() === false) {
+            throw new UploadMissingFileException();
+        }
+
+        $save = $receiver->receive();
+
+        if ($save->isFinished()) {
+
+
+            $file = $save->getFile();
+            $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
+
+            if (!$temporary) {
+                return $this->responseError(1, "File could not be uploaded", "The size you are trying to upload is too big or File extension is not supported!");
+            }
+
+            return $this->responseData(1 ,[
+                'temporary_id'=> $temporary->id,
+                'value'=> $temporary->name,
+                'url' =>  env('DATA_URL').'/'.$temporary->url,
+                'display_name' => $temporary->original_name ,
+                'mime_category' => $temporary->mime_category,
+                'mime_type' => $temporary->mime_type,
+                'low_resoltion' => $temporary->thumbnail
+            ]);
+
+
+        }
+
+        $handler = $save->handler();
+
+        return response()->json([
+            "progress" => $handler->getPercentageDone(),
+            'success' => true
+        ]);
+
+    }
+
     public function createTemporaryFromFile($path , $file){
 
 

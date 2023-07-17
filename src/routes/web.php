@@ -83,6 +83,9 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
 
         Route::get('{page_slug}/create', [hcolab\cms\controllers\PageController::class, 'create'])->name('page.create');
 
+        Route::get('{page_slug}/import', [hcolab\cms\controllers\PageController::class, 'import'])->name('page.import');
+        Route::get('{page_slug}/export', [hcolab\cms\controllers\PageController::class, 'export'])->name('page.export');
+
         Route::get('{page_slug}/create/validate/slug/{key}/{slug}', [hcolab\cms\controllers\PageController::class, 'validateSlug'])->name('page.validate-slug');
 
         
@@ -92,6 +95,9 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
         Route::get('{page_slug}/edit/{id}', [hcolab\cms\controllers\PageController::class, 'edit'])->name('page.edit');
         Route::post('{page_slug}/delete/{id}', [hcolab\cms\controllers\PageController::class, 'delete'])->name('page.delete');
         Route::post('{page_slug}/query', [hcolab\cms\controllers\PageController::class, 'query'])->name('page.table-data');
+
+        
+
     });
 });
 

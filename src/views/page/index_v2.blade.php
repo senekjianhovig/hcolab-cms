@@ -83,6 +83,14 @@ $related_tables = $page->getRelatedTables();
                         Record</a>
                     @endif
 
+                    @if(in_array('export' , $actions))
+                    <a class="ui button mr-2" type="button" href="{{route('page.export', ['page_slug' => $page->slug ])}}">
+                       Export</a>
+
+                    <a class="ui button mr-2" type="button" href="{{route('page.import', ['page_slug' => $page->slug ])}}">
+                        Import</a>
+                    @endif
+
                     {{-- <form action="" method="POST" class="ui form">
                         @csrf
 
@@ -94,7 +102,7 @@ $related_tables = $page->getRelatedTables();
                     <div class="filter-panel" style="display: inline-block">
                         <button class="ui icon button filter-button popup-trigger" > Create Notification </button>
                         <div class="popup-panel ui flowing popup hidden"> 
-                            <form action="{{route('push-notification')}}"  method="POST" id="filters-form" class="ui form">
+                            <form action="{{route('push-notification')}}"  method="POST" class="ui form">
                                 @csrf
                                 <div class="header d-flex align-items-center justify-content-between">
                                     <div class="title">Push Notification </div>

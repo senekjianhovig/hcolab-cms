@@ -629,4 +629,31 @@ class PageController extends Controller
         return $pages;
     }
 
+
+    public function import($page_slug){
+       
+        $page = $this->initializeRequest($page_slug);
+       
+        if (is_null($page)) {
+            return abort(404);
+        }
+
+        $page->setElements();
+    
+        $page->setColumns();
+
+        if(isset($page->sections)){
+            $page->setSections();
+        }
+   
+   
+        $data["page"] = $page;
+
+        return view('CMSViews::page.superimport' , $data);
+    }
+
+    public function export($page_slug){
+            // dd("export");
+    }
+
 }
