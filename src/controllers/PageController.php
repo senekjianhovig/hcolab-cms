@@ -560,7 +560,7 @@ class PageController extends Controller
         if(!$check){ return abort(404); }
 
 
-        $notification = \App\Models\CmsNotification::where('deleted',0)->where('row_id', $id)->where('page_slug' , $page->slug)->first();
+        $notification = \hcolab\cms\models\CmsNotification::where('deleted',0)->where('row_id', $id)->where('page_slug' , $page->slug)->first();
         if($notification){
             $notification->read = 1;
             $notification->save();
