@@ -156,6 +156,57 @@ class ThemeBuilderController extends Controller
     }
 
 
+    public function sectionOrdering($id){
+
+        $array = request()->input('sorting' , []);
+
+        
+        $max_orders = CmsThemeBuilderSection::max('orders');
+
+        if(!$max_orders){
+            $max_orders = 0;
+        }
+
+        
+
+    
+        $sections = CmsThemeBuilderSection::where('deleted',0)->orderBy('orders' , 'ASC')->where('theme_builder_id' , $id)->get();
+
+        $numbers = $sections->pluck('orders')->filter()->values()->toArray();
+
+
+        while (count($sections) != count($numbers)) {
+            $numbers [] = $max_orders + 1;
+            $max_orders++; 
+        }
+
+
+        $sections =  $sections->keyBy('id');
+       
+        
+
+       
+
+        foreach($array as $i => $item){
+
+            
+            if(!isset($sections[$item]) || !isset($numbers[$i])){
+                continue;
+            }
+
+            $record = $sections[$item];
+            $record->orders = $numbers[$i];
+            $record->save();
+
+        }
+       
+        
+
+
+        return response()->json([] , 200);
+    }
+
+
     public function renderSections($location){
 
         $theme_builder = CmsThemeBuilder::where('deleted',0)->where('cms_theme_builder_location' , $location)->where('publish', 1)->orderBy('id' , 'DESC')->first();

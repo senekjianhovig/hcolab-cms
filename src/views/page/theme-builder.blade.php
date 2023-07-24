@@ -11,7 +11,7 @@ $page->getRow($id);
 $data = $page->getRow($id);
 
 
-$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->where('deleted' , 0)->get();
+$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->where('deleted' , 0)->orderBy('orders' , 'ASC')->get();
 
 
 $prev_url = "";
@@ -286,11 +286,44 @@ function editElement(elem) {
 
 }
 
+
+function processElements2(sorting){
+
+   
+    $.ajax({
+                url: `/cms/theme-builder/{{$id}}/section/sorting`,
+                method : "POST",
+                data : {
+                    _token : $('meta[name=csrf-token]').attr("content"),
+                    sorting : sorting
+                },   
+                success: function(data){
+
+                    
+                   
+                },
+                error : function(){
+                   
+                }
+             });
+
+
+    // data-key
+
+    //section/ordering
+
+}
+
 function sortableInit(){
     $( "#sections" ).sortable({
             placeholder: "ui-state-highlight",
             update: function( event, ui ) {
-                processElements();
+
+                var sorting = []; 
+                $('#sections').children().each(function(){
+                    sorting.push($(this).attr('data-key'));
+                });
+                processElements2(sorting);
             }
         });
         $( "#sections" ).disableSelection();

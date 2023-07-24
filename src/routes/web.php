@@ -57,12 +57,15 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
     
     Route::prefix('theme-builder')->group(function () {
         Route::get('/{id}',  function($id){ return view('CMSViews::page.theme-builder' , ['id' => $id]);});
-        
+        Route::post('/{id}/section/sorting', [\hcolab\cms\controllers\ThemeBuilderController::class , 'sectionOrdering']);
+
         Route::post('/section/temporary/create', [\hcolab\cms\controllers\ThemeBuilderController::class , 'store' ]);
         Route::post('/section/temporary/edit',  [\hcolab\cms\controllers\ThemeBuilderController::class , 'update']);
 
         Route::get('section/{section}', [\hcolab\cms\controllers\ThemeBuilderController::class , 'section']);
         Route::post('section/{section}/delete/{key}', [\hcolab\cms\controllers\ThemeBuilderController::class , 'deleteSection']);
+
+        
 
     
     
