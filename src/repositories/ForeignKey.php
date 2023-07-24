@@ -49,6 +49,9 @@ public static function singleTableQuery($table , $key , $value){
 }
 
 public static function doubleTableQuery($main_table, $related_table,  $main_table_value , $related_table_value , $main_key, $foreign_key, $seperator = '/'){
+   
+   
+    // dd($main_table, $related_table,  $main_table_value , $related_table_value , $main_key, $foreign_key, $seperator);
     return DB::table($main_table)->select($main_table.'.id')
     ->selectRaw("CONCAT(".$related_table.".".$related_table_value.", ' ". $seperator ." '  , ".$main_table.".".$main_table_value.") as label")
     ->where($main_table.'.deleted',0)
