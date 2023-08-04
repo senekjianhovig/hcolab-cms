@@ -420,6 +420,10 @@ if(!function_exists('get_media_url')){
     array_pop($temp);
     $original_name = implode("." , $temp);
 
+    if($type == "optimized-video"){
+        return env('DATA_URL')."/files/downloadable-optimized/".$original_name.".mp4"; 
+    }
+
     if($type == "resized"){
         switch($extension){
             case  "jpg" : return env('DATA_URL')."/files/resized/jpg/".$resized."/".$original_name.".jpg";

@@ -235,7 +235,7 @@ class FileUploadController extends Controller
 
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
 
-        $bytes_size_per_megabyte = 1048576; 
+        $bytes_size_per_megabyte = 1048576;
         $max_size = ($mime_category == "video" ? 100 : 5) * $bytes_size_per_megabyte;
         if($file_size > $max_size){ return null; }
 
@@ -343,10 +343,23 @@ class FileUploadController extends Controller
     }
 
 
-    public function processMediaCron($v = 1){
+    public function processMediaCron(){
 
         ini_set('max_execution_time' , 50000);
         ini_set('post_max_size', '500M');
+
+        $nb_ongoing = File::query()->where("process_started" , 1)
+        ->where(function($q){
+            $q->orWhere("processed" , 0);
+            $q->orWhereNull('processed');
+        })->where(function($q){
+            $q->orWhere("process_error" , 0);
+            $q->orWhereNull('process_error');
+        })->count();
+
+        if($nb_ongoing > 0){
+            return;
+        }
 
         $files = File::query()
         ->where(function($q){
@@ -357,28 +370,28 @@ class FileUploadController extends Controller
             $q->orWhere("process_started" , 0);
             $q->orWhereNull('process_started');
         })
-        ->where('id' , 1562)
+        ->where(function($q){
+            $q->orWhere("process_error" , 0);
+            $q->orWhereNull('process_error');
+        })
         ->where('deleted',0)
+        ->orderBy('id' , 'desc')
         ->get()
-        ->take(10);
+        ->take(1);
 
+    
         foreach($files as $file){
             if(in_array($file->extension , ['svg'])){ continue; }
             
-            $file->processed = 1;
-            $file->save();
-
             switch($file->mime_category){
                 case "video" :  
+                   
                     try {
-                        if($v==2){
-                            $this->processVideoUpload2($file);
-                        }else{
-                            $this->processVideoUpload($file);
-                        }
+                       
+                        $this->processVideoUpload($file);
+                       
                     } catch (\Throwable $th) {
-                        $file->processed = 0;
-                        $file->process_started = 0;
+                        $file->process_error = 1;
                         $file->save();
                     }
                     break;
@@ -388,106 +401,75 @@ class FileUploadController extends Controller
                         $this->processImageUpload($file); 
                        
                     } catch (\Throwable $th) {
-                        $file->process_started = 0;
-                        $file->processed = 0;
+                        $file->process_error = 1;
                         $file->save();
                     }
                     break;
             }
 
-            $file->save();
+            
         }
 
     }
 
+    public function processVideoUploadOld($file){
+
+        $file->process_started = 1;
+        $file->save();
+
+        $input_file = $file->url;
+        $file_source = Storage::disk($file->disk)->get("/".$input_file);
+
+       
+
+        $lowBitrate = 250;
+        $midBitrate = 500;
+        $highBitrate = 800;
+        $superBitrate = 1600;
+
+    
+        try { $this->generateVideoResolution($file , $lowBitrate , 640 , 480); } catch (\Throwable $th) { }
+        try { $this->generateVideoResolution($file , $midBitrate , 1280 , 720); } catch (\Throwable $th) { }
+        try { $this->generateVideoResolution($file , $highBitrate , 1920 , 1080); } catch (\Throwable $th) { }
+        try { $this->generateVideoResolution($file , $superBitrate , 2560 , 1440); } catch (\Throwable $th) { }
+
+        FFMpeg::fromDisk($file->disk)
+        ->open("/".$input_file)
+        ->exportForHLS()
+        ->toDisk($file->disk)
+        ->addFormat((new X264)->setKiloBitrate($lowBitrate), function($media) { $media->scale(640, 480); })
+        ->addFormat((new X264)->setKiloBitrate($midBitrate), function($media) { $media->scale(1280, 720); })
+        ->addFormat((new X264)->setKiloBitrate($highBitrate), function ($media) { $media->scale(1920, 1080); })  
+        ->addFormat((new X264)->setKiloBitrate($superBitrate), function($media) { $media->scale(2560, 1440); })
+        ->save("files/streamable/".get_name_from_url($file->name) . '.m3u8');
+
+        $file->processed = 1;
+        $file->save();
+
+    }
+
     public function processVideoUpload($file){
-
-        $file->process_started = 1;
-        $file->save();
-
-        $input_file = $file->url;
-        $file_source = Storage::disk($file->disk)->get("/".$input_file);
-
-       
-
-        $lowBitrate = 250;
-        $midBitrate = 500;
-        $highBitrate = 800;
-        $superBitrate = 1600;
-
     
-        try { $this->generateVideoResolution($file , $lowBitrate , 640 , 480); } catch (\Throwable $th) { }
-        try { $this->generateVideoResolution($file , $midBitrate , 1280 , 720); } catch (\Throwable $th) { }
-        try { $this->generateVideoResolution($file , $highBitrate , 1920 , 1080); } catch (\Throwable $th) { }
-        try { $this->generateVideoResolution($file , $superBitrate , 2560 , 1440); } catch (\Throwable $th) { }
+       $file->process_started = 1;
+       $file->save();
 
-        FFMpeg::fromDisk($file->disk)
-        ->open("/".$input_file)
-        ->exportForHLS()
-        ->toDisk($file->disk)
-        ->addFormat((new X264)->setKiloBitrate($lowBitrate), function($media) { $media->scale(640, 480); })
-        ->addFormat((new X264)->setKiloBitrate($midBitrate), function($media) { $media->scale(1280, 720); })
-        ->addFormat((new X264)->setKiloBitrate($highBitrate), function ($media) { $media->scale(1920, 1080); })  
-        ->addFormat((new X264)->setKiloBitrate($superBitrate), function($media) { $media->scale(2560, 1440); })
-        ->save("files/streamable/".get_name_from_url($file->name) . '.m3u8');
+        $this->compressVideSameResolution($file);
 
-        $file->processed = 1;
-        $file->save();
-
+       $file->processed = 1;
+       $file->save();
     }
 
-    public function processVideoUpload2($file){
-        $file->process_started = 1;
-        $file->save();
-
-        $input_file = $file->url;
-        $file_source = Storage::disk($file->disk)->get("/".$input_file);
-
+    public function compressVideSameResolution($file){
        
-
-        $lowBitrate = 250;
-        $midBitrate = 500;
-        $highBitrate = 800;
-        $superBitrate = 1600;
-
-    
-        try { $this->generateVideoResolution($file , $lowBitrate , 640 , 480); } catch (\Throwable $th) { }
-        try { $this->generateVideoResolution($file , $midBitrate , 1280 , 720); } catch (\Throwable $th) { }
-        try { $this->generateVideoResolution($file , $highBitrate , 1920 , 1080); } catch (\Throwable $th) { }
-        try { $this->generateVideoResolution($file , $superBitrate , 2560 , 1440); } catch (\Throwable $th) { }
-
+        $format = new \FFMpeg\Format\Video\X264('libmp3lame', 'libx264');
+        $format->setKiloBitrate(500); 
+       
         FFMpeg::fromDisk($file->disk)
-        ->open("/".$input_file)
-        ->exportForHLS()
+        ->open("/".$file->url)
+        ->export()
         ->toDisk($file->disk)
-        ->addFormat((new X264)->setKiloBitrate($lowBitrate), function($media) { $media->scale(640, 480); })
-        ->addFormat((new X264)->setKiloBitrate($midBitrate), function($media) { $media->scale(1280, 720); })
-        ->addFormat((new X264)->setKiloBitrate($highBitrate), function ($media) { $media->scale(1920, 1080); })  
-        ->addFormat((new X264)->setKiloBitrate($superBitrate), function($media) { $media->scale(2560, 1440); })
-        ->save("files/streamable/".get_name_from_url($file->name) . '.m3u8');
-
-        $file->processed = 1;
-        $file->save();
-    }
-
-    public function compressVideSameResolution($file , $w , $h){
-        $ffmpeg = FFMpeg\FFMpeg::create();
-
-        // Open the input video file
-        $video = $ffmpeg->fromDisk($file->disk)->open("/".$file->url);
-
-        // Get the video's resolution
-        $videoStream = $video->getStreams()->videos()->first();
-        $width = $videoStream->get('width');
-        $height = $videoStream->get('height');
-
-        // Set the desired compression parameters (adjust as needed)
-        $format = new FFMpeg\Format\Video\X264('libmp3lame', 'libx264');
-        $format->setKiloBitrate(500); // Set the desired bitrate
-
-        $video->toDisk($file->disk)
         ->inFormat($format)
-        ->save("files/downloadable-optimized/".$h."p/".get_name_from_url($file->name) .'.mp4');
+        ->save("files/downloadable-optimized/".get_name_from_url($file->name) .'.mp4');
 
     }
 
@@ -607,7 +589,7 @@ class FileUploadController extends Controller
     }
     
 
-    public function getMedias($file , $force_type = 'array'){
+    public function getMedias($file , $force_type = 'array' , $force_optimize = false){
 
         $array = [];
 
@@ -629,17 +611,24 @@ class FileUploadController extends Controller
 
             if($f->mime_category == 'video'){
                 $thumbnail = env('DATA_URL').'/low_resolution/'.$nameWithoutExtension.".jpg";
+                $opt = env('DATA_URL')."/files/downloadable-optimized/".$nameWithoutExtension.".mp4";
             }else{
                 $thumbnail = env('DATA_URL').'/files/optimized/jpg/'.$nameWithoutExtension.".jpg";
+                $opt = env('DATA_URL').'/files/optimized/jpg/'.$nameWithoutExtension.".jpg";
             }
 
             $original = env('DATA_URL').'/'.$f->url;
+            
+            if($force_optimize){
+                $original = $opt;
+            }
 
             return [
                 'original_name' => $f->original_name,
                 'name' => $f->name,
                 'thumbnail' => $thumbnail,
                 'display_url' => $original,
+                'optimized_url' => $opt,
                 'type' => $f->mime_category
             ];
         });
