@@ -11,7 +11,7 @@
         </a>';
         break;
         case 'application':
-        $icon = '<div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file alternate  icon" style="color:#5C258D;font-size:30px ;height:initial "></i></div>';
+        $icon = '<a href="'.$url.'" target="_blank"><div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file alternate  icon" style="color:#5C258D;font-size:30px ;height:initial "></i></div></a>';
         break;
         case 'video':
         $icon = '<a href="'.$url.'" data-fancybox data-type="video" class="video-thumb-remove">
@@ -21,7 +21,7 @@
         $icon = '<div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file audio    icon" style="color:#c7c5c3;font-size:30px ; height: initial"></i></div>';
         break;
         default:
-        $icon = '<div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file icon" style="color:#c7c5c3;font-size:30px ; height: initial"></i></div>';
+        $icon = '<a href="'.$url.'" target="_blank"><div style="width:50px;height:50px;display:flex ; align-items : center ; justify-content:center"><i class="file icon" style="color:#c7c5c3;font-size:30px ; height: initial"></i></div></a>';
             
       }
 

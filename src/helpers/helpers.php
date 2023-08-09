@@ -163,9 +163,14 @@ if(!function_exists('render_form_field')){
                     if(!$file){ return ""; }
 
                     if($file->mime_category == "image"){
-                        $value = "<a href='".get_media_url($file->name)."' data-fancybox data-type='image'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                        $value = "<a href='".get_media_url($file->name)."' data-fancybox data-type='image'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' /> </a>";
                     }elseif($file->mime_category == "video"){
-                        $value = "<a href='".env('DATA_URL')."/files/original/".$file->name."' data-fancybox data-type='video'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                        $value = "<a href='".env('DATA_URL')."/files/original/".$file->name."' data-fancybox data-type='video'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' /> </a>";
+                        
+                    }else{
+                        $value = "<a href='".env('DATA_URL')."/files/original/".$file->name."' target='blank' > <div style='width:50px;height:50px;display:flex ; align-items : center ; justify-content:center'><i class='file icon' style='color:#c7c5c3;font-size:30px ; height: initial'></i></div>  </a>";
+
+
                         
                     }
 
