@@ -20,15 +20,7 @@ class PushNotificationController extends Controller
     use ApiTrait;
 
 
-    public function sendNotification($title , )
-    {
-
-      
-
-        //$firebaseToken = User::whereNotNull('device_token')->pluck('device_token')->all();
-
-    }
-
+    
     public function save(){
 
 
@@ -93,13 +85,66 @@ class PushNotificationController extends Controller
 
         CmsSentPushNotification::insert($data);
 
-        Larafirebase::withTitle($notification->title)
-        ->withBody($notification->message)
-        ->withPriority('high')
-        ->sendNotification($firebaseTokens);
+        if(env('PUSH_NOTIFICATION') == 'onesignal'){
+            $this->sendByOneSignal($notification->title , $notification->message , null , $firebaseTokens);
+        }else{
+            Larafirebase::withTitle($notification->title)
+            ->withBody($notification->message)
+            ->withPriority('high')
+            ->sendNotification($firebaseTokens);
+        }
+
+       
 
         return redirect("/cms/page/cms-push-notifications?notification_type=success&notification_message=Success!");
     }
+
+
+
+    public function sendByOneSignal($title ,  $text , $image_url , $player_ids){
+
+        $fields = [
+            'app_id' => env('ONE_SIGNAL_APP_ID'),
+            'data' => [],
+            'contents' => [ "en" => $text ],
+            'headings' => [ "en" => $title ],
+            'content_available' => true,
+            'mutable_content' => true,
+            'background_data' => true,
+            'android_background_data' => true,
+            'priority' => 10,
+            'category' => "TEST",
+            "include_player_ids" => $player_ids
+        ];
+
+        if(!is_null($image_url)){
+            $fields["ios_attachments"] =  array("id"=> $image_url);
+            $fields["huawei_big_picture"] =  $image_url;
+            $fields["big_picture"] =  $image_url;
+            $fields["large_icon"] =  $image_url;
+        }
+
+        $fields = json_encode($fields);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8',
+            'Authorization: Basic '.env('ONE_SIGNAL_AUTH_KEY')));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+
+        $response = (curl_exec($ch));
+        curl_close($ch);
+
+        $response = json_decode($response,1);
+
+        return $response;
+
+    }
+
 
     public function getNotifications(){
 
