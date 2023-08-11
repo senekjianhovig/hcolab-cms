@@ -26,9 +26,9 @@ Route::prefix('api/v1')->group(function () {
 
 
     Route::prefix('push-notifications')->group(function () {
-        Route::get('/', [hcolab\cms\controllers\PushNotificationController::class, 'getNotifications']);
-        Route::post('set-all-read', [hcolab\cms\controllers\PushNotificationController::class, 'setAllNotificationsRead']);
-        Route::post('set-read', [hcolab\cms\controllers\PushNotificationController::class, 'setNotificationsRead']);
+        Route::get('/', [hcolab\cms\controllers\PushNotificationController::class, 'getNotifications'])->middleware(\hcolab\cms\middlewares\PushNotificationAccess::class);
+        Route::post('set-all-read', [hcolab\cms\controllers\PushNotificationController::class, 'setAllNotificationsRead'])->middleware(\hcolab\cms\middlewares\PushNotificationAccess::class);
+        Route::post('set-read', [hcolab\cms\controllers\PushNotificationController::class, 'setNotificationsRead'])->middleware(\hcolab\cms\middlewares\PushNotificationAccess::class);
     });
 
    

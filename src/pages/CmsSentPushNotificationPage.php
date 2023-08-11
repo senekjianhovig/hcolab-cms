@@ -12,7 +12,7 @@ class CmsSentPushNotificationPage extends Page
     */
     public function __construct()
     {
-        $this->version = "1.1";
+        $this->version = "1.2";
         $this->page = "CmsSentPushNotificationPage";
         $this->entity = "cms_sent_push_notifications";
         $this->slug = "cms-sent-push-notifications";
@@ -29,7 +29,8 @@ class CmsSentPushNotificationPage extends Page
     public function setElements(){
         return $this
         ->DisabledTextField("ID", "col-lg-12", false , "id", false)
-        ->TextField("Device Token", "col-lg-12", true , "device_token")
+        ->TextField("Row ID", "col-lg-6", true , "row_id")
+        ->TextField("Row Model", "col-lg-6", true , "row_model")
         ->TextField("Notification ID", "col-lg-12", true , "notification_id")
         ->BooleanCheckbox("Read", "col-lg-12", false , "read")
         ;
@@ -38,7 +39,8 @@ class CmsSentPushNotificationPage extends Page
     public function setColumns(){
        return $this
        ->Column("id", null , "primary_field")
-       ->Column("device_token")
+       ->Column("row_id")
+       ->Column("row_model")
        ->Column("notification_id")
        ->Column("read")
        ;  
