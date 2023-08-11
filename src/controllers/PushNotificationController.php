@@ -66,16 +66,14 @@ class PushNotificationController extends Controller
         }
         
 
-      
-
+        $this->sendByProvider($notification , $rows , $target->model);
         
-        
-
+    
         return redirect("/cms/page/cms-push-notifications?notification_type=success&notification_message=Success!");
     }
 
 
-    public function sendByProvider($notification , $player_ids, $rows , $model){
+    public function sendByProvider($notification , $rows , $model){
 
         if(is_numeric($notification)){
             $notification = CmsPushNotification::find($notification);
