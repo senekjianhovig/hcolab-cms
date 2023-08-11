@@ -48,6 +48,10 @@ if(!function_exists('process_form_field')){
                 return view('CMSViews::form.disabled-textfield', [ "element" => $element, "data" => $data ]);
                 break;
 
+                case "hidden_textfield":
+                return view('CMSViews::form.hidden-textfield', [ "element" => $element, "data" => $data ]);
+                break;
+                
                 case "readonly_textfield":
                   
                 return view('CMSViews::form.readonly-textfield', [ "element" => $element, "data" => $data ]);
@@ -154,6 +158,8 @@ if(!function_exists('render_form_field')){
             
                 case 'open div': return  '';
                 case 'close div': return "";
+
+                
 
                 case 'file':
                
