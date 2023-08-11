@@ -109,7 +109,7 @@ class PushNotificationController extends Controller
 
         $fields = [
             'app_id' => env('ONE_SIGNAL_APP_ID'),
-            'data' => [],
+            'data' => ["type" => 1],
             'contents' => [ "en" => $text ],
             'headings' => [ "en" => $title ],
             'content_available' => true,
@@ -117,11 +117,11 @@ class PushNotificationController extends Controller
             'background_data' => true,
             'android_background_data' => true,
             'priority' => 10,
-            'category' => "TEST",
+            'category' => "APP",
             "include_player_ids" => $player_ids
         ];
 
-        if(!is_null($image_url)){
+        if($image_url){
             $fields["ios_attachments"] =  array("id"=> $image_url);
             $fields["huawei_big_picture"] =  $image_url;
             $fields["big_picture"] =  $image_url;
@@ -129,6 +129,7 @@ class PushNotificationController extends Controller
         }
 
         $fields = json_encode($fields);
+
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
