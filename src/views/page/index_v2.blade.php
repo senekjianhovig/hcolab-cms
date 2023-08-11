@@ -102,7 +102,7 @@ $related_tables = $page->getRelatedTables();
                     <div class="filter-panel" style="display: inline-block">
                         <button class="ui icon button filter-button popup-trigger" > Create Notification </button>
                         <div class="popup-panel ui flowing popup hidden"> 
-                            <form action="{{route('push-notification')}}"  method="POST" class="ui form">
+                            <form id="push-notification-form" action="{{route('push-notification')}}"  method="POST" class="ui form">
                                 @csrf
                                 <div class="header d-flex align-items-center justify-content-between">
                                     <div class="title">Push Notification </div>
@@ -118,7 +118,7 @@ $related_tables = $page->getRelatedTables();
                                 </div>
                                
                                 <input type="hidden" name="page_slug" value="{{$page->slug}}">
-                                <input type="hidden" name="path" value="{{url()->current()}}">
+                                {{-- <input type="hidden" name="path" value="{{url()->current()}}"> --}}
                             </form>
                         </div>
                     </div>
@@ -214,6 +214,17 @@ $related_tables = $page->getRelatedTables();
 
 @section('scripts')
     <script>
+
+
+    document.querySelector('#push-notification-form').addEventListener('submit', function() {
+        var hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'path';
+        hiddenInput.value = window.location.href;
+        this.appendChild(hiddenInput);
+    });
+
+
 
 
         calculateFilters();
