@@ -86,8 +86,8 @@ class PushNotificationController extends Controller
         $players = $rows->pluck('device_token');
 
         switch(env('PUSH_NOTIFICATION')){
-            case 'onesignal' :  $this->sendByOneSignal($notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players); break;
-            default: $this->sendByFirebase($notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players); break;
+            case 'onesignal' :  $this->sendByOneSignal($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players); break;
+            default: $this->sendByFirebase($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players); break;
         }
 
         $data = $rows->map(function($row) use ($notification , $model){
@@ -105,11 +105,11 @@ class PushNotificationController extends Controller
     }
 
 
-    public function sendByOneSignal($title ,  $text , $image_url , $player_ids){
+    public function sendByOneSignal($id , $title ,  $text , $image_url , $player_ids){
 
         $fields = [
             'app_id' => env('ONE_SIGNAL_APP_ID'),
-            'data' => ["type" => 1],
+            'data' => ["type" => 1 , "notification_id" => $id],
             'contents' => [ "en" => $text ],
             'headings' => [ "en" => $title ],
             'content_available' => true,
@@ -150,7 +150,7 @@ class PushNotificationController extends Controller
 
     }
 
-    public function sendByFirebase($title , $text , $image_url , $player_ids){
+    public function sendByFirebase($id , $title , $text , $image_url , $player_ids){
        $notification =  Larafirebase::withTitle($notification->title)
         ->withBody($notification->message)
         ->withSound('default');
