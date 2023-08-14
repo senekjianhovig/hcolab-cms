@@ -22,10 +22,10 @@ class PushNotificationController extends Controller
 
     // Create notification from Grid
     public function save(){
- 
+
         $label = request()->input("label");
         $path = request()->input("path");
-       
+
         $url = str_replace(["/cms/" ] , ["/api/v1/"] , $path);
 
         $notification = new CmsPushNotification;
@@ -45,7 +45,7 @@ class PushNotificationController extends Controller
 
         $notification = CmsPushNotification::find($id);
         $page = (new \hcolab\cms\controllers\PageController)->initializeRequest($notification->page_slug);
-       
+
         if (is_null($page)) { return abort(404); }
 
         $key = $page->push_notification_key;
@@ -58,17 +58,17 @@ class PushNotificationController extends Controller
         $result = collect($response->json())->pluck($key)->unique()->values()->toArray();
 
         $target = new $entity_page;
-        
+
         $rows = DB::table($target->entity)->select('id', 'device_token')->whereIn('id' , $result)->get();
 
         if(count($rows) == 0){
             return redirect("/cms/page/cms-push-notifications?notification_type=error&notification_message=Failed!");
         }
-        
+
 
         $this->sendByProvider($notification , $rows , $target->model);
-        
-    
+
+
         return redirect("/cms/page/cms-push-notifications?notification_type=success&notification_message=Success!");
     }
 
@@ -86,8 +86,8 @@ class PushNotificationController extends Controller
         $players = $rows->pluck('device_token');
 
         switch(env('PUSH_NOTIFICATION')){
-            case 'onesignal' :  $this->sendByOneSignal($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players); break;
-            default: $this->sendByFirebase($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players); break;
+            case 'onesignal' :  $this->sendByOneSignal($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players , $notification->btn_link); break;
+            default: $this->sendByFirebase($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players , $notification->btn_link); break;
         }
 
         $data = $rows->map(function($row) use ($notification , $model){
@@ -105,11 +105,17 @@ class PushNotificationController extends Controller
     }
 
 
-    public function sendByOneSignal($id , $title ,  $text , $image_url , $player_ids){
+    public function sendByOneSignal($id , $title ,  $text , $image_url , $player_ids , $btn_link = null){
+
+        $data = ["type" => 1 , "notification_id" => $id];
+
+        if($btn_link){
+            $data['link_to'] = $btn_link;
+        }
 
         $fields = [
             'app_id' => env('ONE_SIGNAL_APP_ID'),
-            'data' => ["type" => 1 , "notification_id" => $id],
+            'data' => $data,
             'contents' => [ "en" => $text ],
             'headings' => [ "en" => $title ],
             'content_available' => true,
@@ -150,7 +156,7 @@ class PushNotificationController extends Controller
 
     }
 
-    public function sendByFirebase($id , $title , $text , $image_url , $player_ids){
+    public function sendByFirebase($id , $title , $text , $image_url , $player_ids, $btn_link = null){
        $notification =  Larafirebase::withTitle($notification->title)
         ->withBody($notification->message)
         ->withSound('default');
@@ -158,7 +164,7 @@ class PushNotificationController extends Controller
         if($image_url){
             $notification->withImage($image_url);
         }
-        
+
         return $notification->withPriority('high')->sendNotification($player_ids);
     }
 
@@ -169,7 +175,7 @@ class PushNotificationController extends Controller
 
         $row_id = request()->row_id;
         $row_model = request()->row_model;
-        
+
 
         $notifications = CmsPushNotification::select([
             'cms_sent_push_notifications.id',
@@ -186,6 +192,7 @@ class PushNotificationController extends Controller
             ->where('cms_sent_push_notifications.row_model' , request()->row_model)
             ->join('cms_sent_push_notifications' ,'cms_push_notifications.id' , 'cms_sent_push_notifications.notification_id')
             ->where('cms_sent_push_notifications.deleted' , 0)
+            ->orderBy('id' , 'DESC')
             ->paginate(20)->map(function($notification){
                     return [
                         'id' => $notification->id,
@@ -222,13 +229,13 @@ class PushNotificationController extends Controller
     public function setNotificationsRead(){
 
         $notification_id = request()->notification_id;
-       
+
         $notification_ids = CmsSentPushNotification::where('row_id' , request()->row_id)
         ->where('row_model' , request()->row_model)
         ->where('id' , $notification_id)
         ->where('deleted' , 0)
         ->update(['read' => 1]);
-       
+
         return response()->json([] , 200);
 
     }
