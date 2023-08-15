@@ -213,6 +213,8 @@ class FileUploadController extends Controller
         $mime_type = $file->getMimeType();
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
 
+        $file_size = $file->getSize();
+
         $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','avi','divx',
             'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
             'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
