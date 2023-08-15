@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class CmsSentPushNotification extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'dictionary' => 'array'
+    ];
+
 }

@@ -73,11 +73,16 @@ class PushNotificationController extends Controller
     }
 
 
-    public function sendByProvider($notification , $rows , $model){
+    public function sendByProvider($notification , $rows , $model , $dictionary = []){
 
         if(is_numeric($notification)){
             $notification = CmsPushNotification::find($notification);
         }
+
+        $notification->title = replace_from_dictionary($notification->title , $dictionary);
+        $notification->message = replace_from_dictionary($notification->message , $dictionary);
+        $notification->text = replace_from_dictionary($notification->text , $dictionary);
+
 
         if(!$notification){
             return null;
@@ -90,11 +95,12 @@ class PushNotificationController extends Controller
             default: $this->sendByFirebase($notification->id , $notification->title , $notification->message , get_media_url($notification->image , 'jpg' , 'optimized') , $players , $notification->btn_link); break;
         }
 
-        $data = $rows->map(function($row) use ($notification , $model){
+        $data = $rows->map(function($row) use ($notification , $model , $dictionary){
             return [
                 'row_id' => $row->id,
                 'row_model' => $model,
                 'notification_id' => $notification->id,
+                'dictionary' => $dictionary,
                 'read' => 0
             ];
         })->toArray();
@@ -176,7 +182,6 @@ class PushNotificationController extends Controller
         $row_id = request()->row_id;
         $row_model = request()->row_model;
 
-
         $notifications = CmsPushNotification::select([
             'cms_sent_push_notifications.id',
             'cms_push_notifications.title',
@@ -187,6 +192,7 @@ class PushNotificationController extends Controller
             'cms_push_notifications.btn_label',
             'cms_push_notifications.btn_link',
             'cms_sent_push_notifications.read',
+            'cms_sent_push_notifications.dictionary',
             ])
             ->where('cms_sent_push_notifications.row_id' , request()->row_id)
             ->where('cms_sent_push_notifications.row_model' , request()->row_model)
@@ -196,9 +202,9 @@ class PushNotificationController extends Controller
             ->paginate(20)->map(function($notification){
                     return [
                         'id' => $notification->id,
-                        'title' => $notification->title,
-                        'message' => $notification->message,
-                        'text' => $notification->text,
+                        'title' => replace_from_dictionary($notification->title , $notification->dictionary),
+                        'message' => replace_from_dictionary($notification->message , $notification->dictionary),
+                        'text' => replace_from_dictionary($notification->text , $notification->dictionary),
                         'created_at'=> $notification->created_at,
                         'image' => get_media_url($notification->image , 'jpg' , 'optimized'),
                         'btn_label' => $notification->btn_label,
