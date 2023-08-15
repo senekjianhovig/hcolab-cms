@@ -100,7 +100,7 @@ class PushNotificationController extends Controller
                 'row_id' => $row->id,
                 'row_model' => $model,
                 'notification_id' => $notification->id,
-                'dictionary' => $dictionary,
+                'dictionary' => is_array($dictionary) ? json_encode($dictionary) : $dictionary,
                 'read' => 0
             ];
         })->toArray();
