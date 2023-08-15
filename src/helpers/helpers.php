@@ -515,12 +515,12 @@ function get_name_initials($array){
 }
 }
 
-if(!function_exists('process_menu_item')){
-    function process_menu_item($item){
+if(!function_exists('process_menu_item')) {
+    function process_menu_item($item)
+    {
 
 
-
-        if(isset($item['admin']) && $item['admin']){
+        if (isset($item['admin']) && $item['admin']) {
             return null;
         }
 
@@ -530,7 +530,7 @@ if(!function_exists('process_menu_item')){
                 $entity = $item['link_to'];
                 $class_exists = class_exists($entity);
 
-                if(!$class_exists){
+                if (!$class_exists) {
                     return null;
                 }
 
@@ -553,11 +553,12 @@ if(!function_exists('process_menu_item')){
                 break;
         }
 
-        if($item['type'] == 'page'){
+        if ($item['type'] == 'page') {
 
         }
 
     }
+}
 
     if(!function_exists('replace_template_dictionary')){
         function replace_template_dictionary($array , $dictionary){
@@ -646,7 +647,5 @@ if(!function_exists('process_menu_item')){
     }
 
 
+    
 
-
-
-}
