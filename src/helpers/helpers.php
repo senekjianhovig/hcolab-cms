@@ -625,10 +625,7 @@ if(!function_exists('process_menu_item')) {
 
     if(!function_exists('replace_from_dictionary')){
         function replace_from_dictionary($payload, $dictionary , $wrapper = "*"){
-
-
-            $dictionary = json_decode($dictionary , 1);
-
+            
             if(!is_array($dictionary)){
                 $dictionary = json_decode($dictionary , 1);
 
@@ -637,9 +634,6 @@ if(!function_exists('process_menu_item')) {
                 }
 
             }
-
-
-
 
             if(count($dictionary) == 0){
                 return $payload;
