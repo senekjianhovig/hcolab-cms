@@ -32,7 +32,7 @@ class FileUploadController extends Controller
     public function UploadToTemporaryAPI(){
 
         ini_set('post_max_size', '500M');
-  
+
 
         $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
 
@@ -48,11 +48,11 @@ class FileUploadController extends Controller
             return $this->responseError(1 , "file is required" , "file is required");
         }
 
-    
+
 
         $file = request()->file('file');
         $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
-        
+
         if(!$temporary){
             return $this->responseError(1 , "File could not be uploaded" , "The size you are trying to upload is too big or File extension is not supported!");
         }
@@ -60,7 +60,7 @@ class FileUploadController extends Controller
         return $this->responseData(1 ,[
             'temporary_id'=> $temporary->id,
             'value'=> $temporary->name,
-            'url' =>  env('DATA_URL').'/'.$temporary->url, 
+            'url' =>  env('DATA_URL').'/'.$temporary->url,
             'display_name' => $temporary->original_name ,
             'mime_category' => $temporary->mime_category,
             'mime_type' => $temporary->mime_type,
@@ -69,10 +69,10 @@ class FileUploadController extends Controller
     }
 
     public function UploadToTemporary(Request $request){
- 
 
 
-        
+
+
 
 
 
@@ -86,64 +86,64 @@ class FileUploadController extends Controller
                 throw new UploadMissingFileException();
             }
 
-          
+
             $save = $receiver->receive();
 
-          
 
-        
+
+
             if ($save->isFinished()) {
-            
-             
+
+
                 $file = $save->getFile();
                 $input_name = request()->input('input_name');
                 $is_multiple = request()->has("is_multiple") && (request()->input("is_multiple") == "true" || request()->input("is_multiple") == "1");
                 $input_name = str_replace('upld' , 'tmp' ,  $input_name);
                 if($is_multiple){ $input_name = $input_name.'[]'; }
-    
+
                 $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
-                
+
                 if(!$temporary){
-                    return response()->json([], 404); 
+                    return response()->json([], 404);
                 }
-    
+
 
                 $return = [
                         'value'=> $temporary->name,
-                        'name' => $input_name , 
-                        'mime_category' => $temporary->mime_category , 
-                        'url' =>  env('DATA_URL').'/'.$temporary->url, 
+                        'name' => $input_name ,
+                        'mime_category' => $temporary->mime_category ,
+                        'url' =>  env('DATA_URL').'/'.$temporary->url,
                         'display_name' => $temporary->original_name,
                 ];
 
                 return view('CMSViews::form.file-preview' , $return);
 
-               
+
 
                 // return response()->json([
                 //             'value'=> $temporary->name,
-                //             'name' => $input_name , 
-                //             'mime_category' => $temporary->mime_category , 
-                //             'url' =>  env('DATA_URL').'/'.$temporary->url, 
+                //             'name' => $input_name ,
+                //             'mime_category' => $temporary->mime_category ,
+                //             'url' =>  env('DATA_URL').'/'.$temporary->url,
                 //             'display_name' => $temporary->original_name,
 
                 //             'view' => view('CMSViews::form.file-preview' , [
 
                 //             ])->render()
-                // ], 200); 
-              
+                // ], 200);
+
 
             }
 
               $handler = $save->handler();
-           
+
 
             return response()->json([
                 "progress" => $handler->getPercentageDone(),
                 'success' => true
             ]);
 
-         
+
 
         // return response()->json([
         //     'success' => false,
@@ -156,6 +156,11 @@ class FileUploadController extends Controller
     public function UploadToTemporaryAPIV2(Request $request){
 
         ini_set('post_max_size', '500M');
+
+        $initfile = request()->file('file');
+        if(!$this->validateFile($initfile)){
+            return $this->responseError(1, "File could not be uploaded", "The size you are trying to upload is too big or File extension is not supported!");
+        }
 
         $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
 
@@ -203,41 +208,47 @@ class FileUploadController extends Controller
 
     }
 
+    public function validateFile($file){
+        $file_extension = $file->getClientOriginalExtension();
+        $mime_type = $file->getMimeType();
+        try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
+
+        $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','avi','divx',
+            'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
+            'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
+            'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
+            'xltm','xlam','pptx','pptm','ppsx','ppsm','potx','potm', 'ppam','sldx','sldm','onetoc','onetoc2','onetmp','onepkg','odt','odp',
+            'ods','odg','odc','odb','odf','wp','wpd' , 'svg'
+        ];
+
+        if(!in_array(strtolower($file_extension) , $allowed_extensions)){ return false; }
+
+        $bytes_size_per_megabyte = 1048576;
+        $max_size = ($mime_category == "video" ? 100 : 5) * $bytes_size_per_megabyte;
+        if($file_size > $max_size){ return false; }
+
+        return true;
+
+    }
+
     public function createTemporaryFromFile($path , $file){
 
-
-
-
-        
         $disk = env('STORAGE_DISK' , 'public');
 
         $file_extension = $file->getClientOriginalExtension();
 
-        // if(empty($file_extension)){
-        //     return null;
-        // }
-
-        $mime_type = $file->getMimeType(); 
+        $mime_type = $file->getMimeType();
         $file_size = $file->getSize();
         $nameWithoutExtension = uniqid().'-'.now()->timestamp;
         $name = $nameWithoutExtension.'.'.$file_extension;
 
-
-        $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','avi','divx',
-        'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
-        'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
-        'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
-        'xltm','xlam','pptx','pptm','ppsx','ppsm','potx','potm', 'ppam','sldx','sldm','onetoc','onetoc2','onetmp','onepkg','odt','odp',
-        'ods','odg','odc','odb','odf','wp','wpd' , 'svg'
-        ];
-
-        if(!in_array(strtolower($file_extension) , $allowed_extensions)){ return null; }
+        if(!$this->validateFile($file)){
+            return null;
+        }
 
         try { $mime_category = explode('/' , $mime_type)[0]; } catch (\Throwable $th) { $mime_category = 'application'; }
 
-        $bytes_size_per_megabyte = 1048576;
-        $max_size = ($mime_category == "video" ? 100 : 5) * $bytes_size_per_megabyte;
-        if($file_size > $max_size){ return null; }
+
 
         $url = Storage::disk($disk)->putFileAs($path, $file, $name , 'public');
 
@@ -252,17 +263,17 @@ class FileUploadController extends Controller
         $temporary->size = $file_size;
         $temporary->url = $url;
         $temporary->save();
-        
+
         $result = "low_resolution/".$name;
         $jpgResult = "low_resolution/".str_replace([$file_extension], ["jpg"] , $name);
         $public_path = env('STORAGE_DISK') == "public" ? storage_path().'/app/public/' : env('DATA_URL')."/";
         $source = $public_path.$temporary->url;
-        
+
         Storage::disk($disk)->makeDirectory('low_resolution');
-       
-    
+
+
         if($mime_category == "image"){
-            
+
             if(!in_array($temporary->extension , ['svg'])){
                 $img = Image::make($source)
                     ->resize(300, null, function ($constraint) { $constraint->aspectRatio(); $constraint->upsize(); })
@@ -271,7 +282,7 @@ class FileUploadController extends Controller
             }else{
 
             }
-            
+
         }elseif($mime_category == "video"){
             $result_video = "low_resolution/".$nameWithoutExtension.".jpg";
             $res = FFMpeg::open($file)
@@ -283,47 +294,47 @@ class FileUploadController extends Controller
         }
 
         $temporary->thumbnail =  env('DATA_URL').'/low_resolution/'.$nameWithoutExtension.".jpg";
-    
+
         return $temporary;
     }
 
     public function createFileFromTemporary($temporary , $resize = null){
 
         ini_set('max_execution_time' , 50000);
-      
-        
+
+
         $input_file = $temporary->url;
 
-    
+
         $original_path = "files/original/".$temporary->name;
-    
+
         try {
             Storage::disk($temporary->disk)->copy("/".$input_file, $original_path);
         } catch (\Throwable $th) {
-            
+
         }
 
         $external = 0;
-    
+
         $processed = 0;
         if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
-            
+
             try {
                 $this->processImageUpload($temporary , $resize);
                 $processed = 1;
             } catch (\Throwable $th) {
                 $processed = 0;
             }
-        
+
 
         }
 
-        
+
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
         if(!$file){
             $file = new File;
         }
-        
+
         $file->disk = $temporary->disk;
         $file->path = "files";
         $file->name = $temporary->name;
@@ -336,7 +347,7 @@ class FileUploadController extends Controller
         $file->resize = $resize;
         $file->external = $external;
         $file->processed = $processed;
-        
+
         $file->save();
 
         return $file;
@@ -365,7 +376,7 @@ class FileUploadController extends Controller
         ->where(function($q){
             $q->orWhere("processed" , 0);
             $q->orWhereNull('processed');
-        })  
+        })
         ->where(function($q){
             $q->orWhere("process_started" , 0);
             $q->orWhereNull('process_started');
@@ -379,27 +390,27 @@ class FileUploadController extends Controller
         ->get()
         ->take(1);
 
-    
+
         foreach($files as $file){
             if(in_array($file->extension , ['svg'])){ continue; }
-            
+
             switch($file->mime_category){
-                case "video" :  
-                   
+                case "video" :
+
                     try {
-                       
+
                         $this->processVideoUpload($file);
-                       
+
                     } catch (\Throwable $th) {
                         $file->process_error = 1;
                         $file->save();
                     }
                     break;
-                case "image" :  
+                case "image" :
                     try {
-                      
-                        $this->processImageUpload($file); 
-                       
+
+                        $this->processImageUpload($file);
+
                     } catch (\Throwable $th) {
                         $file->process_error = 1;
                         $file->save();
@@ -407,7 +418,7 @@ class FileUploadController extends Controller
                     break;
             }
 
-            
+
         }
 
     }
@@ -420,14 +431,14 @@ class FileUploadController extends Controller
         $input_file = $file->url;
         $file_source = Storage::disk($file->disk)->get("/".$input_file);
 
-       
+
 
         $lowBitrate = 250;
         $midBitrate = 500;
         $highBitrate = 800;
         $superBitrate = 1600;
 
-    
+
         try { $this->generateVideoResolution($file , $lowBitrate , 640 , 480); } catch (\Throwable $th) { }
         try { $this->generateVideoResolution($file , $midBitrate , 1280 , 720); } catch (\Throwable $th) { }
         try { $this->generateVideoResolution($file , $highBitrate , 1920 , 1080); } catch (\Throwable $th) { }
@@ -439,7 +450,7 @@ class FileUploadController extends Controller
         ->toDisk($file->disk)
         ->addFormat((new X264)->setKiloBitrate($lowBitrate), function($media) { $media->scale(640, 480); })
         ->addFormat((new X264)->setKiloBitrate($midBitrate), function($media) { $media->scale(1280, 720); })
-        ->addFormat((new X264)->setKiloBitrate($highBitrate), function ($media) { $media->scale(1920, 1080); })  
+        ->addFormat((new X264)->setKiloBitrate($highBitrate), function ($media) { $media->scale(1920, 1080); })
         ->addFormat((new X264)->setKiloBitrate($superBitrate), function($media) { $media->scale(2560, 1440); })
         ->save("files/streamable/".get_name_from_url($file->name) . '.m3u8');
 
@@ -449,7 +460,7 @@ class FileUploadController extends Controller
     }
 
     public function processVideoUpload($file){
-    
+
        $file->process_started = 1;
        $file->save();
 
@@ -460,10 +471,10 @@ class FileUploadController extends Controller
     }
 
     public function compressVideSameResolution($file){
-       
+
         $format = new \FFMpeg\Format\Video\X264('libmp3lame', 'libx264');
-        $format->setKiloBitrate(500); 
-       
+        $format->setKiloBitrate(500);
+
         FFMpeg::fromDisk($file->disk)
         ->open("/".$file->url)
         ->export()
@@ -492,7 +503,7 @@ class FileUploadController extends Controller
     }
 
     public function processImageUpload($file){
-       
+
         $file->process_started = 1;
         $file->save();
 
@@ -500,11 +511,11 @@ class FileUploadController extends Controller
         $name = $file->name;
         $extension = $file->extension;
         $nameWithoutExtension = str_replace([$extension , '.'] , ['',''] , $name);
-        
+
         $public_path = env('STORAGE_DISK') == "public" ? storage_path().'/app/public/' : env('DATA_URL')."/";
-       
+
         $source = $public_path.$file->url;
-       
+
         $main_optimized_directory = "files/optimized/";
         $jpg_optimized_directory = "files/optimized/jpg/";
         $webp_optimized_directory = "files/optimized/webp/";
@@ -512,18 +523,18 @@ class FileUploadController extends Controller
         $optimized_path = $main_optimized_directory."/".$file->name;
         $optimized_jpg_path = $jpg_optimized_directory ."/".$nameWithoutExtension.".jpg";
         $optimized_webp_path = $webp_optimized_directory."/".$nameWithoutExtension.".webp";
-    
+
         Storage::disk($file->disk)->makeDirectory($main_optimized_directory);
         Storage::disk($file->disk)->makeDirectory($jpg_optimized_directory);
         Storage::disk($file->disk)->makeDirectory($webp_optimized_directory);
 
-        $IMAGE_OPTIMIZER_MAXWITH = env('IMAGE_OPTIMIZER_MAXWITH' , 2400); 
-        $IMAGE_OPTIMIZER_MAXHEIGHT = env('IMAGE_OPTIMIZER_MAXHEIGHT' , 1800); 
-        $IMAGE_ENABLE_WEBP = env('IMAGE_ENABLE_WEBP' , 1); 
-       
-       
+        $IMAGE_OPTIMIZER_MAXWITH = env('IMAGE_OPTIMIZER_MAXWITH' , 2400);
+        $IMAGE_OPTIMIZER_MAXHEIGHT = env('IMAGE_OPTIMIZER_MAXHEIGHT' , 1800);
+        $IMAGE_ENABLE_WEBP = env('IMAGE_ENABLE_WEBP' , 1);
+
+
         $OptimizingImage = Image::make($source);
-       
+
         $ImageWidth = $OptimizingImage->width();
         $ImageHeight = $OptimizingImage->height();
 
@@ -535,7 +546,7 @@ class FileUploadController extends Controller
             $this->saveFromIntervention($OptimizingImage->encode($file->extension, 80) , $optimized_path , $file->disk);
             $this->saveFromIntervention($OptimizingImage->encode('jpg', 80) , $optimized_jpg_path , $file->disk);
             $this->saveFromIntervention($OptimizingImage->encode('webp', 80) , $optimized_webp_path , $file->disk);
-            
+
         }else{
 
             $this->saveFromIntervention($OptimizingImage->encode($file->extension, 80) , $optimized_path , $file->disk);
@@ -552,18 +563,18 @@ class FileUploadController extends Controller
             $resized_path = $main_resize_directory."/".$file->name;
             $resized_jpg_path = $jpg_resized_directory ."/".$nameWithoutExtension.".jpg";
             $resized_webp_path = $webp_resized_directory."/".$nameWithoutExtension.".webp";
-            
+
             Storage::disk($file->disk)->makeDirectory($main_resize_directory);
             Storage::disk($file->disk)->makeDirectory($jpg_resized_directory);
             Storage::disk($file->disk)->makeDirectory($webp_resized_directory);
-            
+
             $ResizingImage = Image::make($source);
             $ImageWidth = $ResizingImage->width();
             $ImageHeight = $ResizingImage->height();
-           
+
 
             $dimension_array = explode('_',$dimension);
-            $DIMENSION_WIDTH = $dimension_array[0]; 
+            $DIMENSION_WIDTH = $dimension_array[0];
             $DIMENSION_HEIGHT = $dimension_array[1];
 
             $height = $ImageWidth <= $ImageHeight ? $DIMENSION_HEIGHT : null;
@@ -580,14 +591,14 @@ class FileUploadController extends Controller
 
         $file->processed = 1;
         $file->save();
-           
+
     }
 
 
-    public function saveFromIntervention($interventionInstance , $path , $disk = 'public'){ 
+    public function saveFromIntervention($interventionInstance , $path , $disk = 'public'){
         Storage::disk($disk)->put($path, $interventionInstance->stream() , 'public');
     }
-    
+
 
     public function getMedias($file , $force_type = 'array' , $force_optimize = false){
 
@@ -603,7 +614,7 @@ class FileUploadController extends Controller
         }else{
             $array = $file;
         }
-       
+
 
         $files = File::whereIn('name' , $array)->where('deleted',0)->get()->map(function($f){
 
@@ -618,7 +629,7 @@ class FileUploadController extends Controller
             }
 
             $original = env('DATA_URL').'/'.$f->url;
-            
+
             if($force_optimize){
                 $original = $opt;
             }
@@ -638,7 +649,7 @@ class FileUploadController extends Controller
         }else{
             return count($files) > 0 ? $files[0] : null;
         }
-        
+
 
     }
 
