@@ -157,10 +157,7 @@ class FileUploadController extends Controller
 
         ini_set('post_max_size', '500M');
 
-        $initfile = request()->file('file');
-        if(!$this->validateFile($initfile)){
-            return $this->responseError(1, "File could not be uploaded", "The size you are trying to upload is too big or File extension is not supported!");
-        }
+
 
         $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
 
