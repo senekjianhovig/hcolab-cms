@@ -615,7 +615,7 @@ class FileUploadController extends Controller
         }
 
 
-        $files = File::whereIn('name' , $array)->where('deleted',0)->get()->map(function($f){
+        $files = File::whereIn('name' , $array)->where('deleted',0)->get()->map(function($f) use($force_type , $force_optimize){
 
             $nameWithoutExtension = str_replace(['.'.$f->extension] , [''] , $f->name);
 
