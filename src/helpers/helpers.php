@@ -197,6 +197,8 @@ if(!function_exists('render_form_field')){
                                 $value .= "<a href='".get_media_url($file->name)."' data-fancybox data-type='image' class='mr-2 mb-2' > <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
                             }elseif($file->mime_category == "video"){
                                 $value .= "<a href='".env('DATA_URL')."/files/original/".$file->name."' data-fancybox data-type='video' class='mr-2 mb-2'> <img width='100' src='".env('DATA_URL')."/low_resolution/".get_name_from_url($file->name).".jpg' />";
+                            }else{
+                                $value .= "<a href='".env('DATA_URL')."/files/original/".$file->name."' target='blank' > <div style='width:50px;height:50px;display:flex ; align-items : center ; justify-content:center'><i class='file icon' style='color:#c7c5c3;font-size:30px ; height: initial'></i></div>  </a>";
                             }
                         }
                          break;
