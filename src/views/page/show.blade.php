@@ -41,7 +41,7 @@ $sections = $page->sections;
     </div>
     @endif
 
-    <form id="page" method="POST" action="{{route('page.save' , ['page_slug' => $page->slug ])}}"
+    <form id="page" method="POST" @if($compact) onsubmit="parent.jQuery.fancybox.close();" @endif action="{{route('page.save' , ['page_slug' => $page->slug ])}}"
         enctype='multipart/form-data' class="ui form @if($compact) py-3 @endif">
         @csrf
         <input type="hidden" name="redirect" value="{{$prev_url}}" />

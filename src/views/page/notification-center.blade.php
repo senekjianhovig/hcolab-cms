@@ -2,7 +2,13 @@
 @section('head')
 <title>Notification Center</title>
 
+@php
+use Carbon\Carbon;
+@endphp
+
 <style>
+
+
 
 .notification-item{
     text-decoration: none;
@@ -44,7 +50,7 @@
 
 
 @php
-$notifications_by_slugs = App\Models\CmsNotification::where('deleted',0)->orderBy('id', 'desc')->get()->groupBy('page_slug');
+$notifications_by_slugs = App\Models\CmsNotification::where('deleted',0)->orderBy('id', 'desc')->where('created_at' , '>' , Carbon::now()->subMonth())->get()->groupBy('page_slug');
 
 @endphp
 
