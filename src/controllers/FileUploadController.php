@@ -212,18 +212,18 @@ class FileUploadController extends Controller
 
         $file_size = $file->getSize();
 
-        $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','avi','divx',
-            'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
-            'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
-            'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
-            'xltm','xlam','pptx','pptm','ppsx','ppsm','potx','potm', 'ppam','sldx','sldm','onetoc','onetoc2','onetmp','onepkg','odt','odp',
-            'ods','odg','odc','odb','odf','wp','wpd' , 'svg'
+        $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','divx',
+        'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
+        'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
+        'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
+        'xltm','xlam','pptx','pptm','ppsx','ppsm','potx','potm', 'ppam','sldx','sldm','onetoc','onetoc2','onetmp','onepkg','odt','odp',
+        'ods','odg','odc','odb','odf','wp','wpd' , 'svg'
         ];
 
         if(!in_array(strtolower($file_extension) , $allowed_extensions)){ return false; }
 
         $bytes_size_per_megabyte = 1048576;
-        $max_size = ($mime_category == "video" ? 100 : 5) * $bytes_size_per_megabyte;
+        $max_size = ($mime_category == "video" ? 100 : 100) * $bytes_size_per_megabyte;
         if($file_size > $max_size){ return false; }
 
         return true;
