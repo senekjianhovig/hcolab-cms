@@ -1,4 +1,4 @@
-@extends('CMSViews::layout.layout', ['title' => "Notification Center"])
+@extends('CMSViews::layout.layout', ['title' => "Notification Center" , "disable" => ["jqueryui"]])
 @section('head')
 <title>Notification Center</title>
 
@@ -60,7 +60,7 @@ $notifications_by_slugs = App\Models\CmsNotification::where('deleted',0)->orderB
 <div class="container-fluid my-3">
 
 
-    <div class="ui styled accordion">
+    <div class="ui styled accordion ">
        
   
 
@@ -111,6 +111,9 @@ $notifications_by_slugs = App\Models\CmsNotification::where('deleted',0)->orderB
 @section('scripts')
 <script>
 
+// $('.ui.accordion')
+//   .accordion()
+// ;
 
 </script>
 @endsection

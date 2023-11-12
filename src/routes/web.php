@@ -86,7 +86,8 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
 
         Route::get('{page_slug}/create', [hcolab\cms\controllers\PageController::class, 'create'])->name('page.create');
 
-        Route::get('{page_slug}/import', [hcolab\cms\controllers\PageController::class, 'import'])->name('page.import');
+        Route::get('{page_slug}/import', [hcolab\cms\controllers\PageController::class, 'renderImport'])->name('page.import');
+        Route::post('{page_slug}/import', [hcolab\cms\controllers\PageController::class, 'import']);
         Route::get('{page_slug}/export', [hcolab\cms\controllers\PageController::class, 'export'])->name('page.export');
 
         Route::get('{page_slug}/create/validate/slug/{key}/{slug}', [hcolab\cms\controllers\PageController::class, 'validateSlug'])->name('page.validate-slug');

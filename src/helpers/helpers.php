@@ -3,14 +3,16 @@
  use Illuminate\Support\Facades\Mail;
 
 if(!function_exists('process_grid_field')){
-    function process_grid_field($row, $column , $related_tables){
+    function process_grid_field($row, $column , $related_tables , $formatted = true){
 
             switch ($column->type) {
                 case 'textfield':
                 return $row->{$column->name};
 
                 case 'primary_field':
-                return "<div class='ui  label grey'>".$row->{$column->name}."</div>";
+
+                
+                return $formatted ? "<div class='ui  label grey'>".$row->{$column->name}."</div>" :$row->{$column->name} ;
 
                 case 'select':
                     // dd($column);
@@ -18,13 +20,16 @@ if(!function_exists('process_grid_field')){
 
                 case 'multiple select':
 
-                return "Values";
+                return "";
 
 
                 case "boolean checkbox":
 
-                    return $row->{$column->name} == 0 ?  '<i class="red x icon"></i>' : '<i class="green checkmark icon"></i>';
-
+                    if($formatted){
+                        return $row->{$column->name} == 0 ?  '<i class="red x icon"></i>' : '<i class="green checkmark icon"></i>';
+                    }else{
+                        return $row->{$column->name} == 0 ?  'No' : 'Yes';
+                    }
                 default:
                 return $row->{$column->name};
             }

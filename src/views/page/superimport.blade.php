@@ -8,7 +8,7 @@
 
 <div class="container-fluid my-3">
 
-    <form  method="POST" class="ui form">
+    <form  method="POST" class="ui form" enctype="multipart/form-data">
         @csrf
    
 
@@ -24,14 +24,14 @@
             <h3 class="mb-4">Import data to the following table: {{$page->title}}</h3>
 
 
-            <a class="ui button green mr-2 mb-4" type="button" href="">
+            {{-- <a class="ui button green mr-2 mb-4" type="button" href="">
                 Export Sample</a>
-           
+            --}}
 
             <div class="field">
-                <label>Select Primary Key</label>
-                <select class="ui fluid dropdown">
-                    <option value="" selected disabled>Select Primary Key</option>
+                <label>Select Primary Field</label>
+                <select name="primary_field" class="ui fluid dropdown">
+                    <option value="" selected disabled>Select Primary Field</option>
                     @foreach($page->columns as $column)
                     <option value="{{$column->name}}">{{$column->label}}</option>
                     @endforeach

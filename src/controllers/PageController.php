@@ -3,6 +3,11 @@
 namespace hcolab\cms\controllers;
 
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use hcolab\cms\exports\GridExport;
+use hcolab\cms\imports\GridImport;
+use Carbon\Carbon;
+
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Filesystem\Filesystem;
@@ -629,14 +634,60 @@ class PageController extends Controller
         return $pages;
     }
 
-
     public function import($page_slug){
+
+        
+
+        $page = $this->initializeRequest($page_slug);
+       
+        if (is_null($page)) {
+            return abort(404);
+        }
+
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'export');
+        if(!$check){ return abort(404); }
+
+
+        $page->setElements();
+    
+        $page->setColumns();
+
+        if(isset($page->sections)){
+            $page->setSections();
+        }
+
+        request()->validate([
+            'upload_file' => 'required'
+        ]);
+
+        $file = request()->file('upload_file');
+        $primary_field =  request()->input('primary_field');
+
+        $related_tables = $page->getRelatedTables();
+        $columns = $page->getExportColumns();
+        
+
+        ini_set('max_execution_time', 180);
+
+        // dd($related_tables);
+
+        Excel::import(new GridImport($page->entity , $columns ,$primary_field , $related_tables), $file);
+
+        return redirect()->route('page' , ['page_slug' => $page_slug , "notification_type"=>"success"  , "notification_message"=> "Import successfully completed!"]);
+
+    }
+
+    public function renderImport($page_slug){
        
         $page = $this->initializeRequest($page_slug);
        
         if (is_null($page)) {
             return abort(404);
         }
+
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'import');
+        if(!$check){ return abort(404); }
+
 
         $page->setElements();
     
@@ -653,7 +704,37 @@ class PageController extends Controller
     }
 
     public function export($page_slug){
-            // dd("export");
+        $page = $this->initializeRequest($page_slug);
+        if (is_null($page)) {
+            return response()->json([], 404);
+        }
+
+     
+        $check = CmsUserRolePermission::checkPermissions($page->entity , 'export');
+        if(!$check){ return abort(404); }
+
+        $page->setElements();
+        $page->setColumns();
+        $rows = $page->getRows(false);
+
+        $related_tables = $page->getRelatedTables();
+        $columns = $page->getExportColumns();
+
+        $rows = collect($rows)->map(function($row) use ($columns , $related_tables){
+            $result = [];
+
+            foreach($columns as $column){
+                $result[$column->name] = process_grid_field($row , $column , $related_tables , false);
+            }
+
+            return $result;
+        });
+
+    
+        $columns = collect($columns)->pluck('label')->values()->toArray();
+
+        return Excel::download(new GridExport($rows , $columns), $page->entity.'_'.Carbon::now()->format('d-m-Y h:i:s').'.xlsx');
+
     }
 
 }

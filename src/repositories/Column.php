@@ -8,30 +8,70 @@ class Column
 
   public $columns;
 
-  public function getColumns(){
-  
-    $array = [];
+
+  public function getExportColumns(){
+    $array = collect([]);
+
+    
 
     foreach($this->elements as $element){
-        $array [$element->name] = $element;
-    }
 
-    foreach($this->columns as $column){
-
-      switch ($column->name) {
-        case 'created_at':
-          $column->type = "date time picker";
-          $column->label = "Created";
-          break;
-          default:
-          $column->type = $column->type ? $column->type : $array[$column->name]->ui->type;
-          $column->label = $column->label ? $column->label : $array[$column->name]->ui->label;
-          break;
+      if(!$element->name){
+        continue;
       }
 
+      $column = new \StdClass;
+      $column->name = $element->name;
+      $column->label = $element->ui->label ?? "-";
+      $column->type = $element->ui->type ?? "hidden";
+
+      $array->push($column);
     }
 
+    return $array;
+  }
 
+  public function getColumns(){
+  
+    // $array = [];
+
+    // foreach($this->elements as $element){
+    //     $array [$element->name] = $element;
+    // }
+
+    // foreach($this->columns as $column){
+
+    //   switch ($column->name) {
+    //     case 'created_at':
+    //       $column->type = "date time picker";
+    //       $column->label = "Created";
+    //       break;
+    //       default:
+    //       $column->type = $column->type ? $column->type : $array[$column->name]->ui->type;
+    //       $column->label = $column->label ? $column->label : $array[$column->name]->ui->label;
+    //       break;
+    //   }
+
+    // }
+
+
+// dd($this->columns);
+
+  
+
+// $field_details = collect($this->elements)->where('name' , $name)->first();
+// if(!$label){
+//   $label = $field_details ? $field_details->ui->label : "";
+//   $type = $field_details ? $field_details->ui->type : "";
+// }
+
+// $column = new \StdClass;
+// $column->name = $name;
+// $column->label = $label;
+// $column->type = $type;
+// $column->sortable = $sortable;
+// $column->searchable = $searchable;
+// $column->details = $field_details;
 
 
 
