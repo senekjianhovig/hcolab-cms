@@ -86,8 +86,10 @@ $related_tables = $page->getRelatedTables();
                     @if(in_array('export' , $actions))
                     <a class="ui button mr-2" type="button" target="_blank" href="{{route('page.export', ['page_slug' => $page->slug ])}}">
                        Export</a>
-
-                    <a class="ui button mr-2" type="button" href="{{route('page.import', ['page_slug' => $page->slug ])}}">
+                    @endif
+                    
+                    @if(in_array('import' , $actions))
+                        <a class="ui button mr-2" type="button" href="{{route('page.import', ['page_slug' => $page->slug ])}}">
                         Import</a>
                     @endif
 

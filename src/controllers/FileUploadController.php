@@ -622,6 +622,9 @@ class FileUploadController extends Controller
             if($f->mime_category == 'video'){
                 $thumbnail = env('DATA_URL').'/low_resolution/'.$nameWithoutExtension.".jpg";
                 $opt = env('DATA_URL')."/files/downloadable-optimized/".$nameWithoutExtension.".mp4";
+            }elseif($f->mime_category == 'application'){
+                $thumbnail = env('DATA_URL').'/'.$f->url;
+                $opt = env('DATA_URL').'/'.$f->url;
             }else{
                 $thumbnail = env('DATA_URL').'/files/optimized/jpg/'.$nameWithoutExtension.".jpg";
                 $opt = env('DATA_URL').'/files/optimized/jpg/'.$nameWithoutExtension.".jpg";
