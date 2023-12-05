@@ -163,8 +163,8 @@ class PushNotificationController extends Controller
     }
 
     public function sendByFirebase($id , $title , $text , $image_url , $player_ids, $btn_link = null){
-       $notification =  Larafirebase::withTitle($notification->title)
-        ->withBody($notification->message)
+       $notification =  Larafirebase::withTitle($title)
+        ->withBody($text)
         ->withSound('default');
 
         if($image_url){
