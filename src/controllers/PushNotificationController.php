@@ -99,6 +99,7 @@ class PushNotificationController extends Controller
             return [
                 'row_id' => $row->id,
                 'row_model' => $model,
+                'device_token' => $row->device_token,
                 'notification_id' => $notification->id,
                 'dictionary' => is_array($dictionary) ? json_encode($dictionary) : $dictionary,
                 'read' => 0
@@ -170,6 +171,14 @@ class PushNotificationController extends Controller
         if($image_url){
             $notification->withImage($image_url);
         }
+
+
+        try {
+            $player_ids = $player_ids->toArray();
+        } catch (\Throwable $th) {
+            $player_ids = [];
+        }
+        
 
         return $notification->withPriority('high')->sendNotification($player_ids);
     }

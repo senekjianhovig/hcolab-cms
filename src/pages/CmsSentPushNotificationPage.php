@@ -12,7 +12,7 @@ class CmsSentPushNotificationPage extends Page
     */
     public function __construct()
     {
-        $this->version = "1.3";
+        $this->version = "1.4";
         $this->page = "CmsSentPushNotificationPage";
         $this->entity = "cms_sent_push_notifications";
         $this->slug = "cms-sent-push-notifications";

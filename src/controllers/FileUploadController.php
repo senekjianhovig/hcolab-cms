@@ -353,7 +353,48 @@ class FileUploadController extends Controller
     }
 
 
+    public function processImage($id){
+        
+        $file = File::find($id);
+        
+        if(!$file){
+            return 0;
+        }
+        
+        if(in_array($file->extension , ['svg'])){ return 0; }
+
+            switch($file->mime_category){
+                case "video" :
+
+                    try {
+
+                        $this->processVideoUpload($file);
+
+                    } catch (\Throwable $th) {
+                        $file->process_error = 1;
+                        $file->save();
+                    }
+                    break;
+                case "image" :
+                    try {
+
+                        $this->processImageUpload($file);
+
+                    } catch (\Throwable $th) {
+                        $file->process_error = 1;
+                        $file->save();
+                    }
+                    break;
+            }
+
+        
+        return 1;
+        
+        
+    }
+
     public function processMediaCron(){
+
 
         ini_set('max_execution_time' , 50000);
         ini_set('post_max_size', '500M');
@@ -365,7 +406,11 @@ class FileUploadController extends Controller
         })->where(function($q){
             $q->orWhere("process_error" , 0);
             $q->orWhereNull('process_error');
-        })->count();
+        })
+        // ->first();
+        ->count();
+
+
 
         if($nb_ongoing > 0){
             return;
@@ -390,8 +435,17 @@ class FileUploadController extends Controller
         ->take(1);
 
 
+
+
+
         foreach($files as $file){
-            if(in_array($file->extension , ['svg'])){ continue; }
+           
+            if(in_array($file->extension , ['svg'])){
+                  $file->process_error = 1;
+                  $file->save();
+                continue; 
+                
+            }
 
             switch($file->mime_category){
                 case "video" :
@@ -415,6 +469,13 @@ class FileUploadController extends Controller
                         $file->save();
                     }
                     break;
+                    
+                    default:
+                        
+                $file->process_error = 1;
+                  $file->save();
+               break;
+                        
             }
 
 
