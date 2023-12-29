@@ -398,7 +398,7 @@ class FileUploadController extends Controller
 
         $file = File::query()
         ->where('deleted',0)
-        ->orderBy('id' , $id)
+        ->where('id' , $id)
         ->first();
 
         if(in_array($file->extension , ['svg'])){

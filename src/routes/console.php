@@ -19,7 +19,7 @@ Artisan::command('hcolab:generateSitemap', function () {
 })->purpose('Generate Sitemap of the website');
 
 
-Artisan::command('hcolab:processSingleMedia', function ($id) {
+Artisan::command('hcolab:processSingleMedia {id}', function ($id) {
     (new \hcolab\cms\controllers\FileUploadController)->processSingleMedia($id);
 })->purpose('Process Single Cron');
 
