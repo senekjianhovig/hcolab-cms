@@ -393,6 +393,53 @@ class FileUploadController extends Controller
         
     }
 
+
+    public function processSingleMedia($id){
+
+        $file = File::query()
+        ->where('deleted',0)
+        ->orderBy('id' , $id)
+        ->first();
+
+        if(in_array($file->extension , ['svg'])){
+            $file->process_error = 1;
+            $file->save();
+            return; 
+        }
+
+      switch($file->mime_category){
+          case "video" :
+
+              try {
+
+                  $this->processVideoUpload($file);
+
+              } catch (\Throwable $th) {
+                  $file->process_error = 1;
+                  $file->save();
+              }
+              break;
+          case "image" :
+              try {
+
+                  $this->processImageUpload($file);
+
+              } catch (\Throwable $th) {
+                  $file->process_error = 1;
+                  $file->save();
+              }
+              break;
+              
+              default:
+                  
+            $file->process_error = 1;
+            $file->save();
+         break;
+                  
+      }
+
+    }
+
     public function processMediaCron(){
 
 

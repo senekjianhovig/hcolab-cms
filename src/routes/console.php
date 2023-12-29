@@ -17,3 +17,10 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('hcolab:generateSitemap', function () {
     (new \hcolab\cms\controllers\SitemapController)->generateSitemap();
 })->purpose('Generate Sitemap of the website');
+
+
+Artisan::command('hcolab:processSingleMedia', function ($id) {
+    (new \hcolab\cms\controllers\FileUploadController)->processSingleMedia($id);
+})->purpose('Process Single Cron');
+
+
