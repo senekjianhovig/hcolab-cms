@@ -458,13 +458,15 @@ class FileUploadController extends Controller
         // ->count();
 
         $nb_ongoing = !is_null($ongoing) ? 1 : 0;
-        if(Carbon::parse($ongoing->created_at) < Carbon::now()->subHours(4)){
-            $ongoing->process_started = 0;
-            $ongoing->save();
-            return;    
-        }
-
+    
         if($nb_ongoing > 0){
+
+            if(Carbon::parse($ongoing->created_at) < Carbon::now()->subHours(4)){
+                $ongoing->process_started = 0;
+                $ongoing->save();
+                return;    
+            }
+
             return;
         }
 
