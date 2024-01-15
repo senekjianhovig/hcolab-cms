@@ -20,7 +20,7 @@ use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadFailedException;
 
 use Pion\Laravel\ChunkUpload\Handler\DropZoneUploadHandler;
-
+use Carbon\Carbon;
 
 use Image;
 
@@ -319,7 +319,7 @@ class FileUploadController extends Controller
         if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
 
             try {
-                $this->processImageUpload($temporary , $resize);
+                $this->processImageUpload($temporary);
                 $processed = 1;
             } catch (\Throwable $th) {
                 $processed = 0;
@@ -446,7 +446,7 @@ class FileUploadController extends Controller
         ini_set('max_execution_time' , 50000);
         ini_set('post_max_size', '500M');
 
-        $nb_ongoing = File::query()->where("process_started" , 1)
+        $ongoing = File::query()->where("process_started" , 1)
         ->where(function($q){
             $q->orWhere("processed" , 0);
             $q->orWhereNull('processed');
@@ -454,10 +454,15 @@ class FileUploadController extends Controller
             $q->orWhere("process_error" , 0);
             $q->orWhereNull('process_error');
         })
-        // ->first();
-        ->count();
+        ->first();
+        // ->count();
 
-
+        $nb_ongoing = !is_null($ongoing) ? 1 : 0;
+        if(Carbon::parse($ongoing->created_at) < Carbon::now()->subHours(4)){
+            $ongoing->process_started = 0;
+            $ongoing->save();
+            return;    
+        }
 
         if($nb_ongoing > 0){
             return;
