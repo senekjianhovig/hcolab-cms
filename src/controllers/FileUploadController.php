@@ -315,18 +315,7 @@ class FileUploadController extends Controller
 
         $external = 0;
 
-        $processed = 0;
-        if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
-
-            try {
-                $this->processImageUpload($temporary);
-                $processed = 1;
-            } catch (\Throwable $th) {
-                $processed = 0;
-            }
-
-
-        }
+       
 
 
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
@@ -345,9 +334,18 @@ class FileUploadController extends Controller
         $file->url = $external == 1 ? $uri : $original_path;
         $file->resize = $resize;
         $file->external = $external;
-        $file->processed = $processed;
-
+        $file->processed = 0;
         $file->save();
+     
+        if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
+            try {
+                $this->processImageUpload($file);
+                $file->processed = 1;
+            } catch (\Throwable $th) {
+                $file->processed = 0;
+            }
+            $file->save();
+        }
 
         return $file;
     }
@@ -461,11 +459,11 @@ class FileUploadController extends Controller
     
         if($nb_ongoing > 0){
 
-            if(Carbon::parse($ongoing->created_at) < Carbon::now()->subHours(4)){
-                $ongoing->process_started = 0;
-                $ongoing->save();
-                return;    
-            }
+            // if(Carbon::parse($ongoing->created_at) < Carbon::now()->subHours(4)){
+            //     $ongoing->process_started = 0;
+            //     $ongoing->save();
+            //     return;    
+            // }
 
             return;
         }
