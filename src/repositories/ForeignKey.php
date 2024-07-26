@@ -21,7 +21,7 @@ public static function list(){
         switch ($foreign_key['type']) {
             case 'single':
                 $first = explode(':' , $format[0]);
-                $array[$name] = self::singleTableQuery( $first[0], $first[1], $first[2]);
+                $array[$name] = self::singleTableQuery( $first[0], $first[1], $first[2] , $foreign_key['options'] ?? []);
             break;
             
             case 'double':
@@ -44,8 +44,14 @@ public static function list(){
     // ];
 }
 
-public static function singleTableQuery($table , $key , $value){
-    return DB::table($table)->select($key.' as id', $value.' as label')->where('deleted',0);
+public static function singleTableQuery($table , $key , $value , $options = []){
+    $result =  DB::table($table)->select($key.' as id', $value.' as label')->whereNotNull($value)->where('deleted',0);
+		foreach($options as $optionkey=>$option){
+			$result->where($optionkey , $option);
+		}
+
+return $result;
+
 }
 
 public static function doubleTableQuery($main_table, $related_table,  $main_table_value , $related_table_value , $main_key, $foreign_key, $seperator = '/'){

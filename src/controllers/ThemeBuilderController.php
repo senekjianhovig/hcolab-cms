@@ -223,6 +223,7 @@ class ThemeBuilderController extends Controller
        
        $result = [];
        
+       
        foreach($components as $component){
        
        
@@ -232,17 +233,25 @@ class ThemeBuilderController extends Controller
            $section =  new $namespace;
    
            $foreign_keys = collect($config['foreign_keys'])->whereIn('name' , $section->foreign_keys)->pluck('format' , 'name')->map(function($key){
+               
+               $arr = explode(",",$key);
+               $length = count($arr);
+               $key = $arr[$length - 1];
                return explode(":" , $key)[0];
            });
            
-   
-   
+    
+        //     if($component->id == 10){
+        //       dd($foreign_keys);
+        //   }
    
            try{
                $payload = json_decode($component->payload);
            }catch(\Throwable $th){
                $payload = [];
            }
+           
+        
    
            if(!is_array($payload)) { $payload = []; }
    
@@ -257,7 +266,7 @@ class ThemeBuilderController extends Controller
                    $arr[$payload_item->name] = $payload_item->value;
                }
            } 
-   
+    
            $section->setElements();
    
            $elements = $section->elements;
@@ -268,11 +277,15 @@ class ThemeBuilderController extends Controller
            foreach($elements as $element){
                switch($element->ui->type){
                    case 'multiple select' :
+                 
                      if(isset($arr[$element->name])){
                          
-                        
+                               
                          $data = DB::table($foreign_keys[$element->name])->where('deleted',0)->whereIn('id' ,$arr[$element->name]);
-                        
+                       
+                    //   $str = 'FIELD(id,'.implode(",",$arr[$element->name]).')';
+
+                    //      $data->orderByRaw($str); 
                          if (Schema::hasColumn($foreign_keys[$element->name], 'orders')){
                             $data->orderBy('orders' , 'ASC');
                          }

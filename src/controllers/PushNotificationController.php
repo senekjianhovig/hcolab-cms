@@ -235,7 +235,7 @@ class PushNotificationController extends Controller
         ->where('deleted' , 0)
         ->update(['read' => 1]);
 
-        return response()->json([] , 200);
+        return response()->json(["nb_unread_notifications" => 0] , 200);
 
     }
 
@@ -250,8 +250,16 @@ class PushNotificationController extends Controller
         ->where('id' , $notification_id)
         ->where('deleted' , 0)
         ->update(['read' => 1]);
+        
+        $unread_notifications =  CmsSentPushNotification::where('row_id' , request()->row_id)
+        ->where('row_model' , request()->row_model)
+        ->where('deleted' , 0)->where('read', 0)
+        ->count();
+        
 
-        return response()->json([] , 200);
+        return response()->json([
+               'nb_unread_notifications' => $unread_notifications
+            ] , 200);
 
     }
 

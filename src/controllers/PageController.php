@@ -90,10 +90,12 @@ class PageController extends Controller
     
         $page->setColumns();
 
+
         if(isset($page->sections)){
             $page->setSections();
         }
    
+ 
         
         try {
             $page->generateTable();

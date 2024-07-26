@@ -173,8 +173,19 @@ class Page extends Element
                 if(empty(request()->input('filter_'.$column->name))){
                     continue;
                 }
+                
+               
+                
+              
+                
 
                 $search = request()->input($column->name);
+                
+                  
+                if($column->type == "select"){
+                    $query->where($column->name ,$search);
+                    continue;
+                }else{
                 
                     $words = explode(" ", $search);
                     foreach ($words as $word) {
@@ -187,6 +198,7 @@ class Page extends Element
                                 ->orWhere($searchField, $trim_word);
                         });
                     }
+                }
                 
             }
 

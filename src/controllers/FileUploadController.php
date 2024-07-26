@@ -20,7 +20,7 @@ use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadFailedException;
 
 use Pion\Laravel\ChunkUpload\Handler\DropZoneUploadHandler;
-use Carbon\Carbon;
+
 
 use Image;
 
@@ -31,7 +31,7 @@ class FileUploadController extends Controller
 
     public function UploadToTemporaryAPI(){
 
-        ini_set('post_max_size', '500M');
+        ini_set('post_max_size', '5000M');
 
 
         $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
@@ -155,7 +155,7 @@ class FileUploadController extends Controller
 
     public function UploadToTemporaryAPIV2(Request $request){
 
-        ini_set('post_max_size', '500M');
+        ini_set('post_max_size', '5000M');
 
 
 
@@ -223,7 +223,7 @@ class FileUploadController extends Controller
         if(!in_array(strtolower($file_extension) , $allowed_extensions)){ return false; }
 
         $bytes_size_per_megabyte = 1048576;
-        $max_size = ($mime_category == "video" ? 100 : 100) * $bytes_size_per_megabyte;
+        $max_size = ($mime_category == "video" ? 1000 : 1000) * $bytes_size_per_megabyte;
         if($file_size > $max_size){ return false; }
 
         return true;
@@ -336,16 +336,28 @@ class FileUploadController extends Controller
         $file->external = $external;
         $file->processed = 0;
         $file->save();
-     
+        
+        
+        $processed = 0;
         if($temporary->mime_category == 'image' && !in_array($temporary->extension , ['svg'])){
+
             try {
                 $this->processImageUpload($file);
-                $file->processed = 1;
+                $processed = 1;
+                $json = "[]";
             } catch (\Throwable $th) {
-                $file->processed = 0;
+                $processed = 0;
+                $json = json_encode($th);
             }
-            $file->save();
+
+
         }
+        
+        $file->processed = $processed;
+        // $file->json = $json;
+        $file->save();
+        
+        
 
         return $file;
     }
@@ -453,7 +465,6 @@ class FileUploadController extends Controller
             $q->orWhereNull('process_error');
         })
         ->first();
-        // ->count();
 
         $nb_ongoing = !is_null($ongoing) ? 1 : 0;
     
@@ -482,9 +493,32 @@ class FileUploadController extends Controller
             $q->orWhereNull('process_error');
         })
         ->where('deleted',0)
+        ->where('mime_category' , 'image')
         ->orderBy('id' , 'desc')
         ->get()
         ->take(1);
+        
+        if(count($files) == 0){
+            
+                $files = File::query()
+        ->where(function($q){
+            $q->orWhere("processed" , 0);
+            $q->orWhereNull('processed');
+        })
+        ->where(function($q){
+            $q->orWhere("process_started" , 0);
+            $q->orWhereNull('process_started');
+        })
+        ->where(function($q){
+            $q->orWhere("process_error" , 0);
+            $q->orWhereNull('process_error');
+        })
+        ->where('deleted',0)
+        ->orderBy('id' , 'desc')
+        ->get()
+        ->take(1);
+            
+        }
 
 
 
