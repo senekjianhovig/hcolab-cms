@@ -64,6 +64,7 @@ $related_tables = $page->getRelatedTables();
     $data = new \stdClass();
     $data->id = request()->input('id');
 
+    $recordsperpage = [50 , 100 , 200 , 300 , 400 , 500 , 750 , 1000 , 1250 , 1500 , 1750 , 2000];
 
 @endphp
 
@@ -197,7 +198,15 @@ $related_tables = $page->getRelatedTables();
             @include('CMSViews::grid_v2.grid', ['page' => $page , 'actions' => $actions])
     
 
-            <div class="pagination-area pagination-area-{{$page->slug}} d-flex justify-content-end">
+            <div class="pagination-area pagination-area-{{$page->slug}} d-flex justify-content-between">
+
+                <select class="ui dropdown" onchange="window.location.href=$('[data-url]').attr('data-url') + '?records='+$(this).val()"> 
+                    <option @if(request()->input('records') == "20" || request()->input('records') == null) selected @endif value="20"> Show 20 per page </option> 
+                    @foreach($recordsperpage as $records)
+                    <option @if(request()->input('records') == $records) selected @endif value="{{$records}}"> Show {{$records}} per page </option> 
+                    @endforeach
+                </select>
+
                 @include('CMSViews::grid_v2.pagination', ['page' => $page ])
             </div>
 
@@ -218,12 +227,14 @@ $related_tables = $page->getRelatedTables();
     <script>
 
 
-    document.querySelector('#push-notification-form').addEventListener('submit', function() {
+    document.querySelector('#push-notification-form')?.addEventListener('submit', function() {
         var hiddenInput = document.createElement('input');
+        if(hiddenInput){
         hiddenInput.type = 'hidden';
         hiddenInput.name = 'path';
         hiddenInput.value = window.location.href;
         this.appendChild(hiddenInput);
+        }
     });
 
 

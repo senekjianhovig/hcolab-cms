@@ -211,7 +211,10 @@ class Page extends Element
             return $table_data->get();
         }
 
-        return $table_data->paginate(20);
+
+        $records = request()->input('records' , 20);
+
+        return $table_data->paginate($records);
     }
 
     public function getRow($id)
