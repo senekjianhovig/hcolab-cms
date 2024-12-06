@@ -17,20 +17,20 @@ $current_url = url()->current();
         <ul>
 
             <li><a href="/cms"> Dashboard</a></li>
-        
+
 
             <?php $sidebar = config('pages')['menu']; ?>
-           
+
 
             @foreach ($sidebar as $item)
-           
+
             @switch($item["type"])
             @case('static')
 
             @php
                 $link_to = str_replace( env('APP_URL') , '' , $item['link_to']);
                 $current_to = str_replace(env('APP_URL') , '' , $current_url);
-               
+
             @endphp
 
             <li> <a @if(array_key_exists('target' , $item)) target="{{$item['target']}}" @endif
@@ -46,15 +46,17 @@ $current_url = url()->current();
 
                     @foreach($item['children'] as $dropdown_page)
 
+
                     @if($dropdown_page['type'] == 'page')
 
                     @php
                     $entity = $dropdown_page['link_to'];
+                    
                     $class_exists = class_exists($entity);
 
 
                     @endphp
-        
+
                     @if($class_exists)
                     @php $class = new $entity; @endphp
                     <li>
@@ -85,10 +87,10 @@ $current_url = url()->current();
             @endphp
 
             @if($class_exists)
-            @php 
-            
-            $class = new $entity; 
-            
+            @php
+
+            $class = new $entity;
+
             @endphp
             <li>
                 <a href="{{route('page',['page_slug'=> $class->slug ])}}" class="@if(str_contains($current_url, $class->slug)) active @endif"> {!! isset($class->icon) ?? $class->icon !!}
