@@ -21,6 +21,8 @@ class Page extends Element
     public $sort_direction;
     public $foreign_keys;
     public $sections;
+    public $push_notification_key;
+    public $push_notification_page;
 
 
     public function checkEntity(){
