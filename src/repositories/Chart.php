@@ -277,7 +277,10 @@ class Chart
     public function getTable(){
 
         $options = $this->options;
-        $model = $options['model']::where('deleted',0);
+        $model = $options['model']::where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          });
         foreach($options['conditions'] as $condition){
             $model->where($condition['field'] , $condition['operator'] , $condition['value']);
         }

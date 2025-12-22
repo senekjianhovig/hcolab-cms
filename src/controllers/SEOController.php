@@ -56,7 +56,14 @@ class SEOController extends Controller
             $path = '/'.$path;
         }
 
-        $seo =  CmsSEO::where('url' , $path)->whereNotNull('title')->where('deleted' , 0)->first();
+        $seo =  CmsSEO::where('url' , $path)->whereNotNull('title')
+        
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+
+        ->first();
         $default_seo =  CmsSEO::where('url' , "/")->whereNotNull('title')->where('deleted' , 0)->first();
 
         return view('CMSViews::page.seo' , compact('seo' , 'default_seo'));
@@ -107,7 +114,12 @@ class SEOController extends Controller
 
         foreach($urls as $url){
 
-            $seo = CmsSEO::where('url' , $url)->where('deleted' , 0)->first();
+            $seo = CmsSEO::where('url' , $url)
+            ->where(function($q){
+                $q->whereNull('deleted_at');
+                $q->orWhere('deleted' , 0);
+              })
+            ->first();
             if(!$seo){ $seo = new CmsSEO; }
 
             $seo->url = $url;

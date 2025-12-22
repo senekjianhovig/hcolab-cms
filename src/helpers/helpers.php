@@ -169,7 +169,12 @@ if(!function_exists('render_form_field')){
                 case 'file':
 
 
-                    $file =  \hcolab\cms\models\File::where('name' , $data->{$element->name})->where('deleted',0)->first();
+                    $file =  \hcolab\cms\models\File::where('name' , $data->{$element->name})
+                    ->where(function($q){
+                        $q->whereNull('deleted_at');
+                        $q->orWhere('deleted' , 0);
+                      })
+                    ->first();
 
                     if(!$file){ return ""; }
 
@@ -192,7 +197,12 @@ if(!function_exists('render_form_field')){
                     break;
                     case 'multiple file':
 
-                        $files =  \hcolab\cms\models\File::whereIn('name' , json_decode_to_array($data->{$element->name}))->where('deleted',0)->get();
+                        $files =  \hcolab\cms\models\File::whereIn('name' , json_decode_to_array($data->{$element->name}))
+                        ->where(function($q){
+                            $q->whereNull('deleted_at');
+                            $q->orWhere('deleted' , 0);
+                          })
+                        ->get();
 
                         if(count($files) < 0){ return ""; }
 
@@ -597,7 +607,12 @@ if(!function_exists('process_menu_item')) {
     if(!function_exists('send_cms_notification')){
         function send_cms_notification($action , $dictionary = [] , $page_slug = null , $row_id = null){
 
-            $template = \hcolab\cms\models\CmsNotificationTemplate::where('action' , $action)->where('deleted',0)->first();
+            $template = \hcolab\cms\models\CmsNotificationTemplate::where('action' , $action)
+            ->where(function($q){
+                $q->whereNull('deleted_at');
+                $q->orWhere('deleted' , 0);
+              })
+            ->first();
             if(!$template){ return false; }
 
 

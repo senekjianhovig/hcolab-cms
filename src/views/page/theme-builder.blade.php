@@ -11,7 +11,10 @@ $page->getRow($id);
 $data = $page->getRow($id);
 
 
-$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->where('deleted' , 0)->orderBy('orders' , 'ASC')->get();
+$sections = \hcolab\cms\models\CmsThemeBuilderSection::where('theme_builder_id' , $id)->where(function($q){
+    $q->whereNull('deleted_at');
+    $q->orWhere('deleted' , 0);
+  })->orderBy('orders' , 'ASC')->get();
 
 
 $prev_url = "";

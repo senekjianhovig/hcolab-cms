@@ -35,7 +35,12 @@ class ThemeBuilderController extends Controller
            if(!$file){
                continue;
            }
-           $temporary = \hcolab\cms\models\TemporaryFile::where('name' , $file["value"] )->where('deleted',0)->first();
+           $temporary = \hcolab\cms\models\TemporaryFile::where('name' , $file["value"] ) 
+           ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+           ->first();
            $uploaded_file = (new FileUploadController)->createFileFromTemporary($temporary, $file_input->ui->resize);            
            
 
@@ -97,6 +102,7 @@ class ThemeBuilderController extends Controller
         }
 
         $section->deleted = 1;
+        $section->deleted_at = now();
         $section->save();
 
         return response()->json([], 200);
@@ -170,7 +176,13 @@ class ThemeBuilderController extends Controller
         
 
     
-        $sections = CmsThemeBuilderSection::where('deleted',0)->orderBy('orders' , 'ASC')->where('theme_builder_id' , $id)->get();
+        $sections = CmsThemeBuilderSection::query()
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+        
+        ->orderBy('orders' , 'ASC')->where('theme_builder_id' , $id)->get();
 
         $numbers = $sections->pluck('orders')->filter()->values()->toArray();
 
@@ -209,13 +221,23 @@ class ThemeBuilderController extends Controller
 
     public function renderSections($location){
 
-        $theme_builder = CmsThemeBuilder::where('deleted',0)->where('cms_theme_builder_location' , $location)->where('publish', 1)->orderBy('id' , 'DESC')->first();
+        $theme_builder = CmsThemeBuilder::query()
+         ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+        ->where('cms_theme_builder_location' , $location)->where('publish', 1)->orderBy('id' , 'DESC')->first();
     
         if(!$theme_builder){
             return abort(403 , "No theme found from the CMS");
         }
    
-       $components = CmsThemeBuilderSection::where('deleted',0)->orderBy('orders' , 'ASC')->where('theme_builder_id' , $theme_builder->id)->get();
+       $components = CmsThemeBuilderSection::query()
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+       ->orderBy('orders' , 'ASC')->where('theme_builder_id' , $theme_builder->id)->get();
     
     
        $config = config('pages');
@@ -281,7 +303,14 @@ class ThemeBuilderController extends Controller
                      if(isset($arr[$element->name])){
                          
                                
-                         $data = DB::table($foreign_keys[$element->name])->where('deleted',0)->whereIn('id' ,$arr[$element->name]);
+                         $data = DB::table($foreign_keys[$element->name])
+                        
+                         ->where(function($q){
+                            $q->whereNull('deleted_at');
+                            $q->orWhere('deleted' , 0);
+                          })
+
+                         ->whereIn('id' ,$arr[$element->name]);
                        
                     //   $str = 'FIELD(id,'.implode(",",$arr[$element->name]).')';
 
@@ -300,7 +329,12 @@ class ThemeBuilderController extends Controller
                    
                    case 'select':
                        if(isset($arr[$element->name])){
-                           $data = DB::table($foreign_keys[$element->name])->where('deleted',0)->where('id' ,$arr[$element->name])->first();
+                           $data = DB::table($foreign_keys[$element->name])
+                           ->where(function($q){
+                            $q->whereNull('deleted_at');
+                            $q->orWhere('deleted' , 0);
+                          })
+                           ->where('id' ,$arr[$element->name])->first();
                        }else{
                            $data = null;
                        }

@@ -6,7 +6,10 @@
 
 @php
 $files = File::files(app_path()."/Pages/");
-$entities = DB::table('entity_versions')->where('deleted', 0)->get()->keyBy('entity')->toArray();
+$entities = DB::table('entity_versions')->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })->get()->keyBy('entity')->toArray();
 
 @endphp
 

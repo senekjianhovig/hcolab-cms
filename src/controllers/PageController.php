@@ -183,7 +183,7 @@ class PageController extends Controller
         $page->setElements();
         $page->setColumns();
 
-        DB::table($page->entity)->where('id' , $id)->update(['deleted' => 1]);
+        DB::table($page->entity)->where('id' , $id)->update(['deleted' => 1 , 'deleted_at' => now()]);
 
         $data["page"] = $page;
         $data["actions"] = CmsUserRolePermission::getPermissions($page->entity);
@@ -512,7 +512,14 @@ class PageController extends Controller
             return $page->validateSlug($slug);
         }else{
 
-          $record =  DB::table($page->entity)->where($key , $slug)->where('deleted',0)->first();
+          $record =  DB::table($page->entity)->where($key , $slug)
+      
+          ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+
+          ->first();
 
           if($record){
               return response()->json(0, 200);

@@ -5,7 +5,10 @@
 
 
 @php
-$settings = \hcolab\cms\models\Setting::where('deleted',0)->get();
+$settings = \hcolab\cms\models\Setting::where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })->get();
 
 @endphp
 

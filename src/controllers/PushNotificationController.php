@@ -206,7 +206,13 @@ class PushNotificationController extends Controller
             ->where('cms_sent_push_notifications.row_id' , request()->row_id)
             ->where('cms_sent_push_notifications.row_model' , request()->row_model)
             ->join('cms_sent_push_notifications' ,'cms_push_notifications.id' , 'cms_sent_push_notifications.notification_id')
-            ->where('cms_sent_push_notifications.deleted' , 0)
+        
+            ->where(function($q){
+                $q->whereNull('cms_sent_push_notifications.deleted_at');
+                $q->orWhere('cms_sent_push_notifications.deleted' , 0);
+              })
+
+
             ->orderBy('id' , 'DESC')
             ->paginate(20)->map(function($notification){
                     return [
@@ -232,7 +238,13 @@ class PushNotificationController extends Controller
 
         $notification_ids = CmsSentPushNotification::where('row_id' , request()->row_id)
         ->where('row_model' , request()->row_model)
-        ->where('deleted' , 0)
+
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+
+    
         ->update(['read' => 1]);
 
         return response()->json(["nb_unread_notifications" => 0] , 200);
@@ -248,12 +260,24 @@ class PushNotificationController extends Controller
         $notification_ids = CmsSentPushNotification::where('row_id' , request()->row_id)
         ->where('row_model' , request()->row_model)
         ->where('id' , $notification_id)
-        ->where('deleted' , 0)
+        
+
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+
         ->update(['read' => 1]);
         
         $unread_notifications =  CmsSentPushNotification::where('row_id' , request()->row_id)
         ->where('row_model' , request()->row_model)
-        ->where('deleted' , 0)->where('read', 0)
+        
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+        
+        ->where('read', 0)
         ->count();
         
 

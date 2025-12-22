@@ -52,7 +52,12 @@ class UserController extends Controller
             return abort(404);
         }
 
-        $role = CmsUserRole::where('id' , $id)->where('deleted',0)->first();
+        $role = CmsUserRole::where('id' , $id)
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+          ->first();
 
         if(!$role){
             return abort(404);
@@ -109,10 +114,13 @@ class UserController extends Controller
 
     public function login(){
         
-        $admin = CmsUser::where('phone',request()->input('username'))->orWhere('email', request()->input('username'))->first();
-        
-
-        
+        $admin = CmsUser::where('phone',request()->input('username'))->orWhere('email', request()->input('username'))
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+        })
+        ->first();
+                
 
         if(!$admin || !Hash::check(request()->input('password'), $admin->password)){
             return redirect()->route('login')->with('notification', 'Invalid Credentials');
@@ -197,7 +205,10 @@ class UserController extends Controller
             return abort(404);
         }
 
-        $role = CmsUserRole::where('id' , $id)->where('deleted',0)->first();
+        $role = CmsUserRole::where('id' , $id)->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })->first();
 
         if(!$role){
             return abort(404);

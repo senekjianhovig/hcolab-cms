@@ -28,7 +28,13 @@ class PushNotificationAccess
 
 
 
-        $access_token = AccessToken::where('deleted', 0)
+        $access_token = AccessToken::query()
+
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+
         ->where('expires_at', '>' , Carbon::now())
         ->where('token',request()->header('access-token'))->first();
 

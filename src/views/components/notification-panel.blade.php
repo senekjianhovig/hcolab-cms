@@ -1,6 +1,9 @@
 @php
 
-$notifications = App\Models\CmsNotification::where('deleted',0)->orderBy('id', 'desc')->get()->take(5);
+$notifications = App\Models\CmsNotification::where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })->orderBy('id', 'desc')->get()->take(5);
 
 @endphp
 

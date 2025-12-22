@@ -45,7 +45,11 @@ public static function list(){
 }
 
 public static function singleTableQuery($table , $key , $value , $options = []){
-    $result =  DB::table($table)->select($key.' as id', $value.' as label')->whereNotNull($value)->where('deleted',0);
+    $result =  DB::table($table)->select($key.' as id', $value.' as label')->whereNotNull($value)->where(function($q){
+        $q->whereNull('deleted_at');
+        $q->orWhere('deleted' , 0);
+      });
+    
 		foreach($options as $optionkey=>$option){
 			$result->where($optionkey , $option);
 		}
@@ -60,7 +64,11 @@ public static function doubleTableQuery($main_table, $related_table,  $main_tabl
     // dd($main_table, $related_table,  $main_table_value , $related_table_value , $main_key, $foreign_key, $seperator);
     return DB::table($main_table)->select($main_table.'.id')
     ->selectRaw("CONCAT(".$related_table.".".$related_table_value.", ' ". $seperator ." '  , ".$main_table.".".$main_table_value.") as label")
-    ->where($main_table.'.deleted',0)
+    ->where(function($q) use ($main_table){
+        $q->whereNull($main_table.'.deleted_at');
+        $q->orWhere($main_table.'.deleted' , 0);
+      })
+
     ->join($related_table, $related_table.'.'.$main_key, $main_table.'.'.$foreign_key);
 }
 

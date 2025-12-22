@@ -18,7 +18,10 @@ class SettingController extends Controller
 
     public function render(){
 
-        $settings = \hcolab\cms\models\Setting::where('deleted',0)->get();
+        $settings = \hcolab\cms\models\Setting::query()->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })->get();
 
         return view('CMSViews::page.settings' , compact('settings'));
     }
@@ -26,7 +29,12 @@ class SettingController extends Controller
     public function save()
     {
        
-        $settings = \hcolab\cms\models\Setting::where('deleted',0)->get();
+        $settings = \hcolab\cms\models\Setting::query()
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+        ->get();
 
         foreach($settings as $setting){
             if(request()->has($setting->key)){

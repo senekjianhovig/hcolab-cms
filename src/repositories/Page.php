@@ -77,6 +77,9 @@ class Page extends Element
             if (!Schema::hasColumn($this->entity, "deleted")) {
                 $table->tinyInteger('deleted', 0)->default(0);
             }
+
+        
+
             if (!Schema::hasColumn($this->entity, "version")) {
                 $table->mediumInteger('version')->default(0);
             }
@@ -153,7 +156,11 @@ class Page extends Element
 
     public function getRows($pagination = true)
     {
-        $table_data = DB::table($this->entity)->where('deleted', 0);
+        $table_data = DB::table($this->entity)
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+        });
         
         if (request()->input('sortColumn') && request()->input('sortOrder')) {
             $table_data->orderBy(request()->input('sortColumn'), request()->input('sortOrder'));
@@ -219,7 +226,12 @@ class Page extends Element
 
     public function getRow($id)
     {
-        return DB::table($this->entity)->where('deleted', 0)->where('id', $id)->first();
+        return DB::table($this->entity)
+        ->where(function($q){
+            $q->whereNull('deleted_at');
+            $q->orWhere('deleted' , 0);
+          })
+        ->where('id', $id)->first();
     }
 
     public function getRelatedTables()
