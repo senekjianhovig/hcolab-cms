@@ -8,6 +8,7 @@ use hcolab\cms\traits\ApiTrait;
 use hcolab\cms\models\CmsThemeBuilderSection;
 use hcolab\cms\models\CmsThemeBuilder;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 
 use Illuminate\Support\Facades\DB;
 
@@ -161,6 +162,7 @@ class ThemeBuilderController extends Controller
       $section->save();
 
 
+      $this->clearCache($section->theme_builder_id);
 
       return $section->id;
 
@@ -181,6 +183,8 @@ class ThemeBuilderController extends Controller
 
         $section->payload = json_encode($payload);
         $section->save();
+
+        $this->clearCache($section->theme_builder_id);
   
         return $section->id;
     }
@@ -197,6 +201,8 @@ class ThemeBuilderController extends Controller
         $section->deleted = 1;
         $section->deleted_at = now();
         $section->save();
+
+        $this->clearCache($section->theme_builder_id);
 
         return response()->json([], 200);
 
@@ -288,7 +294,7 @@ class ThemeBuilderController extends Controller
             $max_orders = 0;
         }
 
-        
+        $this->clearCache($id);
 
     
         $sections = CmsThemeBuilderSection::query()
@@ -331,6 +337,23 @@ class ThemeBuilderController extends Controller
 
 
         return response()->json([] , 200);
+    }
+
+    public function clearCache($id){
+
+        // try {
+            $theme = CmsThemeBuilder::find($id);
+
+            if($theme){
+                foreach(['en' , 'ar' , 'fr'] as $lang){
+                    Cache::forget($theme->cms_theme_builder_location.'_api_response_'.$lang);
+                }
+            }
+
+        // } catch (\Throwable $th) {
+            //throw $th;
+        // }
+
     }
 
 
