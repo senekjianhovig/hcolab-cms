@@ -10,7 +10,7 @@
 
         <h2 class="">Login</h2>
         <div class="ui  divider pb-1"></div>
-        <form action="{{route('login')}}" method="POST" class="ui form">
+        <form  method="POST" class="ui form">
             @csrf
             <div class="field">
                 <label>Email / Phone</label>

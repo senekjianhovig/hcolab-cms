@@ -101,17 +101,21 @@ $path = app_path() . '/Sections';
                     <br>
                     <div class="field">
                         <label>Add a Component</label>
-                        
+                       
                         <div class="field ">
                             <select id="section" class="ui sections-dropdown search dropdown" onchange="CreateSection($(this))">
                                 <option selected  value="">Select Component</option>
+                                
+                              
                                 @foreach ($files->files($path) as $file)
                                     @php
+
                                         $entity = str_replace('.php', '', $file->getFileName());
                                         $namespace = 'App\\Sections\\' . $entity;
                                         $section = new $namespace;
                                      
                                         if(!in_array($data->cms_theme_builder_location , $section->locations) && !empty($section->locations)){
+                                           
                                             continue;
                                         }
 

@@ -13,6 +13,11 @@ class CreateFilesTable extends Migration
      */
     public function up()
     {
+
+        if(Schema::hasTable('files')){
+            return;
+        }
+
         Schema::create('files', function (Blueprint $table) {
             $table->id();
             $table->string('disk', 255);

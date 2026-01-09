@@ -13,6 +13,11 @@ class CreateTemporaryFilesTable extends Migration
      */
     public function up()
     {
+
+        if(Schema::hasTable('temporary_files')){
+            return;
+        }
+
         Schema::create('temporary_files', function (Blueprint $table) {
             $table->id();
             $table->string('disk', 255);

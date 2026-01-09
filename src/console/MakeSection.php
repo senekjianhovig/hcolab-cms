@@ -36,9 +36,9 @@ class MakeSection extends Command
 $contents=
 '<?php
 namespace App\Sections;
-use hcolab\cms\repositories\Element;
+use hcolab\cms\repositories\Section;
         
-class '.$section.' extends Element
+class '.$section.' extends Section
 {
         
     /**
@@ -51,7 +51,11 @@ class '.$section.' extends Element
         $this->version = "1.0";
         $this->section = "'.$section.'";
         $this->title ="'.$title.'";
-        $this->elements = collect([]);     
+        $this->elements = collect([]);    
+        $this->identifier ="";    
+        $this->foreign_keys = [];
+        $this->component = "";
+        $this->locations = [];  
     }
         
  

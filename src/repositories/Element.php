@@ -505,4 +505,61 @@ class Element extends Column
 
         return $this;
     }
+
+    public function RepeaterField($label, $container, $required, $field_name, $fields = [])
+    {
+        $ui = new \StdClass;
+        $ui->type = "repeater";
+        $ui->label = $label;
+        $ui->container = $container;
+        $ui->required = $required;
+        $ui->fields = $fields; // Array of field definitions: ['image' => 'file', 'title' => 'text', 'description' => 'textarea']
+
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "longtext", NULL, NULL, false);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
+
+    public function BigIntegerField($label, $container, $required, $field_name, $field_default = NULL, $is_multi_language = false)
+    {
+        $ui = new \StdClass;
+        $ui->type = "big_integer";
+        $ui->label = $label;
+        $ui->container = $container;
+        $ui->required = $required;
+
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "bigint", NULL, $field_default, $is_multi_language);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
+
+    public function DecimalField($label, $container, $required, $field_name, $precision = 10, $scale = 2, $field_default = NULL, $is_multi_language = false)
+    {
+        $ui = new \StdClass;
+        $ui->type = "decimal";
+        $ui->label = $label;
+        $ui->container = $container;
+        $ui->required = $required;
+        $ui->precision = $precision;
+        $ui->scale = $scale;
+
+        $std = new \StdClass;
+        $std->name = $field_name;
+        $std->ui = $ui;
+        $std->db = set_db($field_name, "decimal", "{$precision},{$scale}", $field_default, $is_multi_language);
+
+        $this->elements = $this->elements->push($std);
+
+        return $this;
+    }
 }

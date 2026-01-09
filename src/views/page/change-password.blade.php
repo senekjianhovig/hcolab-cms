@@ -11,7 +11,7 @@
     <div class="ui segment raised mb-3">
 
 
-        <form action="{{route('change-password')}}" method="POST" class="ui form">
+        <form  method="POST" class="ui form">
             @csrf
 
             <div class="field">

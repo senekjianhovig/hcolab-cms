@@ -237,6 +237,8 @@ class PageController extends Controller
             switch ($element->ui->type){
                 case "readonly_textfield":
                 case "textfield":
+                    case "decimal":
+                    case "big_integer":
                 case "select":
                 case "disabled_textfield" :
                 case "hidden_textfield" : 

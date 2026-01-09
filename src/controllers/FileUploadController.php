@@ -98,8 +98,19 @@ class FileUploadController extends Controller
                 $file = $save->getFile();
                 $input_name = request()->input('input_name');
                 $is_multiple = request()->has("is_multiple") && (request()->input("is_multiple") == "true" || request()->input("is_multiple") == "1");
+                
+                // Check if this is a repeater field (bracket-free name like upld_cards_0_image)
+                // If so, we need to get the actual field name from the dropzone element
+                // The actual field name will be set via JavaScript when file is uploaded
+                // For now, convert upld_ to tmp_ and handle brackets if they exist
                 $input_name = str_replace('upld' , 'tmp' ,  $input_name);
-                if($is_multiple){ $input_name = $input_name.'[]'; }
+                
+                // If input_name has underscores and looks like a repeater field (upld_cards_0_image),
+                // we'll let the JavaScript handle mapping it to the actual field name
+                // Otherwise, handle multiple files
+                if($is_multiple && strpos($input_name, '[') === false){ 
+                    $input_name = $input_name.'[]'; 
+                }
 
                 $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
 
@@ -160,6 +171,8 @@ class FileUploadController extends Controller
 
 
         $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
+
+       
 
         if($uploader_key !=  env('UPLOADER_KEY')){
             return $this->responseError(1 , "Wrong Uploader Key" , "Wrong Uploader Key");

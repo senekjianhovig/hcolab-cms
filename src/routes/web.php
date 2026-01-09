@@ -20,10 +20,10 @@ Route::group(['middleware' => 'web'] , function(){
     });
 
 Route::group(['prefix' => 'cms'], function(){
-    Route::post('/login' , [ \hcolab\cms\controllers\UserController::class , 'login'])->name('login');
+    Route::post('/login' , [ \hcolab\cms\controllers\UserController::class , 'login']);
     Route::get('/login' , [ \hcolab\cms\controllers\UserController::class , 'renderLoginPage'])->name('login');
 
-    Route::post('/force-change-password' , [ \hcolab\cms\controllers\UserController::class , 'forceChangePassword'])->name('force-change-password');
+    Route::post('/force-change-password' , [ \hcolab\cms\controllers\UserController::class , 'forceChangePassword']);
     Route::get('/force-change-password' , [ \hcolab\cms\controllers\UserController::class , 'renderForceChangePassword'])->name('force-change-password');
 });
 
@@ -38,19 +38,19 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
 
     Route::get('/logout' , [\hcolab\cms\controllers\UserController::class , 'logout'])->name('logout');
     Route::get('/change-password' , [\hcolab\cms\controllers\UserController::class , 'renderChangePassword'])->name('change-password');
-    Route::post('/change-password' , [\hcolab\cms\controllers\UserController::class , 'changePassword'])->name('change-password');
+    Route::post('/change-password' , [\hcolab\cms\controllers\UserController::class , 'changePassword']);
 
     Route::get('/role-permissions/{id}/{token}' , [\hcolab\cms\controllers\UserController::class , 'renderRolePermissions'])->name('role-permissions');   
-    Route::post('/role-permissions/{id}/{token}' , [\hcolab\cms\controllers\UserController::class , 'rolePermissions'])->name('role-permissions');
+    Route::post('/role-permissions/{id}/{token}' , [\hcolab\cms\controllers\UserController::class , 'rolePermissions']);
  
     Route::get('/settings' ,  [ \hcolab\cms\controllers\SettingController::class , 'render'])->name('settings');   
 
     Route::get('/sitemap/generate' ,  function(){ (new \hcolab\cms\controllers\SitemapController)->generateSitemap(); return redirect()->back(); })->name('sitemap-generate'); 
     Route::get('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'render'])->name('seo-configuration');   
-    Route::post('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'renderModify'])->name('seo-configuration');   
+    Route::post('/seo/configuration' ,  [ \hcolab\cms\controllers\SEOController::class , 'renderModify']);   
     Route::post('/seo/modify' ,  [ \hcolab\cms\controllers\SEOController::class , 'modify'] )->name('seo-modify');
 
-    Route::post('/settings' , [ \hcolab\cms\controllers\SettingController::class , 'save'])->name('settings');
+    Route::post('/settings' , [ \hcolab\cms\controllers\SettingController::class , 'save']);
     
     Route::get('/notification-center' ,  function(){ return view('CMSViews::page.notification-center');})->name('notification-center');
     
@@ -75,7 +75,7 @@ Route::group(['prefix' => 'cms' , 'middleware' => [\hcolab\cms\middlewares\CMSAu
 
     Route::get('/push-notification/{id}/{token}' , [\hcolab\cms\controllers\PushNotificationController::class , 'send'])->name('push-notification');
     
-    Route::post('/push-notification' , [\hcolab\cms\controllers\PushNotificationController::class , 'save'])->name('push-notification');
+    Route::post('/push-notification' , [\hcolab\cms\controllers\PushNotificationController::class , 'save']);
 
     Route::get('generate', function(){ return view('CMSViews::generate');});
     Route::prefix('page')->group(function () {

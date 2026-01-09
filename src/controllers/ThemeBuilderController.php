@@ -26,6 +26,94 @@ class ThemeBuilderController extends Controller
         $payload = collect($payload);
 
         $section_model->setElements();
+        
+        // Process repeater fields - convert array data to JSON and handle file uploads
+        $repeater_inputs = collect($section_model->elements)->where('ui.type', 'repeater')->values();
+        foreach($repeater_inputs as $repeater_input){
+            $repeater_name = $repeater_input->name;
+            $repeater_fields = $repeater_input->ui->fields ?? [];
+            $repeater_data = [];
+            
+            // Process file uploads for repeater fields first
+            foreach($repeater_fields as $fieldName => $fieldType){
+                if($fieldType == 'file' || $fieldType == 'image'){
+                    // Find temporary files for this repeater field
+                    // Check both bracket notation (tmp_cards[0][image]) and bracket-free (tmp_upld_cards_0_image)
+                    foreach($payload as $item){
+                        $is_repeater_file = false;
+                        $index = null;
+                        
+                        // Check bracket notation: tmp_cards[0][image]
+                        if(strpos($item['name'], 'tmp_'.$repeater_name.'[') === 0 && strpos($item['name'], '['.$fieldName.']') !== false){
+                            preg_match('/\[(\d+)\]\[([^\]]+)\]/', $item['name'], $matches);
+                            if(count($matches) == 3 && $matches[2] == $fieldName){
+                                $index = $matches[1];
+                                $is_repeater_file = true;
+                            }
+                        }
+                        // Check bracket-free notation: tmp_upld_cards_0_image
+                        elseif(strpos($item['name'], 'tmp_upld_'.$repeater_name.'_') === 0 && strpos($item['name'], '_'.$fieldName) !== false){
+                            // Extract index from bracket-free name: tmp_upld_cards_0_image -> index: 0
+                            $pattern = '/tmp_upld_'.$repeater_name.'_(\d+)_'.$fieldName.'/';
+                            if(preg_match($pattern, $item['name'], $matches)){
+                                $index = $matches[1];
+                                $is_repeater_file = true;
+                            }
+                        }
+                        
+                        if($is_repeater_file && $index !== null){
+                            $temporary = \hcolab\cms\models\TemporaryFile::where('name', $item['value'])
+                                ->where(function($q){
+                                    $q->whereNull('deleted_at');
+                                    $q->orWhere('deleted', 0);
+                                })
+                                ->first();
+                            if($temporary){
+                                $uploaded_file = (new FileUploadController)->createFileFromTemporary($temporary, null);
+                                // Update payload with actual file name using bracket notation
+                                $actual_field_name = $repeater_name.'['.$index.']['.$fieldName.']';
+                                $payload = $payload->map(function($current_payload) use ($repeater_name, $index, $fieldName, $item, $uploaded_file, $actual_field_name){
+                                    if($current_payload['name'] == $item['name'] || 
+                                       $current_payload['name'] == $actual_field_name ||
+                                       $current_payload['name'] == $repeater_name.'['.$index.']['.$fieldName.']'){
+                                        return ["name" => $actual_field_name, "value" => $uploaded_file->name];
+                                    }
+                                    return $current_payload;
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Collect all fields for this repeater
+            foreach($payload as $item){
+                if(strpos($item['name'], $repeater_name.'[') === 0 && strpos($item['name'], 'tmp_') === false){
+                    // Extract index and field name: cards[0][title] -> index: 0, field: title
+                    preg_match('/\[(\d+)\]\[([^\]]+)\]/', $item['name'], $matches);
+                    if(count($matches) == 3){
+                        $index = $matches[1];
+                        $field = $matches[2];
+                        if(!isset($repeater_data[$index])){
+                            $repeater_data[$index] = [];
+                        }
+                        $repeater_data[$index][$field] = $item['value'];
+                    }
+                }
+            }
+            
+            // Convert to indexed array (don't JSON encode - the whole payload will be encoded later)
+            $repeater_data = array_values($repeater_data);
+            
+            // Remove old repeater items from payload (including tmp_ ones)
+            $payload = $payload->filter(function($item) use ($repeater_name){
+                return strpos($item['name'], $repeater_name.'[') !== 0 && strpos($item['name'], 'tmp_'.$repeater_name.'[') !== 0;
+            });
+            
+            // Add array value (will be JSON encoded when whole payload is saved)
+            $payload->push(['name' => $repeater_name, 'value' => $repeater_data]);
+        }
+        
         $file_inputs = collect($section_model->elements)->where('ui.type', 'file')->values();
    
         $to_remove = [];
@@ -62,6 +150,8 @@ class ThemeBuilderController extends Controller
 
       $payload = $this->processFile(request()->input('name'), request()->input('payload'));
     
+      // Always save as values array (numeric indices starting from 0)
+      $payload = collect($payload)->values();
         
       $section = new CmsThemeBuilderSection;
       $section->payload = json_encode($payload);
@@ -85,6 +175,9 @@ class ThemeBuilderController extends Controller
         if(!$section){ return response()->json([] , 400); }
 
         $payload = $this->processFile($section->name, request()->input('payload'));
+
+        // Always save as values array (numeric indices starting from 0)
+        $payload = collect($payload)->values();
 
         $section->payload = json_encode($payload);
         $section->save();
@@ -122,15 +215,23 @@ class ThemeBuilderController extends Controller
                 $payload = [];
             }
 
+
+           
+
           //  [{"name":"section_title","value":"Slideshow"},{"name":"section_name","value":"SlideshowSection"},{"name":"slideshow_id[]","value":"1"}]
 
 
             //dd($payload);
 
             // dd($payload);
+            // Convert payload to array if it's an object with numeric keys
+            if(is_object($payload)){
+                $payload = collect($payload)->values()->toArray();
+            }
             if(!is_array($payload)) { $payload = []; }
 
             
+       
             foreach($payload as $payload_item){
                
 
@@ -141,8 +242,22 @@ class ThemeBuilderController extends Controller
                     if(!isset($data[$key])){ $data[$key] = []; }
                     $data[$key] [] = $payload_item->value;     
                 }else{
-                    
-                    $data[$payload_item->name] = $payload_item->value;
+                    // Check if this is a repeater field - if value is already an array, use it directly
+                    // Otherwise, it might be a JSON string that needs decoding (for backward compatibility)
+                    $value = $payload_item->value;
+
+                   
+                    if(is_string($value) && (substr($value, 0, 1) === '[' || substr($value, 0, 1) === '{')){
+                        // Try to decode if it looks like JSON (for backward compatibility with old data)
+                        
+                      
+
+                        $decoded = json_decode($value, true);
+                        if(json_last_error() === JSON_ERROR_NONE){
+                            $value = $decoded;
+                        }
+                    }
+                    $data[$payload_item->name] = $value;
                    
                 }
             } 

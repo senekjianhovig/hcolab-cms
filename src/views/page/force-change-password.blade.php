@@ -10,7 +10,7 @@
 
         <h2 class="">Change Password</h2>
         <div class="ui  divider pb-1"></div>
-        <form action="{{route('force-change-password')}}" method="POST" class="ui form">
+        <form  method="POST" class="ui form">
             @csrf
             <div class="field">
                 <label>Password</label>

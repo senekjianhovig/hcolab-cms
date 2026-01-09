@@ -46,6 +46,8 @@ if(!function_exists('process_form_field')){
                 case "textfield":
                 case "email":
                 case "number":
+                case "big_integer":
+                case "decimal":
                 return view('CMSViews::form.textfield', [ "element" => $element, "data" => $data ]);
 
                 break;
@@ -127,6 +129,10 @@ if(!function_exists('process_form_field')){
 
                 case 'tags':
                 return view('CMSViews::form.tags', [ "element" => $element, "data" => $data ]);
+                break;
+
+                case 'repeater':
+                return view('CMSViews::form.repeater', [ "element" => $element, "data" => $data, "related_tables" => $related_tables ]);
                 break;
 
                 case 'hidden json field' :
@@ -219,6 +225,30 @@ if(!function_exists('render_form_field')){
                          break;
 
                 case 'text': return '';
+
+                case "repeater":
+                    $name = $element->name;
+                    if (!property_exists($data, $name)) {
+                        $data->$name = '[]';
+                    }
+
+                    try {
+                        $items = json_decode($data->$name, true);
+                    } catch (\Throwable $th) {
+                        $items = [];
+                    }
+
+                    if(!is_array($items)){ $items = []; }
+
+                    $result = "<div>";
+                    $result .= "<strong>".count($items)." item(s)</strong><br>";
+                    foreach($items as $index => $item){
+                        $result .= '<div class="ui grey horizontal label mb-2">Item #'.($index + 1).'</div>';
+                    }
+                    $result.="</div>";
+
+                    $value = $result;
+                    break;
 
                 case "tags":
 
@@ -674,6 +704,18 @@ if(!function_exists('process_menu_item')) {
 
             return str_replace( $Search, $Replace,$payload );
 
+        }
+    }
+
+
+
+    if(!function_exists('get_language_label')){
+        function get_language_label($lang){
+          
+            return "";
+
+            return "(".strtoupper($lang).")";
+          
         }
     }
 

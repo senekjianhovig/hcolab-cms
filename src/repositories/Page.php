@@ -99,6 +99,8 @@ class Page extends Element
                             case "varchar":
                                 $table->string($field_name, $element->db->field_length)->nullable();
                                 break;
+
+
                             case "multiple file":
                             case "text":
                                 $table->text($field_name)->nullable();
@@ -115,6 +117,10 @@ class Page extends Element
                             case "bigint":
                                 $table->bigInteger($field_name)->nullable();
                                 break;
+                            case "decimal":
+                                // dd($element->db->field_length, $element->db->field_scale);
+                                $table->decimal($field_name, 8 , 2)->nullable();
+                            break;
                             case "double":
                                 $table->double($field_name, 8, 2)->nullable();
                                 break;

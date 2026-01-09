@@ -51,6 +51,10 @@ onsubmit="AddSection($(this))"
 </form>
 
 <script>
+   // Initialize repeater fields before file uploads
+   if (typeof addRepeaterItem === 'undefined') {
+       console.warn('Repeater functions not loaded. Make sure repeater.blade.php script is included.');
+   }
    summernoteInit();
    initFilesUpload();
    </script>
