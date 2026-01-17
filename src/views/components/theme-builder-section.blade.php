@@ -41,6 +41,7 @@ onsubmit="AddSection($(this))"
     @endforeach
     <div class="col-lg-12 d-flex align-items-center  @if($edit_mode) justify-content-end @else justify-content-between @endif">
         @if($edit_mode)
+        <button type="button" onclick="DisplaySelectSection()" class="ui button red"> Cancel </button>
         <button class="ui button green"> Edit </button>
         @else
         <button type="button" onclick="DisplaySelectSection()" class="ui button red"> Cancel </button>

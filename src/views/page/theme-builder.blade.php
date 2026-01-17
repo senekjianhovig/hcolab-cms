@@ -28,7 +28,7 @@ if($elements[0]->ui->type == 'open div'){
 if(request()->has("redirect_url")){
     $prev_url = request()->input('redirect_url');
 }else{
-    if(app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName() == "page"){ $prev_url = $_SERVER['HTTP_REFERER']; }
+    if(app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName() == "page"){ $prev_url = url()->previous(); }
 }
 
 $files = new \Illuminate\Filesystem\Filesystem();

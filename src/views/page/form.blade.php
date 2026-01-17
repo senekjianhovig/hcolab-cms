@@ -13,7 +13,7 @@ if($elements[0]->ui->type == 'open div'){
 if(request()->has("redirect_url")){
     $prev_url = request()->input('redirect_url');
 }else{
-    if(in_array(app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName() , ["page" , "page.show"])){ $prev_url = $_SERVER['HTTP_REFERER']; }
+    if(in_array(app('router')->getRoutes()->match(app('request')->create(url()->previous()))->getName() , ["page" , "page.show"])){ $prev_url = url()->previous(); }
 }
 
 ?>
