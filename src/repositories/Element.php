@@ -506,6 +506,10 @@ class Element extends Column
         return $this;
     }
 
+    /**
+     * @param array $fields Legacy: ['fieldName' => 'type', ...]. New: array of objects with name, type, optional label, optional options (for select).
+     *                      Example: [['name' => 'type', 'type' => 'select', 'label' => 'Type', 'options' => [['id' => 'a', 'label' => 'A']]], ['name' => 'value', 'type' => 'text']]
+     */
     public function RepeaterField($label, $container, $required, $field_name, $fields = [])
     {
         $ui = new \StdClass;
@@ -513,7 +517,7 @@ class Element extends Column
         $ui->label = $label;
         $ui->container = $container;
         $ui->required = $required;
-        $ui->fields = $fields; // Array of field definitions: ['image' => 'file', 'title' => 'text', 'description' => 'textarea']
+        $ui->fields = $fields;
 
         $std = new \StdClass;
         $std->name = $field_name;

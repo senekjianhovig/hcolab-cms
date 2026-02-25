@@ -35,8 +35,22 @@ class ThemeBuilderController extends Controller
             $repeater_fields = $repeater_input->ui->fields ?? [];
             $repeater_data = [];
             
+            // Support both key-value array and array-of-objects (with 'name' and 'type')
+            $fields_list = [];
+            if (isset($repeater_fields[0]) && is_array($repeater_fields[0]) && array_key_exists('name', $repeater_fields[0])) {
+                foreach ($repeater_fields as $f) {
+                    $fields_list[] = ['name' => $f['name'] ?? $f['key'] ?? '', 'type' => $f['type'] ?? 'text'];
+                }
+            } else {
+                foreach ($repeater_fields as $fieldName => $fieldType) {
+                    $fields_list[] = ['name' => $fieldName, 'type' => $fieldType];
+                }
+            }
+            
             // Process file uploads for repeater fields first
-            foreach($repeater_fields as $fieldName => $fieldType){
+            foreach($fields_list as $fieldDef){
+                $fieldName = $fieldDef['name'];
+                $fieldType = $fieldDef['type'];
                 if($fieldType == 'file' || $fieldType == 'image'){
                     // Find temporary files for this repeater field
                     // Check both bracket notation (tmp_cards[0][image]) and bracket-free (tmp_upld_cards_0_image)

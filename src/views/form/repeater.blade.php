@@ -27,19 +27,47 @@ $items = array_map(function($item){
     return $item;
 }, $items);
 
-$fields = $element->ui->fields ?? [];
+$fieldsRaw = $element->ui->fields ?? [];
 
-// Store select field options in data attribute for JavaScript access
-$selectFieldsOptions = [];
-foreach ($fields as $fieldName => $fieldType) {
-    if ($fieldType == 'select') {
-        $options = [];
-        if (isset($related_tables) && !is_null($related_tables) && !empty($related_tables) && isset($related_tables[$fieldName]['data'])) {
-            $options = $related_tables[$fieldName]['data'];
+// Normalize to array of objects: [['name' => 'x', 'type' => 'text'], ['name' => 'y', 'type' => 'select', 'options' => [...]]]
+// Supports both legacy key-value array and new array-of-objects with optional 'options' for select
+$fields = [];
+$isAssoc = !isset($fieldsRaw[0]) || !is_array($fieldsRaw[0]) || !array_key_exists('name', $fieldsRaw[0]);
+if ($isAssoc) {
+    foreach ($fieldsRaw as $fieldName => $fieldType) {
+        $fields[] = ['name' => $fieldName, 'type' => $fieldType, 'label' => null, 'options' => []];
+    }
+} else {
+    foreach ($fieldsRaw as $f) {
+        $name = $f['name'] ?? $f['key'] ?? '';
+        $type = $f['type'] ?? 'text';
+        $label = $f['label'] ?? null;
+        $options = $f['options'] ?? [];
+        if (isset($related_tables) && !empty($related_tables) && isset($related_tables[$name]['data'])) {
+            $options = $related_tables[$name]['data'];
         }
-        $selectFieldsOptions[$fieldName] = $options;
+        $fields[] = ['name' => $name, 'type' => $type, 'label' => $label, 'options' => $options];
     }
 }
+// For legacy normalized entries (from $isAssoc), fill options from related_tables for select
+foreach ($fields as &$f) {
+    if (($f['type'] ?? '') === 'select' && empty($f['options']) && isset($related_tables[$f['name']]['data'])) {
+        $f['options'] = $related_tables[$f['name']]['data'];
+    }
+    // Normalize options to [['id' => x, 'label' => y]] for JSON/JS (handle objects and arrays)
+    if (!empty($f['options'])) {
+        $opts = [];
+        foreach ($f['options'] as $o) {
+            if (is_object($o)) {
+                $opts[] = ['id' => $o->id ?? $o->name ?? null, 'label' => $o->label ?? $o->title_en ?? $o->name ?? $o->id ?? ''];
+            } else {
+                $opts[] = is_array($o) ? ['id' => $o['id'] ?? $o['value'] ?? null, 'label' => $o['label'] ?? $o['text'] ?? $o['id'] ?? ''] : ['id' => $o, 'label' => (string)$o];
+            }
+        }
+        $f['options'] = $opts;
+    }
+}
+unset($f);
 @endphp
 
 <div class="{{ $element->ui->container }} mb-4 repeater-field-container" data-repeater-name="{{$name}}">
@@ -47,7 +75,7 @@ foreach ($fields as $fieldName => $fieldType) {
         {{$element->ui->label}} @if($element->ui->required) * @endif
     </div>
 
-    <div class="repeater-wrapper" data-field-name="{{$name}}" data-fields="{{json_encode($fields)}}" data-select-options="{{json_encode($selectFieldsOptions)}}">
+    <div class="repeater-wrapper" data-field-name="{{$name}}" data-fields="{{json_encode($fields)}}">
         <div class="repeater-items">
             @foreach($items as $index => $item)
                 @php
@@ -60,17 +88,17 @@ foreach ($fields as $fieldName => $fieldType) {
                 <div class="repeater-item" data-index="{{$index}}">
                     <div class="repeater-item-header">
                         <span class="repeater-item-title">Item #{{$index + 1}}</span>
-                        <button type="button" class="repeater-remove-btn" onclick="removeRepeaterItem(this)">
+                        <button type="button" class="repeater-remove-btn" onclick="if(typeof window.removeRepeaterItem === 'function') { window.removeRepeaterItem(this); }">
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </div>
                     <div class="repeater-item-content">
-                        @foreach($fields as $fieldName => $fieldType)
+                        @foreach($fields as $field)
                             @php
+                                $fieldName = $field['name'];
+                                $fieldType = $field['type'];
                                 $fieldValue = $item[$fieldName] ?? '';
-                                // Remove "_id" suffix from field name before creating label
-                                $labelName = preg_replace('/_id$/', '', $fieldName);
-                                $fieldLabel = ucfirst(str_replace('_', ' ', $labelName));
+                                $fieldLabel = $field['label'] ?? ucfirst(str_replace('_', ' ', preg_replace('/_id$/', '', $fieldName)));
                             @endphp
                             
                             @if($fieldType == 'file' || $fieldType == 'image')
@@ -120,20 +148,18 @@ foreach ($fields as $fieldName => $fieldType) {
                                 </div>
                             @elseif($fieldType == 'select')
                                 @php
-                                    // Get options from related_tables if field name matches a foreign key
-                                    $options = [];
-                                    if (isset($related_tables) && !is_null($related_tables) && !empty($related_tables) && isset($related_tables[$fieldName]['data'])) {
-                                        $options = $related_tables[$fieldName]['data'];
-                                    }
+                                    $options = $field['options'] ?? [];
                                 @endphp
                                 <div class="repeater-field col-lg-12 mb-3">
                                     <label>{{$fieldLabel}}</label>
                                     <select name="{{$name}}[{{$index}}][{{$fieldName}}]" class="ui fluid search dropdown form-control">
                                         <option value="" disabled selected>Choose {{$fieldLabel}}</option>
                                         @foreach($options as $option)
-                                            <option value="{{ $option->id }}" @if($fieldValue == $option->id) selected @endif>
-                                                {{ $option->label ?? $option->title_en ?? $option->name ?? $option->id }}
-                                            </option>
+                                            @php
+                                                $optId = is_array($option) ? ($option['id'] ?? $option['value'] ?? '') : ($option->id ?? $option->name ?? '');
+                                                $optLabel = is_array($option) ? ($option['label'] ?? $option['text'] ?? $optId) : ($option->label ?? $option->title_en ?? $option->name ?? $option->id ?? '');
+                                            @endphp
+                                            <option value="{{ $optId }}" @if($fieldValue == $optId) selected @endif>{{ $optLabel }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -149,7 +175,7 @@ foreach ($fields as $fieldName => $fieldType) {
             @endforeach
         </div>
         
-        <button type="button" class="repeater-add-btn" onclick="if(typeof addRepeaterItem === 'function') { addRepeaterItem(this); } else { alert('Repeater function not loaded. Please refresh the page.'); }">
+        <button type="button" class="repeater-add-btn" onclick="if(typeof window.addRepeaterItem === 'function') { window.addRepeaterItem(this); } else { alert('Repeater function not loaded. Please refresh the page.'); }">
             <i class="fas fa-plus"></i> Add Item
         </button>
     </div>
@@ -362,16 +388,20 @@ foreach ($fields as $fieldName => $fieldType) {
 </style>
 
 <script>
-// Initialize Semantic UI dropdowns for existing select fields
-$(document).ready(function() {
-    $('.repeater-wrapper select.ui.dropdown').dropdown();
-});
+// Run after jQuery is loaded (repeater may be rendered before layout scripts)
+(function initRepeaterWhenReady() {
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(document).ready(function() {
+            window.jQuery('.repeater-wrapper select.ui.dropdown').dropdown();
+        });
+    } else {
+        setTimeout(initRepeaterWhenReady, 50);
+    }
+})();
 
-// Simple initialization - script.js will handle everything
-
-// Make functions globally available - ensure they're on window object
+// Make functions globally available - use jQuery (not $) so we work regardless of load order
 window.addRepeaterItem = function(btn) {
-    if (typeof jQuery === 'undefined') {
+    if (typeof window.jQuery === 'undefined') {
         console.error('jQuery is not loaded. Cannot add repeater item.');
         return false;
     }
@@ -396,22 +426,21 @@ window.addRepeaterItem = function(btn) {
     var itemHtml = '<div class="repeater-item" data-index="' + currentIndex + '">' +
         '<div class="repeater-item-header">' +
         '<span class="repeater-item-title">Item #' + (currentIndex + 1) + '</span>' +
-        '<button type="button" class="repeater-remove-btn" onclick="removeRepeaterItem(this)">' +
+        '<button type="button" class="repeater-remove-btn" onclick="if(typeof window.removeRepeaterItem === \'function\') { window.removeRepeaterItem(this); }">' +
         '<i class="fas fa-times"></i> Remove' +
         '</button>' +
         '</div>' +
         '<div class="repeater-item-content">';
     
-    for (var fieldNameKey in fields) {
-        if (!fields.hasOwnProperty(fieldNameKey)) continue;
-        
-        var fieldType = fields[fieldNameKey];
-        // Remove "_id" suffix from field name before creating label
-        var labelName = fieldNameKey.replace(/_id$/, '');
-        var fieldLabel = labelName.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+    var fieldsList = Array.isArray(fields) ? fields : Object.keys(fields).map(function(k) { return { name: k, type: fields[k], label: null, options: [] }; });
+    for (var i = 0; i < fieldsList.length; i++) {
+        var field = fieldsList[i];
+        var fieldNameKey = field.name || field.key;
+        var fieldType = field.type || 'text';
+        var fieldLabel = field.label || fieldNameKey.replace(/_id$/, '').replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+        var fieldOptions = field.options || [];
         
         if (fieldType == 'file' || fieldType == 'image') {
-            // Use bracket-free name for dropzone to avoid CSS selector issues
             var dropzoneName = 'upld_' + fieldName + '_' + currentIndex + '_' + fieldNameKey;
             var actualFieldName = fieldName + '[' + currentIndex + '][' + fieldNameKey + ']';
             var previewWrapperId = 'preview-' + fieldName + '-' + currentIndex + '-' + fieldNameKey;
@@ -432,14 +461,12 @@ window.addRepeaterItem = function(btn) {
                 '<textarea name="' + fieldName + '[' + currentIndex + '][' + fieldNameKey + ']" class="form-control" rows="3"></textarea>' +
                 '</div>';
         } else if (fieldType == 'select') {
-            // Get options from data attribute
-            var selectOptions = wrapper.data('select-options') || {};
-            var fieldOptions = selectOptions[fieldNameKey] || [];
             var optionsHtml = '<option value="" disabled selected>Choose ' + fieldLabel + '</option>';
-            for (var i = 0; i < fieldOptions.length; i++) {
-                var option = fieldOptions[i];
-                var optionLabel = option.label || option.title_en || option.name || option.id;
-                optionsHtml += '<option value="' + option.id + '">' + optionLabel + '</option>';
+            for (var j = 0; j < fieldOptions.length; j++) {
+                var option = fieldOptions[j];
+                var optionId = option.id !== undefined ? option.id : option.value;
+                var optionLabel = option.label !== undefined ? option.label : (option.title_en || option.name || option.id || '');
+                optionsHtml += '<option value="' + optionId + '">' + optionLabel + '</option>';
             }
             itemHtml += '<div class="repeater-field col-lg-12 mb-3">' +
                 '<label>' + fieldLabel + '</label>' +
@@ -624,29 +651,7 @@ window.updateRepeaterIndexes = function(wrapper) {
     });
 };
 
-// Also create aliases for backward compatibility
-function addRepeaterItem(btn) { 
-    if (typeof window.addRepeaterItem === 'function') {
-        return window.addRepeaterItem(btn);
-    }
-    console.error('addRepeaterItem function not available');
-    return false;
-}
-
-function removeRepeaterItem(btn) { 
-    if (typeof window.removeRepeaterItem === 'function') {
-        return window.removeRepeaterItem(btn);
-    }
-    console.error('removeRepeaterItem function not available');
-    return false;
-}
-
-function updateRepeaterIndexes(wrapper) { 
-    if (typeof window.updateRepeaterIndexes === 'function') {
-        return window.updateRepeaterIndexes(wrapper);
-    }
-    console.error('updateRepeaterIndexes function not available');
-    return false;
-}
+// Aliases removed: global function declarations overwrote window.addRepeaterItem
+// and caused infinite recursion. Use window.addRepeaterItem etc. directly.
 </script>
 
