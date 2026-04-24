@@ -469,7 +469,7 @@ if(!function_exists('get_name_from_urls')){
 
 if(!function_exists('get_media_url')){
 
- function get_media_url($name, $extension = "jpg" , $type = "optimized" , $resized = null){
+ function get_media_url($name, $extension = "webp" , $type = "optimized" , $resized = null){
 
     if(str_starts_with($name, "http")){
         return $name;
