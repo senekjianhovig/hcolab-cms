@@ -14,10 +14,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('api/v2/utilities/upload/media', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporaryAPIV2']);
+Route::post('api/v3/utilities/upload/media', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporaryAPIV3']);
+
 
 Route::prefix('api/v1')->group(function () {
     Route::prefix('utilities')->group(function () {
         Route::post('upload/media', [ \hcolab\cms\controllers\FileUploadController::class , 'UploadToTemporaryAPI']);
+
+
+        Route::get('file-info', [ \hcolab\cms\controllers\FileUploadController::class , 'getFileInfo']);
+        Route::get('files-info', [ \hcolab\cms\controllers\FileUploadController::class , 'getFilesInfo']);
+
     });
 
     Route::prefix('page')->group(function () {

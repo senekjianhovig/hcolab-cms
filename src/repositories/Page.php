@@ -23,6 +23,7 @@ class Page extends Element
     public $sections;
     public $push_notification_key;
     public $push_notification_page;
+    public $grid_operations;
 
 
     public function checkEntity(){

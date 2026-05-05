@@ -13,6 +13,7 @@ use hcolab\cms\traits\ApiTrait;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use FFMpeg\Coordinate\Dimension;
 use FFMpeg\Format\Video\X264;
+use Illuminate\Support\Facades\Validator;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
 use Pion\Laravel\ChunkUpload\Handler\AbstractHandler;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
@@ -21,8 +22,9 @@ use Pion\Laravel\ChunkUpload\Exceptions\UploadFailedException;
 
 use Pion\Laravel\ChunkUpload\Handler\DropZoneUploadHandler;
 
+use Intervention\Image\Facades\Image;
 
-use Image;
+
 
 class FileUploadController extends Controller
 {
@@ -218,6 +220,131 @@ class FileUploadController extends Controller
 
     }
 
+
+    public function UploadToTemporaryAPIV3(Request $request){
+
+
+        ini_set('post_max_size', '5000M');
+
+
+        $uploader_key = request()->header('uploader_key', request()->input('uploader_key' , null));
+
+       
+
+        if($uploader_key !=  env('UPLOADER_KEY')){
+            return $this->responseError(1 , "Wrong Uploader Key" , "Wrong Uploader Key");
+        }
+
+        $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
+
+        if ($receiver->isUploaded() === false) {
+            throw new UploadMissingFileException();
+        }
+
+        $save = $receiver->receive();
+
+        if ($save->isFinished()) {
+
+
+            $file = $save->getFile();
+            $temporary = $this->createTemporaryFromFile('temporary_files' , $file);
+
+            if (!$temporary) {
+                return $this->responseError(1, "File could not be uploaded", "The size you are trying to upload is too big or File extension is not supported!");
+            }
+
+            $file = $this->createFileFromTemporary($temporary);
+
+            if(!$file){
+                return $this->responseError(1, "File could not be uploaded", "The size you are trying to upload is too big or File extension is not supported!");
+            }
+
+            return $this->responseData(1 ,[
+                'file_id'=> $file->id,
+                'value'=> $file->name,
+                'url' =>  env('DATA_URL').'/'.$file->url,
+                'display_name' => $temporary->original_name ,
+                'mime_category' => $temporary->mime_category,
+                'mime_type' => $temporary->mime_type,
+                'low_resoltion' => $temporary->thumbnail
+            ]);
+
+
+        }
+
+        $handler = $save->handler();
+
+        return response()->json([
+            "progress" => $handler->getPercentageDone(),
+            'success' => true
+        ]);
+
+
+    }
+
+
+    public function getFileInfo(){
+
+
+        $validator = Validator::make(request()->all(), [
+            'file_name' => 'required',
+        ]);
+
+        if($validator->fails()){
+            return $this->responseError(1 , "Invalid file name" , "Invalid file name");
+        }
+
+        $name = $validator->validated('file_name');
+
+        $file = File::where('name' , $name)->whereNull('deleted_at')->first();
+        
+        if(!$file){
+            return $this->responseError(1 , "File not found" , "File not found");
+        }
+
+        return $this->responseData(1 ,[
+            'file_id'=> $file->id,
+            'value'=> $file->name,
+            'url' =>  env('DATA_URL').'/'.$file->url,
+            'display_name' => $file->original_name ,
+            'mime_category' => $file->mime_category,
+            'mime_type' => $file->mime_type,
+            'low_resoltion' => $file->thumbnail ?? null
+        ]);
+    }
+
+    public function getFilesInfo(){
+
+
+        $validator = Validator::make(request()->all(), [
+            'file_names' => 'required|array',
+            'file_names.*' => 'required|string',
+        ]);
+
+        if($validator->fails()){
+            return $this->responseValidationError(422 , $validator->errors()->toArray());
+        }
+
+        $names = request()->input('file_names');
+
+        $files = File::whereIn('name' , $names)->whereNull('deleted_at')->get()->map(function($file){
+            return [
+                'file_id'=> $file->id,
+                'value'=> $file->name,
+                'url' =>  env('DATA_URL').'/'.$file->url,
+                'display_name' => $file->original_name ,
+                'mime_category' => $file->mime_category,
+                'mime_type' => $file->mime_type,
+                'low_resoltion' => $file->thumbnail ?? null
+            ];
+        })->toArray();
+      
+        
+      
+        return $this->responseData(1 ,$files);
+    }
+
+
     public function validateFile($file){
         $file_extension = $file->getClientOriginalExtension();
         $mime_type = $file->getMimeType();
@@ -225,7 +352,7 @@ class FileUploadController extends Controller
 
         $file_size = $file->getSize();
 
-        $allowed_extensions = [ 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','divx',
+        $allowed_extensions = ['webp', 'jpg','jpeg','jpe','gif','png', 'bmp', 'tif','tiff','ico','asf','asx','wax','wmv','wmx','divx',
         'flv','mov','qt','mpeg','mpg','mpe','mp4','m4v','ogv','mkv','txt','asc','c','cc','h','csv','tsv','ics','rtx','css','htm','html',
         'mp3m4a','m4b','ra','ram','wav','ogg','oga','mid','midi','wma','mka','rtf','js','pdf','tar','zip','gz','gzip','rar','7z',
         'pot','pps','ppt','doc','wri','xla','xls','xlt','xlw','mdb','mpp','docx','docm','dotx','dotm','xlsx','xlsm','xlsb','xltx',
@@ -329,6 +456,7 @@ class FileUploadController extends Controller
         $external = 0;
 
        
+        $uri = null;
 
 
         $file = File::where('name' , $temporary->name)->where('deleted',0)->first();
