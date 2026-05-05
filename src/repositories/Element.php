@@ -414,11 +414,12 @@ class Element extends Column
         return $this;
     }
 
-    public function Text($text){
+    public function Text($text , $classes = "col-lg-12"){
         $ui = new \StdClass;
         $ui->type = "text";
         $ui->text = $text;
-       
+        $ui->classes = $classes;
+
         $std = new \StdClass;
         $std->name = null;
         $std->ui = $ui;

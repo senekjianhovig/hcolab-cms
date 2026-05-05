@@ -116,7 +116,7 @@ if(!function_exists('process_form_field')){
                 break;
 
                 case 'text':
-                return $element->ui->text;
+                return "<div class='".$element->ui->classes."'>".$element->ui->text."</div>";
                 break;
 
                 case 'values select':
