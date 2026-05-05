@@ -351,6 +351,25 @@ class PageController extends Controller
                     break;
                 }
 
+                case "repeater":
+                {
+                    $field = $element->db->field_name;
+                    $post = request()->post();
+                    // Zero repeater rows => no POST key; do not overwrite DB with null.
+                    if (! array_key_exists($element->name, $post)) {
+                        break;
+                    }
+                    $raw = $post[$element->name];
+                    if (! is_array($raw)) {
+                        $inputs[$field] = null;
+                        break;
+                    }
+                    $rows = array_values($raw);
+                    $inputs[$field] = json_encode($rows, JSON_UNESCAPED_UNICODE);
+                    break;
+                }
+
+
                 case "variants panel":
 
                     $waiting_id_elements [] = $element;
