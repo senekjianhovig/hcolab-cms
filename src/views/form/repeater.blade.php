@@ -39,14 +39,14 @@ if ($isAssoc) {
     }
 } else {
     foreach ($fieldsRaw as $f) {
-        $name = $f['name'] ?? $f['key'] ?? '';
+        $columnName = $f['name'] ?? $f['key'] ?? '';
         $type = $f['type'] ?? 'text';
         $label = $f['label'] ?? null;
         $options = $f['options'] ?? [];
-        if (isset($related_tables) && !empty($related_tables) && isset($related_tables[$name]['data'])) {
-            $options = $related_tables[$name]['data'];
+        if (isset($related_tables) && !empty($related_tables) && isset($related_tables[$columnName]['data'])) {
+            $options = $related_tables[$columnName]['data'];
         }
-        $fields[] = ['name' => $name, 'type' => $type, 'label' => $label, 'options' => $options];
+        $fields[] = ['name' => $columnName, 'type' => $type, 'label' => $label, 'options' => $options];
     }
 }
 // For legacy normalized entries (from $isAssoc), fill options from related_tables for select
